@@ -30,7 +30,7 @@ class AgeBinning(object):
 
             ageBinPrev = ageBin
 
-        ageLabels.append(str(ageLabelMin) + " to " + str(maxAge))
+        ageLabels.append(str(ageLabelMin) + " to " + str(self.maxAge))
 
         return ageLabels
 
@@ -121,10 +121,11 @@ class CreateLabels(object):
 
 class ReadSpectra(object):
 
-    def __init__(self, w0, w1, nw):
+    def __init__(self, w0, w1, nw, z):
         self.w0 = w0
         self.w1 = w1
         self.nw = nw
+        self.z = z
 
 
     def temp_list(self, tempFileList):
@@ -140,8 +141,8 @@ class ReadSpectra(object):
 
     def snid_template_data(self, snidTemplateLocation, filename, ageIdx):
         """ lnw template files """
-        data = PreProcessing()
-        wave, flux, nCols, ages, tType, minIndex, maxIndex = data.templates(snidTemplateLocation+filename, ageIdx, self.w0, self.w1, self.nw)
+        data = PreProcessing(snidTemplateLocation+filename, self.w0, self.w1, self.nw, self.z)
+        wave, flux, nCols, ages, tType, minIndex, maxIndex = data.snid_template_data(ageIdx)
 
         return wave, flux, nCols, ages, tType, minIndex, maxIndex
 
@@ -164,8 +165,8 @@ class ReadSpectra(object):
 
     def superfit_template_data(self, sfTemplateLocation, filename):
         """ Returns wavelength and flux after all preprocessing """
-        data = PreProcessing()
-        wave, flux, minIndex, maxIndex = data.processed_data(sfTemplateLocation + filename, w0, w1, nw)
+        data = PreProcessing(sfTemplateLocation + filename, self.w0, self.w1, self.nw, self.z)
+        wave, flux, minIndex, maxIndex = data.two_column_data()
         snName, ttype, age = self.sf_age(filename)
 
         print snName, ttype, age
@@ -173,6 +174,12 @@ class ReadSpectra(object):
         return wave, flux, minIndex, maxIndex, age, snName, ttype
 
 
+    def input_spectrum(self, sfTemplateLocation, filename):
+        data = PreProcessing(sfTemplateLocation+filename, self.w0, self.w1, self.nw, self.z)
+        wave, flux, minIndex, maxIndex = data.two_column_data()
+        snName, ttype, age = self.sf_age(filename)
+
+        return wave, flux, minIndex, maxIndex, age, snName, ttype
 
 class ArrayTools(object):
 
@@ -219,7 +226,7 @@ class ArrayTools(object):
         print "Before OverSample"  #
         print counts  #
 
-        overSampleAmount = self.div0(5 * max(counts), counts)  # ignore zeros in counts
+        overSampleAmount = self.div0(1 * max(counts), counts)  # ignore zeros in counts
         imagesOverSampled = []
         labelsOverSampled = []
         filenamesOverSampled = []
@@ -257,7 +264,7 @@ class ArrayTools(object):
 
 
 class CreateArrays(object):
-    def __init__(self, w0, w1, nw, nTypes, minAge, maxAge, ageBinSize):
+    def __init__(self, w0, w1, nw, nTypes, minAge, maxAge, ageBinSize, z):
         self.w0 = w0
         self.w1 = w1
         self.nw = nw
@@ -268,7 +275,8 @@ class CreateArrays(object):
         self.ageBinning = AgeBinning(self.minAge, self.maxAge, self.ageBinSize)
         self.numOfAgeBins = self.ageBinning.age_bin(self.maxAge) + 1
         self.nLabels = self.nTypes * self.numOfAgeBins
-        self.readSpectra = ReadSpectra(self.w0, self.w1, self.nw)
+        self.z = z
+        self.readSpectra = ReadSpectra(self.w0, self.w1, self.nw, self.z)
         self.createLabels = CreateLabels(self.nTypes, self.minAge, self.maxAge, self.ageBinSize)
 
 
@@ -291,7 +299,7 @@ class CreateArrays(object):
                     tempwave, tempflux, ncols, ages, ttype, tminindex, tmaxindex = self.readSpectra.snid_template_data(snidTemplateLocation, templist[i], ageidx)
                     agesList.append(ages[ageidx])
 
-                    if ((float(ages[ageidx]) > minAge and float(ages[ageidx]) < maxAge)):
+                    if ((float(ages[ageidx]) > self.minAge and float(ages[ageidx]) < self.maxAge)):
                         label, typeName = self.createLabels.label_array(ttype, ages[ageidx])
                         nonzeroflux = tempflux[tminindex:tmaxindex + 1]
                         newflux = (nonzeroflux - min(nonzeroflux)) / (max(nonzeroflux) - min(nonzeroflux))
@@ -332,129 +340,3 @@ class CreateArrays(object):
         return images, labels, np.array(filenames), typeNames
 
 
-class CreateTrainingSet(object):
-
-    def __init__(self, snidTemplateLocation, snidtempfilelist, sfTemplateLocation, sftempfilelist, w0, w1, nw, nTypes, minAge, maxAge, ageBinSize):
-        self.snidTemplateLocation = snidTemplateLocation
-        self.snidtempfilelist = snidtempfilelist
-        self.sfTemplateLocation = sfTemplateLocation
-        self.sftempfilelist = sftempfilelist
-        self.w0 = w0
-        self.w1 = w1
-        self.nw = nw
-        self.nTypes = nTypes
-        self.minAge = minAge
-        self.maxAge = maxAge
-        self.ageBinSize = ageBinSize
-        self.ageBinning = AgeBinning(self.minAge, self.maxAge, self.ageBinSize)
-        self.numOfAgeBins = self.ageBinning.age_bin(self.maxAge) + 1
-        self.nLabels = self.nTypes * self.numOfAgeBins
-        self.createArrays = CreateArrays(self.w0, self.w1, self.nw, self.nTypes, self.minAge, self.maxAge, self.ageBinSize)
-        self.arrayTools = ArrayTools(self.nLabels)
-
-
-    def all_templates_to_arrays(self):
-        images = np.empty((0, self.nw), np.float32)  # Number of pixels
-        labels = np.empty((0, self.nTypes), float)  # Number of labels (SN types)
-        typeList = []
-
-        typelistSnid, imagesSnid, labelsSnid, filenamesSnid, typeNamesSnid = self.createArrays.snid_templates_to_arrays(self.snidTemplateLocation, self.snidtempfilelist)
-        # imagesSuperfit, labelsSuperfit, filenamesSuperfit, typeNamesSuperfit = superfit_templates_to_arrays(self.sfTemplateLocation, sftempfilelist)
-
-        images = np.vstack((imagesSnid))  # , imagesSuperfit)) #Add in other templates from superfit etc.
-        labels = np.vstack((labelsSnid))  # , labelsSuperfit))
-        filenames = np.hstack((filenamesSnid))  # , filenamesSuperfit))
-        typeNames = np.hstack((typeNamesSnid))
-
-        typeList = typelistSnid
-
-        imagesShuf, labelsShuf, filenamesShuf, typeNamesShuf = self.arrayTools.shuffle_arrays(images, labels, filenames, typeNames)  # imagesShortlist, labelsShortlist = shortlist_arrays(images, labels)
-
-        return typeList, imagesShuf, labelsShuf, filenamesShuf, typeNamesShuf  # imagesShortlist, labelsShortlist
-
-
-    def sort_data(self):
-        trainPercentage = 0.8
-        testPercentage = 0.2
-        validatePercentage = 0.
-
-        typeList, images, labels, filenames, typeNames = self.all_templates_to_arrays()
-        # imagesSuperfit, labelsSuperfit, filenamesSuperfit = superfit_templates_to_arrays(sftempfilelist)
-        # imagesSuperfit, labelsSuperfit, filenamesSuperfit = shuffle_arrays(imagesSuperfit, labelsSuperfit, filenamesSuperfit)
-
-
-        trainSize = int(trainPercentage * len(images))
-        testSize = int(testPercentage * len(images))
-
-        trainImages = images[:trainSize]
-        testImages = images[trainSize: trainSize + testSize]
-        validateImages = images[trainSize + testSize:]
-        trainLabels = labels[:trainSize]
-        testLabels = labels[trainSize: trainSize + testSize]
-        validateLabels = labels[trainSize + testSize:]
-        trainFilenames = filenames[:trainSize]
-        testFilenames = filenames[trainSize: trainSize + testSize]
-        validateFilenames = filenames[trainSize + testSize:]
-        trainTypeNames = typeNames[:trainSize]
-        testTypeNames = typeNames[trainSize: trainSize + testSize]
-        validateTypeNames = typeNames[trainSize + testSize:]
-
-        trainImagesOverSample, trainLabelsOverSample, trainFilenamesOverSample, trainTypeNamesOverSample = self.arrayTools.over_sample_arrays(trainImages, trainLabels, trainFilenames, trainTypeNames)
-        testImagesShortlist, testLabelsShortlist, testFilenamesShortlist, testTypeNamesShortlist = testImages, testLabels, testFilenames, testTypeNames  # (testImages, testLabels, testFilenames)
-
-        return ((trainImagesOverSample, trainLabelsOverSample, trainFilenamesOverSample, trainTypeNamesOverSample),
-                (testImagesShortlist, testLabelsShortlist, testFilenamesShortlist, testTypeNamesShortlist),
-                (validateImages, validateLabels, validateFilenames, validateTypeNames))
-
-
-class SaveTrainingSet(object):
-    def __init__(self, snidTemplateLocation, snidtempfilelist, sfTemplateLocation, sftempfilelist, w0, w1, nw, nTypes, minAge, maxAge, ageBinSize):
-        self.snidTemplateLocation = snidTemplateLocation
-        self.snidtempfilelist = snidtempfilelist
-        self.sfTemplateLocation = sfTemplateLocation
-        self.sftempfilelist = sftempfilelist
-        self.w0 = w0
-        self.w1 = w1
-        self.nw = nw
-        self.nTypes = nTypes
-        self.minAge = minAge
-        self.maxAge = maxAge
-        self.ageBinSize = ageBinSize
-
-        self.createTrainingSet = CreateTrainingSet(self.snidTemplateLocation, self.snidtempfilelist, self.sfTemplateLocation, self.sftempfilelist, self.w0, self.w1, self.nw, self.nTypes, self.minAge, self.maxAge, self.ageBinSize)
-        self.sortData = self.createTrainingSet.sort_data()
-        self.trainImages = self.sortData[0][0]
-        self.trainLabels = self.sortData[0][1]
-        self.trainFilenames = self.sortData[0][2]
-        self.trainTypeNames = self.sortData[0][3]
-        self.testImages = self.sortData[1][0]
-        self.testLabels = self.sortData[1][1]
-        self.testFilenames = self.sortData[1][2]
-        self.testTypeNames = self.sortData[1][3]
-        self.validateImages = self.sortData[2][0]
-        self.validateLabels = self.sortData[2][1]
-        self.validateFilenames = self.sortData[2][2]
-        self.validateTypeNames = self.sortData[2][3]
-
-        self.save_arrays()
-
-    def save_arrays(self):
-        np.savez_compressed('file_w_ages.npz', trainImages=self.trainImages, trainLabels=self.trainLabels,
-                        trainFilenames=self.trainFilenames, trainTypeNames=self.trainTypeNames,
-                        testImages=self.testImages, testLabels=self.testLabels,
-                        testFilenames=self.testFilenames, testTypeNames=self.testTypeNames)
-
-
-nTypes = 14
-w0 = 2500. #wavelength range in Angstroms
-w1 = 11000.
-nw = 1024. #number of wavelength bins
-minAge = -50
-maxAge = 50
-ageBinSize = 4.
-snidTemplateLocation = '/home/dan/Desktop/SNClassifying/templates/'
-sfTemplateLocation = '/home/dan/Desktop/SNClassifying/templates/superfit_templates/sne/'
-snidtempfilelist1 = snidTemplateLocation + 'templist'
-sftempfilelist1 = sfTemplateLocation + 'templist.txt'
-
-SaveTrainingSet(snidTemplateLocation, snidtempfilelist1, sfTemplateLocation, sftempfilelist1, w0, w1, nw, nTypes, minAge, maxAge, ageBinSize)

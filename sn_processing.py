@@ -1,8 +1,5 @@
 #Pre-processing class
 
-import numpy as np
-import matplotlib.pyplot as plt
-from scipy.fftpack import fft
 from preprocessing import *
 
 
@@ -10,60 +7,33 @@ from preprocessing import *
 class PreProcessing(object):
     """ Pre-processes spectra for cross correlation """
     
-    def __init__(self):
-        pass#self.filename = filename
+    def __init__(self, filename, w0, w1, nw, z):
+        self.filename = filename
+        self.w0 = w0
+        self.w1 = w1
+        self.nw = nw
+        self.polyorder = 4
+        self.z = z
+        self.readInputSpectra = ReadInputSpectra(self.filename, self.w0, self.w1, self.z)
+        self.preProcess = PreProcessSpectrum(self.w0, self.w1, self.nw)
 
-    def processed_data(self, filename, w0, w1, nw):
-        polyorder = 4
-        
-        wave, flux = input_spectra(filename, w0, w1)
-        binnedwave, binnedflux, minindex, maxindex = log_wavelength(wave, flux, w0, w1, nw)
-        polyx, polyy = poly_fit(binnedwave, binnedflux, polyorder, minindex, maxindex)
-        newflux = continuum_removal(binnedwave, binnedflux, polyorder, minindex, maxindex)
-        meanzero = mean_zero(binnedwave, newflux, minindex, maxindex)
-        apodized = apodize(binnedwave, meanzero, minindex, maxindex)
+    def two_column_data(self):
+        wave, flux = self.readInputSpectra.two_col_input_spectra()
+        binnedwave, binnedflux, minindex, maxindex = self.preProcess.log_wavelength(wave, flux)
+        newflux = self.preProcess.continuum_removal(binnedwave, binnedflux, self.polyorder, minindex, maxindex)
+        meanzero = self.preProcess.mean_zero(binnedwave, newflux, minindex, maxindex)
+        apodized = self.preProcess.apodize(binnedwave, meanzero, minindex, maxindex)
 
         return binnedwave, apodized, minindex, maxindex
 
-    def templates(self, filename, ageidx, w0, w1, nw):
+    def snid_template_data(self, ageidx):
         """lnw templates """
         
-        wave, flux, ncols, ages, ttype = template_spectra(filename, ageidx)
-        binnedwave, binnedflux, minindex, maxindex = log_wavelength(wave, flux, w0, w1, nw)
+        wave, flux, ncols, ages, ttype = self.readInputSpectra.snid_template_spectra(ageidx)
+        binnedwave, binnedflux, minindex, maxindex = self.preProcess.log_wavelength(wave, flux)
         
         return binnedwave, binnedflux, ncols, ages, ttype, minindex, maxindex
 
-    def galaxy_template(self, filename, w0, w1, nw):
-        """superfit galaxy templates"""
-        polyorder = 4
-        
-        wave, flux = input_spectra(filename)
-        binnedwave, binnedflux, minindex, maxindex = log_wavelength(wave, flux, w0, w1, nw)
-        polyx, polyy = poly_fit(binnedwave, binnedflux, polyorder, minindex, maxindex)
-        newflux = continuum_removal(binnedwave, binnedflux, polyorder, minindex, maxindex)
-        meanzero = mean_zero(binnedwave, newflux, minindex, maxindex)
-        apodized = apodize(binnedwave, meanzero, minindex, maxindex)
-
-        return binnedwave, apodized
 
 
-
-
-
-
-##filelocation = 'C:\Users\Daniel\OneDrive\Documents\Thesis Project\superfit\sne\Ia\\'
-##snfilename ='sn2002bo.m01.dat' #sn2003jo.dat
-##templatefilename = 'sn1999ee.m08.dat'
-##
-##inputpre = PreProcessing()
-##temppre = PreProcessing()
-##
-##
-##wd,fd = inputpre.processed_data(filelocation+snfilename)
-##wt,ft = inputpre.processed_data(filelocation+templatefilename)
-##
-##plt.plot(wd,fd)
-##plt.plot(wt,ft)
-##
-##plt.show()
 

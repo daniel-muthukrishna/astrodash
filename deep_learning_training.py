@@ -33,7 +33,7 @@ inputFilenames = inputLoaded['inputFilenames']
 inputRedshifts = inputLoaded['inputRedshifts']
 
 snidtempfilelist = r'/home/dan/Desktop/SNClassifying/templates/templist'
-loaded = np.load('file_w_ages.npz')
+loaded = np.load('file3.npz')
 trainImages = loaded['trainImages']
 trainLabels = loaded['trainLabels']
 trainFilenames = loaded['trainFilenames']
@@ -86,7 +86,7 @@ print(sess.run(y, feed_dict={x: batch_xs1, y_: batch_ys1}))
 #Train 1000 times
 trainImagesCycle = itertools.cycle(trainImages)
 trainLabelsCycle = itertools.cycle(trainLabels)
-for i in range(600):
+for i in range(2000):
     batch_xs = np.array(list(itertools.islice(trainImagesCycle, 5000*i, 5000*i+5000)))
     batch_ys = np.array(list(itertools.islice(trainLabelsCycle, 5000*i, 5000*i+5000)))
     sess.run(train_step, feed_dict={x: batch_xs, y_: batch_ys})
