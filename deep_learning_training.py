@@ -33,7 +33,7 @@ inputFilenames = inputLoaded['inputFilenames']
 inputRedshifts = inputLoaded['inputRedshifts']
 
 snidtempfilelist = r'/home/dan/Desktop/SNClassifying/templates/templist'
-loaded = np.load('file2.npz')
+loaded = np.load('file_w_ages.npz')
 trainImages = loaded['trainImages']
 trainLabels = loaded['trainLabels']
 trainFilenames = loaded['trainFilenames']
