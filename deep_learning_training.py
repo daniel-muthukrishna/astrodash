@@ -33,20 +33,28 @@ inputFilenames = inputLoaded['inputFilenames']
 inputRedshifts = inputLoaded['inputRedshifts']
 
 snidtempfilelist = r'/home/dan/Desktop/SNClassifying/templates/templist'
-loaded = np.load('file1.npz')#sortData = create_arrays.sort_data(snidtempfilelist)
-trainImages = loaded['trainImages']#np.repeat(sortData[0][0], 20, axis=0)#mnist.train.images#
-trainLabels = loaded['trainLabels']#np.repeat(sortData[0][1], 20, axis=0)#mnist.train.labels#
+loaded = np.load('file2.npz')
+trainImages = loaded['trainImages']
+trainLabels = loaded['trainLabels']
 trainFilenames = loaded['trainFilenames']
-testImages = loaded['testImages']#np.repeat(sortData[1][0], 20, axis=0)#mnist.test.images#
-testLabels = loaded['testLabels']#np.repeat(sortData[1][1], 20, axis=0)#mnist.test.labels#
+trainTypeNames = loaded['trainTypeNames']
+testImages = loaded['testImages']
+testLabels = loaded['testLabels']
 testFilenames = loaded['testFilenames']
+testTypeNames = loaded['testTypeNames']
 #validateImages = sortData[2][0]
 #validateLabels = sortData[2][1]
+
+testLabels1 = []
+trainLabels1 = []
+inputLabels1 = []
+
 
 print("Completed creatingArrays")
 
 N = 1024
-ntypes = 14
+ntypes = len(testLabels[0])
+print(ntypes)
 
 a = []
 
@@ -79,15 +87,16 @@ print(sess.run(y, feed_dict={x: batch_xs1, y_: batch_ys1}))
 trainImagesCycle = itertools.cycle(trainImages)
 trainLabelsCycle = itertools.cycle(trainLabels)
 for i in range(600):
-    batch_xs = np.array(list(itertools.islice(trainImagesCycle, 4000*i, 4000*i+4000)))
-    batch_ys = np.array(list(itertools.islice(trainLabelsCycle, 4000*i, 4000*i+4000)))
+    batch_xs = np.array(list(itertools.islice(trainImagesCycle, 5000*i, 5000*i+5000)))
+    batch_ys = np.array(list(itertools.islice(trainLabelsCycle, 5000*i, 5000*i+5000)))
     sess.run(train_step, feed_dict={x: batch_xs, y_: batch_ys})
     if (i % 100 == 1):
         correct_prediction = tf.equal(tf.argmax(y,1), tf.argmax(y_,1))
         accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
         testacc = sess.run(accuracy, feed_dict={x: testImages, y_: testLabels})
+        trainacc = sess.run(accuracy, feed_dict={x: trainImages, y_: trainLabels})
         a.append(testacc)
-        print(str(testacc))
+        print(str(testacc) + " " + str(trainacc))
 
 batch_xs1 = testImages
 batch_ys1 = testLabels
@@ -108,14 +117,9 @@ for i in range(len(cp)):
         print(i, testFilenames[i])
 
 
-from PIL import Image
-img = Image.new('L', (int(np.sqrt(N)), int(np.sqrt(N))))
-img.putdata(trainImages[31]*255)
-img.save('number.png')
-
 
 ############################################################
-yInputRedshift = sess.run(y, feed_dict={x: inputImages, y_: inputLabels})
+yInputRedshift = sess.run(y, feed_dict={x: inputImages})
 print(yInputRedshift)
 print(sess.run(accuracy, feed_dict={x: inputImages, y_: inputLabels}))
 
@@ -129,7 +133,7 @@ for i in range(len(yInputRedshift)):
     if prob[bestIndex] > bestForEachType[bestIndex][2]:
         bestForEachType[bestIndex][2] = prob[bestIndex]
         bestForEachType[bestIndex][1] = z
-        bestForEachType[bestIndex][0] = bestIndex
+        bestForEachType[bestIndex][0] = bestIndex #inputTypeNames
         index[bestIndex] = i
 
 idx = np.argsort(bestForEachType[:,2])
@@ -146,20 +150,20 @@ for c in range(0,2):#ntypes):
             print(i)
             plt.plot(trainImages[i])
             plt.plot(inputImages[index[c]])
-            plt.title(str(c)+": " + str(bestForEachType[c][1]))
+            plt.title(str(bestForEachType[c][0])+": " + str(bestForEachType[c][1]))
             plt.show()
             break
         
 
 #Plot Probability vs redshift for each class
 redshiftGraphs = [[[],[]] for i in range(ntypes)]
-for c in range(ntypes):
+for c in range(2):#ntypes):
     redshiftGraphs[c][0] = inputRedshifts
     redshiftGraphs[c][1] = yInputRedshift[:,c]
     plt.plot(redshiftGraphs[c][0],redshiftGraphs[c][1])
     plt.xlabel("z")
     plt.ylabel("Probability")
-    plt.title("Type: " + str(c))
+    plt.title("Type: " + str(bestForEachType[c][0]))
     plt.show()
 
 redshiftGraphs = np.array(redshiftGraphs)

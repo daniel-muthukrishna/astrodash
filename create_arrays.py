@@ -10,10 +10,7 @@ w0 = 2500. #wavelength range in Angstroms
 w1 = 11000.
 nw = 1024. #number of wavelength bins
 
-snidTemplateLocation = '/home/dan/Desktop/SNClassifying/templates/'
-sfTemplateLocation = '/home/dan/Desktop/SNClassifying/templates/superfit_templates/sne/'
-snidtempfilelist1 = snidTemplateLocation + 'templist'
-sftempfilelist1 = sfTemplateLocation + 'templist.txt'
+
 
 def temp_list(tempfilelist):
     f = open(tempfilelist, 'rU')
@@ -34,66 +31,112 @@ def snid_template_data(filename, ageidx):
 
     return wave, flux, ncols, ages, ttype, minindex, maxindex
 
-def label_array(ttype):
-    labelarray = np.zeros(ntypes)
-    if (ttype == 'Ia-norm'):
-        labelarray[0] = 1
+def age_bin(age, ageBinSize, minAge, maxAge):
+    #print(i, int(i/5), int(i/5)+ int(33/5), int((i + 33)/5))
+    ageBin = int(age/ageBinSize) - int(minAge/ageBinSize) #around zero has double bin siz
+
+    return ageBin
+
+def age_labels(ageBinSize, minAge, maxAge):
+    ageLabels = []
+
+    ageBinPrev = 0
+    ageLabelMin = minAge
+    for age in np.arange(minAge, maxAge):
+        ageBin = age_bin(age, ageBinSize, minAge, maxAge)
         
+        if (ageBin != ageBinPrev):
+            ageLabelMax = age
+            ageLabels.append(str(ageLabelMin) + " to " + str(ageLabelMax))
+            ageLabelMin = ageLabelMax
+            
+        ageBinPrev = ageBin
+            
+        
+    ageLabels.append(str(ageLabelMin) + " to " + str(maxAge))   
+    
+    return ageLabels
+    
+
+minAge = -50
+maxAge = 50
+ageBinSize = 4.
+numOfAgeBins = age_bin(maxAge,ageBinSize, minAge, maxAge) + 1
+nLabels = ntypes*numOfAgeBins
+ageLabels = age_labels(ageBinSize, minAge, maxAge)
+
+
+def label_array(ttype, age):
+    ageBin = age_bin(age, ageBinSize, minAge, maxAge)
+    labelarray = np.zeros((ntypes, numOfAgeBins))
+    typeNames = []
+    
+    if (ttype == 'Ia-norm'):
+        typeIndex = 0
+
     elif (ttype == 'IIb'):
-        labelarray[1] = 1
+        typeIndex = 1
         
     elif (ttype == 'Ia-pec'):
-        labelarray[2] = 1
+        typeIndex = 2
         
     elif (ttype == 'Ic-broad'):
-        labelarray[3] = 1
+        typeIndex = 3
         
     elif (ttype == 'Ia-csm'):
-        labelarray[4] = 1
+        typeIndex = 4
         
     elif (ttype == 'Ic-norm'):
-        labelarray[5] = 1
+        typeIndex = 5
         
     elif (ttype == 'IIP'):
-        labelarray[6] = 1
+        typeIndex = 6
         
     elif (ttype == 'Ib-pec'):
-        labelarray[7] = 1
+        typeIndex = 7
         
     elif (ttype == 'IIL'):
-        labelarray[8] = 1
+        typeIndex = 8
         
     elif (ttype == 'Ib-norm'):
-        labelarray[9] = 1
+        typeIndex = 9
         
     elif (ttype == 'Ia-91bg'):
-        labelarray[10] = 1
+        typeIndex = 10
         
     elif (ttype == 'II-pec'):
-        labelarray[11] = 1
+        typeIndex = 11
         
     elif (ttype == 'Ia-91T'):
-        labelarray[12] = 1
+        typeIndex = 12
         
     elif (ttype == 'IIn'):
-        labelarray[13] = 1
+        typeIndex = 13
         
     elif (ttype == 'Ia'):
-        labelarray[0] = 1
+        typeIndex = 0
         
     elif (ttype == 'Ib'):
-        labelarray[9] = 1
+        typeIndex = 9
         
     elif (ttype == 'Ic'):
-        labelarray[5] = 1
+        typeIndex = 5
         
     elif (ttype == 'II'):
-        labelarray[13] = 1
+        typeIndex = 13
     else:
         print ("Invalid type")
-
         
-    return labelarray
+
+    labelarray[typeIndex][ageBin] = 1
+    labelarray = labelarray.flatten()
+    
+    typeNames.append(ttype + ": " + ageLabels[ageBin])
+    typeNames = np.array(typeNames)
+    
+    
+    
+    return labelarray, typeNames
 
 def snid_templates_to_arrays(tempfilelist):
     ''' This function is for the SNID processed files, which
@@ -103,25 +146,27 @@ def snid_templates_to_arrays(tempfilelist):
     templist = temp_list(tempfilelist)
     typeList = []
     images = np.empty((0,N), np.float32) #Number of pixels
-    labels = np.empty((0,ntypes), float) #Number of labels (SN types)
+    labels = np.empty((0,nLabels), float) #Number of labels (SN types)
     filenames = []
+    typeNames = []
+    agesList = []
 
     for i in range(0, len(templist)):
         ncols = 15
         for ageidx in range(0,100):
             if (ageidx < ncols):
                 tempwave, tempflux, ncols, ages, ttype, tminindex, tmaxindex = snid_template_data(templist[i], ageidx)
-                label = label_array(ttype)
-                
-                #Check if age is 0ish and create list of lists for images and labels
-                if ((float(ages[ageidx]) < 4 and float(ages[ageidx]) > -4)):		
-                    
+                agesList.append(ages[ageidx])
+
+                if ((float(ages[ageidx]) > minAge and float(ages[ageidx]) < maxAge)):    
+                    label, typeName = label_array(ttype, ages[ageidx])
                     nonzeroflux = tempflux[tminindex:tmaxindex+1]
                     newflux = (nonzeroflux - min(nonzeroflux))/(max(nonzeroflux)-min(nonzeroflux))
                     newflux2 = np.concatenate((tempflux[0:tminindex], newflux, tempflux[tmaxindex+1:]))
                     images = np.append(images, np.array([newflux2]), axis=0) #images.append(newflux2)
                     labels = np.append(labels, np.array([label]), axis=0) #labels.append(ttype)
                     filenames.append(templist[i] + '_' + ttype + '_' + str(ages[ageidx]))
+                    typeNames.append(typeName)
                     
         print templist[i]
         #Create List of all SN types
@@ -129,7 +174,7 @@ def snid_templates_to_arrays(tempfilelist):
             typeList.append(ttype)
 
                 
-    return typeList, images, labels, np.array(filenames)
+    return typeList, images, labels, np.array(filenames), typeNames
 
 def sf_age(filename):
     snName, extension = filename.strip('.dat').split('.')
@@ -161,28 +206,31 @@ def superfit_template_data(filename):
 def superfit_templates_to_arrays(sftempfilelist):
     templist = temp_list(sftempfilelist)
     images = np.empty((0,N), np.float32) #Number of pixels
-    labels = np.empty((0,ntypes), float) #Number of labels (SN types)
+    labels = np.empty((0,nLabels), float) #Number of labels (SN types)
     filenames = []
+    typeNames = []
     
     for i in range(0, len(templist)):
         tempwave, tempflux, tminindex, tmaxindex, age, snName, ttype = superfit_template_data(templist[i])
-        label = label_array(ttype)
         
-        if ((float(age) < 4 and float(age) > -4)):                
+        if ((float(ages[ageidx]) > minAge and float(ages[ageidx]) > maxAge)):
+            label, typeName = label_array(ttype, ages[ageidx])                    
             nonzeroflux = tempflux[tminindex:tmaxindex+1]
             newflux = (nonzeroflux - min(nonzeroflux))/(max(nonzeroflux)-min(nonzeroflux))
             newflux2 = np.concatenate((tempflux[0:tminindex], newflux, tempflux[tmaxindex+1:]))
             images = np.append(images, np.array([newflux2]), axis=0) #images.append(newflux2)
             labels = np.append(labels, np.array([label]), axis=0) #labels.append(ttype)
             filenames.append(templist[i])
+            typeNames.append(typeName)
             
-    return images, labels, np.array(filenames)
+    return images, labels, np.array(filenames), typeNames
 
 
-def shuffle_arrays(images, labels, filenames):
+def shuffle_arrays(images, labels, filenames, typeNames):
     imagesShuf = []
     labelsShuf = []
     filenamesShuf = []
+    typeNamesShuf = []
 
     #Randomise order
     indexShuf = range(len(images))
@@ -190,169 +238,72 @@ def shuffle_arrays(images, labels, filenames):
     for i in indexShuf:
         imagesShuf.append(images[i])
         labelsShuf.append(labels[i])
-        filenamesShuf.append((filenames[i]))
+        filenamesShuf.append(filenames[i])
+        typeNamesShuf.append(typeNames[i])
 
-    return np.array(imagesShuf), np.array(labelsShuf), np.array(filenamesShuf)
+    return np.array(imagesShuf), np.array(labelsShuf), np.array(filenamesShuf), np.array(typeNamesShuf)
 
-def shortlist_arrays(images, labels, filenames):
-    count1a = 0
-    count1b = 0
-    count1c = 0
-    count2 = 0
-    imagesShortlist = []
-    labelsShortlist = []
-    filenamesShortlist = []
+def count_labels(labels):
+    counts = np.zeros(nLabels)
 
-    imagesShuf, labelsShuf, filenamesShuf = shuffle_arrays(images, labels, filenames)
+    for i in range(len(labels)):
+        counts = labels[i] + counts
 
-    for i in range(len(labelsShuf)):
-        label = labelsShuf[i]
-        image = imagesShuf[i]
-        filename = filenamesShuf[i]
-        
-        if (label[0] == 1):
-            count1a += 1
-            if (count1a > 5):
-                continue
-        elif (label[1] == 1):
-            count1b += 1
-            if (count1b > 5):
-                print("1b exceed")
-                continue
-        elif (label[2] == 1):
-            count1c += 1
-            if (count1c > 5):
-                print("1c exceed")
-                continue
-        elif (label[3] == 1):
-            count2 += 1
-            if (count2 > 5):
-                print("2 exceed")
-                continue
-            
-        imagesShortlist.append(image)
-        labelsShortlist.append(label)
-        filenamesShortlist.append(filename)
-        print(count1a, count1b, count1c, count2)
+    return counts
 
+def div0( a, b ):
+    """ ignore / 0, div0( [-1, 0, 1], 0 ) -> [0, 0, 0] """
+    with np.errstate(divide='ignore', invalid='ignore'):
+        c = np.true_divide( a, b )
+        c[ ~ np.isfinite( c )] = 0  # -inf inf NaN
+    return c
 
-    imagesShortlist = np.array(imagesShortlist)
-    labelsShortlist = np.array(labelsShortlist)
-    filenamesShortlist = np.array(filenamesShortlist)
-    imagesShortlistShuf, labelsShortlistShuf, filenamesShortlistShuf = shuffle_arrays(imagesShortlist, labelsShortlist, filenamesShortlist)
-        
-    return imagesShortlistShuf, labelsShortlistShuf
-
+countsBefore = np.zeros(nLabels)
+countsAfter = np.zeros(nLabels)
+    
 """Randomise order and shortlist arrays to have even
     number of SN for each type """
-def over_sample_arrays(images, labels, filenames):
-    counts = np.zeros(ntypes)
-    imagesShortlist = []
-    labelsShortlist = []
-    filenamesShortlist = []
+def over_sample_arrays(images, labels, filenames, typeNames):
+    counts = count_labels(labels)
+    print "Before OverSample" #
+    print counts #
+    
+    overSampleAmount = div0(20*max(counts), counts) #ignore zeros in counts
+    imagesOverSampled = []
+    labelsOverSampled = []
+    filenamesOverSampled = []
+    typeNamesOverSampled = []
 
-    imagesShuf, labelsShuf, filenamesShuf = shuffle_arrays(images, labels, filenames)
+    counts1 = np.zeros(nLabels)
+
+    imagesShuf, labelsShuf, filenamesShuf, typeNamesShuf = shuffle_arrays(images, labels, filenames, typeNames)
 
     for i in range(len(labelsShuf)):
         label = labelsShuf[i]
         image = imagesShuf[i]
         filename = filenamesShuf[i]
+        typeName = typeNamesShuf[i]
+
+        labelIndex = np.argmax(label)
         
-        if (label[0] == 1): 
-            for r in range(20):
-                imagesShortlist.append(image)# + abs(np.random.normal(0,0.1,100)))
-                labelsShortlist.append(label)
-                filenamesShortlist.append(filename)
-                counts = np.array(label) + counts
-        elif (label[1] == 1): 
-            for r in range(177):
-                imagesShortlist.append(image)
-                labelsShortlist.append(label)
-                filenamesShortlist.append(filename)
-                counts = np.array(label) + counts
-        elif (label[2] == 1): 
-            for r in range(164):
-                imagesShortlist.append(image)
-                labelsShortlist.append(label)
-                filenamesShortlist.append(filename)
-                counts = np.array(label) + counts
-        elif (label[3] == 1):
-            for r in range(177):
-                imagesShortlist.append(image)
-                labelsShortlist.append(label)
-                filenamesShortlist.append(filename)
-                counts = np.array(label) + counts
-        elif (label[4] == 1): 
-            for r in range(287):
-                imagesShortlist.append(image)
-                labelsShortlist.append(label)
-                filenamesShortlist.append(filename)
-                counts = np.array(label) + counts
-        elif (label[5] == 1): 
-            for r in range(88):
-                imagesShortlist.append(image)
-                labelsShortlist.append(label)
-                filenamesShortlist.append(filename)
-                counts = np.array(label) + counts
-        elif (label[6] == 1):
-            for r in range(88):
-                imagesShortlist.append(image)
-                labelsShortlist.append(label)
-                filenamesShortlist.append(filename)
-                counts = np.array(label) + counts
-        elif (label[7] == 1): 
-            for r in range(255):
-                imagesShortlist.append(image)
-                labelsShortlist.append(label)
-                filenamesShortlist.append(filename)
-                counts = np.array(label) + counts
-        elif (label[8] == 1): 
-            for r in range(575):
-                imagesShortlist.append(image)
-                labelsShortlist.append(label)
-                filenamesShortlist.append(filename)
-                counts = np.array(label) + counts
-        elif (label[9] == 1):
-            for r in range(230):
-                imagesShortlist.append(image)
-                labelsShortlist.append(label)
-                filenamesShortlist.append(filename)
-                counts = np.array(label) + counts
-        elif (label[10] == 1): 
-            for r in range(128):
-                imagesShortlist.append(image)
-                labelsShortlist.append(label)
-                filenamesShortlist.append(filename)
-                counts = np.array(label) + counts
-        elif (label[11] == 1): 
-            for r in range(767):
-                imagesShortlist.append(image)
-                labelsShortlist.append(label)
-                filenamesShortlist.append(filename)
-                counts = np.array(label) + counts
-        elif (label[12] == 1):
-            for r in range(288):
-                imagesShortlist.append(image)
-                labelsShortlist.append(label)
-                filenamesShortlist.append(filename)
-                counts = np.array(label) + counts
-        elif (label[13] == 1): 
-            for r in range(153):
-                imagesShortlist.append(image)
-                labelsShortlist.append(label)
-                filenamesShortlist.append(filename)
-                counts = np.array(label) + counts
-
-
-        print(counts)
-
-
-    imagesShortlist = np.array(imagesShortlist)
-    labelsShortlist = np.array(labelsShortlist)
-    filenamesShortlist = np.array(filenamesShortlist)
-    imagesShortlistShuf, labelsShortlistShuf, filenamesShortlistShuf = shuffle_arrays(imagesShortlist, labelsShortlist, filenamesShortlist)
+        for r in range(int(overSampleAmount[labelIndex])):
+            imagesOverSampled.append(image)
+            labelsOverSampled.append(label)
+            filenamesOverSampled.append(filename)
+            typeNamesOverSampled.append(typeName)
+            counts1 = label + counts1
+    print "After OverSample" #
+    print counts1 #
+    countsBefore = counts #
+    countsAfter = counts1 #
+    #[ 372.    8.   22.   12.    1.   22.   26.    6.    1.    7.   34.    5.  44.    6.]
+    imagesOverSampled = np.array(imagesOverSampled)
+    labelsOverSampled = np.array(labelsOverSampled)
+    filenamesOverSampled = np.array(filenamesOverSampled)
+    typeNamesOverSampled = np.array(typeNamesOverSampled)
+    imagesOverSampledShuf, labelsOverSampledShuf, filenamesOverSampledShuf, typeNamesOverSampledShuf = shuffle_arrays(imagesOverSampled, labelsOverSampled, filenamesOverSampled, typeNamesOverSampled)
         
-    return imagesShortlistShuf, labelsShortlistShuf, filenamesShortlistShuf
+    return imagesOverSampledShuf, labelsOverSampledShuf, filenamesOverSampledShuf, typeNamesOverSampledShuf
         
 
 def all_templates_to_arrays(snidtempfilelist, sftempfilelist):
@@ -360,74 +311,81 @@ def all_templates_to_arrays(snidtempfilelist, sftempfilelist):
     labels = np.empty((0,ntypes), float) #Number of labels (SN types)
     typeList = []
 
-    typelistSnid, imagesSnid, labelsSnid, filenamesSnid = snid_templates_to_arrays(snidtempfilelist)
-    #imagesSuperfit, labelsSuperfit, filenamesSuperfit = superfit_templates_to_arrays(sftempfilelist)
+    typelistSnid, imagesSnid, labelsSnid, filenamesSnid, typeNamesSnid = snid_templates_to_arrays(snidtempfilelist)
+    #imagesSuperfit, labelsSuperfit, filenamesSuperfit, typeNamesSuperfit = superfit_templates_to_arrays(sftempfilelist)
     
     images = np.vstack((imagesSnid))#, imagesSuperfit)) #Add in other templates from superfit etc.
     labels = np.vstack((labelsSnid))#, labelsSuperfit))
     filenames = np.hstack((filenamesSnid))#, filenamesSuperfit))
+    typeNames = np.hstack((typeNamesSnid))
     
     typeList = typelistSnid
     
     
-    imagesShuf, labelsShuf, filenamesShuf = shuffle_arrays(images, labels, filenames)#imagesShortlist, labelsShortlist = shortlist_arrays(images, labels)
+    imagesShuf, labelsShuf, filenamesShuf, typeNamesShuf = shuffle_arrays(images, labels, filenames, typeNames)#imagesShortlist, labelsShortlist = shortlist_arrays(images, labels)
 
     
-    return typeList, imagesShuf, labelsShuf, filenamesShuf #imagesShortlist, labelsShortlist
+    return typeList, imagesShuf, labelsShuf, filenamesShuf, typeNamesShuf #imagesShortlist, labelsShortlist
 
 
 def sort_data(snidtempfilelist, sftempfilelist):
-    trainPercentage = 1.
-    testPercentage = 0.
+    trainPercentage = 0.8
+    testPercentage = 0.2
     validatePercentage = 0.
     
-    typeList, images, labels, filenames = all_templates_to_arrays(snidtempfilelist, sftempfilelist)
-    imagesSuperfit, labelsSuperfit, filenamesSuperfit = superfit_templates_to_arrays(sftempfilelist)
-    imagesSuperfit, labelsSuperfit, filenamesSuperfit = shuffle_arrays(imagesSuperfit, labelsSuperfit, filenamesSuperfit)
+    typeList, images, labels, filenames, typeNames = all_templates_to_arrays(snidtempfilelist, sftempfilelist)
+    #imagesSuperfit, labelsSuperfit, filenamesSuperfit = superfit_templates_to_arrays(sftempfilelist)
+    #imagesSuperfit, labelsSuperfit, filenamesSuperfit = shuffle_arrays(imagesSuperfit, labelsSuperfit, filenamesSuperfit)
 
 
     trainSize = int(trainPercentage*len(images))
     testSize = int(testPercentage*len(images))
     
     trainImages = images[:trainSize]
-    testImages = imagesSuperfit#images[trainSize : trainSize+testSize]
+    testImages = images[trainSize : trainSize+testSize]
     validateImages = images[trainSize+testSize:]
     trainLabels = labels[:trainSize]
-    testLabels = labelsSuperfit#labels[trainSize : trainSize+testSize]
+    testLabels = labels[trainSize : trainSize+testSize]
     validateLabels = labels[trainSize+testSize:]
     trainFilenames = filenames[:trainSize]
-    testFilenames = filenamesSuperfit#filenames[trainSize : trainSize+testSize]
+    testFilenames = filenames[trainSize : trainSize+testSize]
     validateFilenames = filenames[trainSize+testSize:]
+    trainTypeNames = typeNames[:trainSize]
+    testTypeNames = typeNames[trainSize : trainSize+testSize]
+    validateTypeNames = typeNames[trainSize+testSize:]
 
-    trainImagesOverSample, trainLabelsOverSample, trainFilenamesOverSample = over_sample_arrays(trainImages, trainLabels, trainFilenames)
-    testImagesShortlist, testLabelsShortlist, testFilenamesShortlist = testImages, testLabels, testFilenames#shortlist_arrays(testImages, testLabels)
+    trainImagesOverSample, trainLabelsOverSample, trainFilenamesOverSample, trainTypeNamesOverSample = over_sample_arrays(trainImages, trainLabels, trainFilenames, trainTypeNames)
+    testImagesShortlist, testLabelsShortlist, testFilenamesShortlist, testTypeNamesShortlist = testImages, testLabels, testFilenames, testTypeNames#(testImages, testLabels, testFilenames)
 
-    return ((trainImagesOverSample, trainLabelsOverSample, trainFilenamesOverSample), (testImagesShortlist, testLabelsShortlist, testFilenamesShortlist), (validateImages, validateLabels, validateFilenames))
+    return ((trainImagesOverSample, trainLabelsOverSample, trainFilenamesOverSample, trainTypeNamesOverSample), (testImagesShortlist, testLabelsShortlist, testFilenamesShortlist, testTypeNamesShortlist), (validateImages, validateLabels, validateFilenames, validateTypeNames))
 
 
 
-##a = all_templates_to_arrays(snidtempfilelist1, sftempfilelist1)
-##print a[0]
-##print ("-------------------------------")
-##print a[1]
-##print ("-------------------------------")
-##print a[2]
-##print ("-------------------------------")
+
+snidTemplateLocation = '/home/dan/Desktop/SNClassifying/templates/'
+sfTemplateLocation = '/home/dan/Desktop/SNClassifying/templates/superfit_templates/sne/'
+snidtempfilelist1 = snidTemplateLocation + 'templist'
+sftempfilelist1 = sfTemplateLocation + 'templist.txt'
+
+
 
 sortData = sort_data(snidtempfilelist1, sftempfilelist1)
 
 trainImages = sortData[0][0]
 trainLabels = sortData[0][1]
 trainFilenames = sortData[0][2]
+trainTypeNames = sortData[0][3]
 testImages = sortData[1][0]
 testLabels = sortData[1][1]
 testFilenames = sortData[1][2]
+testTypeNames = sortData[1][3]
 validateImages = sortData[2][0]
 validateLabels = sortData[2][1]
 validateFilenames = sortData[2][2]
+validateTypeNames = sortData[2][3]
 
-np.savez_compressed('file1.npz', trainImages=trainImages, trainLabels=trainLabels, trainFilenames=trainFilenames, testImages = testImages, testLabels=testLabels, testFilenames=testFilenames)
+np.savez_compressed('file2.npz', trainImages=trainImages, trainLabels=trainLabels, trainFilenames=trainFilenames, trainTypeNames=trainTypeNames, testImages = testImages, testLabels=testLabels, testFilenames=testFilenames, testTypeNames=testTypeNames)
 
 
 
-    
+
