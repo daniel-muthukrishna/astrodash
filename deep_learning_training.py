@@ -30,10 +30,11 @@ inputLoaded = np.load('input_data.npz')
 inputImages = inputLoaded['inputImages']
 inputLabels = inputLoaded['inputLabels']
 inputFilenames = inputLoaded['inputFilenames']
+inputTypeNames = inputLoaded['inputTypeNames']
 inputRedshifts = inputLoaded['inputRedshifts']
 
 snidtempfilelist = r'/home/dan/Desktop/SNClassifying/templates/templist'
-loaded = np.load('file3.npz')
+loaded = np.load('file_w_ages2.npz')
 trainImages = loaded['trainImages']
 trainLabels = loaded['trainLabels']
 trainFilenames = loaded['trainFilenames']
@@ -42,6 +43,7 @@ testImages = loaded['testImages']
 testLabels = loaded['testLabels']
 testFilenames = loaded['testFilenames']
 testTypeNames = loaded['testTypeNames']
+typeNamesList = loaded['typeNamesList']
 #validateImages = sortData[2][0]
 #validateLabels = sortData[2][1]
 
@@ -86,7 +88,7 @@ print(sess.run(y, feed_dict={x: batch_xs1, y_: batch_ys1}))
 #Train 1000 times
 trainImagesCycle = itertools.cycle(trainImages)
 trainLabelsCycle = itertools.cycle(trainLabels)
-for i in range(2000):
+for i in range(600):
     batch_xs = np.array(list(itertools.islice(trainImagesCycle, 5000*i, 5000*i+5000)))
     batch_ys = np.array(list(itertools.islice(trainLabelsCycle, 5000*i, 5000*i+5000)))
     sess.run(train_step, feed_dict={x: batch_xs, y_: batch_ys})
@@ -114,8 +116,10 @@ cp = sess.run(correct_prediction, feed_dict={x: testImages, y_: testLabels})
 print(cp)
 for i in range(len(cp)):
     if (cp[i] == False):
-        print(i, testFilenames[i])
+        predictedIndex = np.argmax(yy[i])
+        print(i, testTypeNames[i], typeNamesList[predictedIndex])
 
+#ACTUAL ACCURACY, SUBTYPE ACCURACY, AGE ACCURACY
 
 
 ############################################################
@@ -141,10 +145,14 @@ bestForEachType = bestForEachType[idx[::-1]]
 
 print ("Type          Redshift      Rel. Prob.")
 print(bestForEachType)
+for i in range(10):#ntypes):
+    bestIndex = bestForEachType[i][0]
+    print(typeNamesList[bestIndex] + '\t' + bestForEachType[i][1:])
+
 
 
 #Plot Each Best Type at corresponding best redshift
-for c in range(0,2):#ntypes):
+for c in range(2):#ntypes):
     for i in range(0,len(trainImages)):
         if (trainLabels[i][c] == 1):
             print(i)
@@ -163,7 +171,8 @@ for c in range(2):#ntypes):
     plt.plot(redshiftGraphs[c][0],redshiftGraphs[c][1])
     plt.xlabel("z")
     plt.ylabel("Probability")
-    plt.title("Type: " + str(bestForEachType[c][0]))
+    bestIndex = bestForEachType[c][0]
+    plt.title("Type: " + typeNamesList[bestIndex])
     plt.show()
 
 redshiftGraphs = np.array(redshiftGraphs)

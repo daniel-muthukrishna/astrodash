@@ -46,57 +46,24 @@ class CreateLabels(object):
         self.numOfAgeBins = self.ageBinning.age_bin(self.maxAge) + 1
         self.nLabels = self.nTypes * self.numOfAgeBins
         self.ageLabels = self.ageBinning.age_labels()
-
-
+        self.typeList = ['Ia-norm', 'IIb', 'Ia-pec', 'Ic-broad', 'Ia-csm', 'Ic-norm', 'IIP', 'Ib-pec',
+                  'IIL', 'Ib-norm', 'Ia-91bg', 'II-pec', 'Ia-91T', 'IIn']
+        #MAYBE CHANGE THIS TYPELIST FROM BEING HARDCODED        
+        
 
     def label_array(self, ttype, age):
         ageBin = self.ageBinning.age_bin(age)
         labelarray = np.zeros((self.nTypes, self.numOfAgeBins))
         typeNames = []
 
-        if (ttype == 'Ia-norm'):
-            typeIndex = 0
+        try:
+            typeIndex = self.typeList.index(ttype)
+        except ValueError as err:
+            print("INVALID TYPE: {0}".format(err))
 
-        elif (ttype == 'IIb'):
-            typeIndex = 1
 
-        elif (ttype == 'Ia-pec'):
-            typeIndex = 2
-
-        elif (ttype == 'Ic-broad'):
-            typeIndex = 3
-
-        elif (ttype == 'Ia-csm'):
-            typeIndex = 4
-
-        elif (ttype == 'Ic-norm'):
-            typeIndex = 5
-
-        elif (ttype == 'IIP'):
-            typeIndex = 6
-
-        elif (ttype == 'Ib-pec'):
-            typeIndex = 7
-
-        elif (ttype == 'IIL'):
-            typeIndex = 8
-
-        elif (ttype == 'Ib-norm'):
-            typeIndex = 9
-
-        elif (ttype == 'Ia-91bg'):
-            typeIndex = 10
-
-        elif (ttype == 'II-pec'):
-            typeIndex = 11
-
-        elif (ttype == 'Ia-91T'):
-            typeIndex = 12
-
-        elif (ttype == 'IIn'):
-            typeIndex = 13
-
-        elif (ttype == 'Ia'):
+        #THIS IS FOR SUPERFIT TEMPLATES - REMOVE THESE IF STATEMENTS LATER
+        if (ttype == 'Ia'):
             typeIndex = 0
 
         elif (ttype == 'Ib'):
@@ -107,9 +74,9 @@ class CreateLabels(object):
 
         elif (ttype == 'II'):
             typeIndex = 13
-        else:
-            print ("Invalid type")
 
+        ######################################
+            
         labelarray[typeIndex][ageBin] = 1
         labelarray = labelarray.flatten()
 
@@ -117,6 +84,16 @@ class CreateLabels(object):
         typeNames = np.array(typeNames)
 
         return labelarray, typeNames
+
+
+    def type_names_list(self):
+        typeNamesList = []
+        for tType in self.typeList:
+            for ageLabel in self.ageBinning.age_labels():
+                typeNamesList.append(tType + ": " + ageLabel)
+
+        return typeNamesList
+        
 
 
 class ReadSpectra(object):
@@ -286,7 +263,7 @@ class CreateArrays(object):
             imaged yet '''
         templist = self.readSpectra.temp_list(tempfilelist)
         typeList = []
-        images = np.empty((0, self.nw), np.float32)  # Number of pixels
+        images = np.empty((0, int(self.nw)), np.float32)  # Number of pixels
         labels = np.empty((0, self.nLabels), float)  # Number of labels (SN types)
         filenames = []
         typeNames = []

@@ -20,12 +20,12 @@ class InputSpectra(object):
         self.redshiftPrecision = 1000
         self.numOfRedshifts = (self.maxZ - self.minZ) * self.redshiftPrecision
         self.createLabels = CreateLabels(self.nTypes, self.minAge, self.maxAge, self.ageBinSize)
-        self.fileType = 'fits or twocloumn etc.' #Will use later on
+        self.fileType = 'fits or twocolumn etc.' #Will use later on
 
         self.saveArrays()
 
     def redshifting(self):
-        images = np.empty((0, self.nw), np.float32)  # Number of pixels
+        images = np.empty((0, int(self.nw)), np.float32)  # Number of pixels
         labels = np.empty((0, self.nLabels), float)  # Number of labels (SN types)
         filenames = []
         typeNames = []
@@ -41,7 +41,7 @@ class InputSpectra(object):
             images = np.append(images, np.array([newflux2]), axis=0)  # images.append(newflux2)
             labels = np.append(labels, np.array([label]), axis=0)  # labels.append(ttype)
             filenames.append(self.filename + "_" + str(z))
-            typeNames.append(typeNames)
+            typeNames.append(typeName)
             redshifts.append(z)
 
         inputImages = np.array(images)
@@ -58,7 +58,6 @@ class InputSpectra(object):
         np.savez_compressed('input_data.npz', inputImages=inputImages, inputLabels=inputLabels,
                             inputFilenames=inputFilenames, inputTypeNames=inputTypeNames, inputRedshifts=inputRedshifts)
 
-
 sfTemplateLocation = '/home/dan/Desktop/SNClassifying_Pre-alpha/templates/superfit_templates/sne/'
 sfFilename = 'Ia/sn1981b.max.dat'
 
@@ -68,9 +67,9 @@ nTypes = 14
 w0 = 2500. #wavelength range in Angstroms
 w1 = 11000.
 nw = 1024. #number of wavelength bins
-minAge = -4
-maxAge = 4
-ageBinSize = 200.
+minAge = -50
+maxAge = 50
+ageBinSize = 4.
 minZ = 0
 maxZ = 0.5
 
