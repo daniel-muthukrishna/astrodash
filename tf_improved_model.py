@@ -24,7 +24,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import itertools
 import tensorflow as tf
-#import create_arrays
 
 inputLoaded = np.load('input_data.npz')
 inputImages = inputLoaded['inputImages']
@@ -47,72 +46,95 @@ typeNamesList = loaded['typeNamesList']
 #validateImages = sortData[2][0]
 #validateLabels = sortData[2][1]
 
-testLabels1 = []
-trainLabels1 = []
-inputLabels1 = []
-
-
 print("Completed creatingArrays")
 
 N = 1024
 ntypes = len(testLabels[0])
-print(ntypes)
+imWidth = 32 #Image size and width
+imWidthReduc = 8
 
 a = []
 
-#IMPLEMENTING THE REGRESSSION
-x = tf.placeholder(tf.float32, [None, N])
+sess = tf.InteractiveSession()
 
-W = tf.Variable(tf.zeros([N, ntypes]))
-b = tf.Variable(tf.zeros([ntypes]))
+#WEIGHT INITIALISATION
+def weight_variable(shape):
+    initial = tf.truncated_normal(shape, stddev=0.1)
+    return tf.Variable(initial)
 
-y = tf.nn.softmax(tf.matmul(x, W) + b)
+def bias_variable(shape):
+    initial = tf.constant(0.1, shape=shape)
+    return tf.Variable(initial)
 
+#CONVOLUTION AND POOLING
+def conv2d(x, W):
+    return tf.nn.conv2d(x, W, strides=[1, 1, 1, 1], padding='SAME')
 
-#TRAINING
-y_ = tf.placeholder(tf.float32, [None, ntypes]) #correct answers
+def max_pool_2x2(x):
+    return tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
 
-cross_entropy = tf.reduce_mean(-tf.reduce_sum(y_ * tf.log(tf.clip_by_value(y,1e-10,1.0)), reduction_indices=[1]))
+x = tf.placeholder(tf.float32, shape=[None, N])
+y_ = tf.placeholder(tf.float32, shape=[None, ntypes])
 
-train_step = tf.train.GradientDescentOptimizer(0.5).minimize(cross_entropy)
+#FIRST CONVOLUTIONAL LAYER
+W_conv1 = weight_variable([5, 5, 1, 32])
+b_conv1 = bias_variable([32])
+x_image = tf.reshape(x, [-1,imWidth,imWidth,1])
+h_conv1 = tf.nn.relu(conv2d(x_image, W_conv1) + b_conv1)
+h_pool1 = max_pool_2x2(h_conv1)
 
-init = tf.initialize_all_variables()
+#SECOND CONVOLUTIONAL LAYER
+W_conv2 = weight_variable([5, 5, 32, 64])
+b_conv2 = bias_variable([64])
+h_conv2 = tf.nn.relu(conv2d(h_pool1, W_conv2) + b_conv2)
+h_pool2 = max_pool_2x2(h_conv2)
 
-sess = tf.Session()
-sess.run(init)
+#DENSELY CONNECTED LAYER
+W_fc1 = weight_variable([imWidthReduc * imWidthReduc * 64, 1024])
+b_fc1 = bias_variable([1024])
+h_pool2_flat = tf.reshape(h_pool2, [-1, imWidthReduc*imWidthReduc*64])
+h_fc1 = tf.nn.relu(tf.matmul(h_pool2_flat, W_fc1) + b_fc1)
 
-batch_xs1 = trainImages
-batch_ys1 = trainLabels
-print(sess.run(y, feed_dict={x: batch_xs1, y_: batch_ys1}))
+#DROPOUT
+keep_prob = tf.placeholder(tf.float32)
+h_fc1_drop = tf.nn.dropout(h_fc1, keep_prob)
 
-#Train 1000 times
+#READOUT LAYER
+W_fc2 = weight_variable([1024, ntypes])
+b_fc2 = bias_variable([ntypes])
+
+y_conv = tf.nn.softmax(tf.matmul(h_fc1_drop, W_fc2) + b_fc2)
+
+########
+##batch_xs1 = trainImages
+##batch_ys1 = trainLabels
+##print(sess.run(y_conv, feed_dict={x: batch_xs1, y_: batch_ys1}))
+########
+
+#TRAIN AND EVALUATE MODEL
+cross_entropy = tf.reduce_mean(-tf.reduce_sum(y_ * tf.log(y_conv), reduction_indices=[1]))
+train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy)
+correct_prediction = tf.equal(tf.argmax(y_conv,1), tf.argmax(y_,1))
+accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+
+sess.run(tf.initialize_all_variables())
+
 trainImagesCycle = itertools.cycle(trainImages)
 trainLabelsCycle = itertools.cycle(trainLabels)
-for i in range(20000):
-    batch_xs = np.array(list(itertools.islice(trainImagesCycle, 5000*i, 5000*i+5000)))
-    batch_ys = np.array(list(itertools.islice(trainLabelsCycle, 5000*i, 5000*i+5000)))
-    sess.run(train_step, feed_dict={x: batch_xs, y_: batch_ys})
-    if (i % 100 == 1):
-        correct_prediction = tf.equal(tf.argmax(y,1), tf.argmax(y_,1))
-        accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-        testacc = sess.run(accuracy, feed_dict={x: testImages, y_: testLabels})
-        trainacc = sess.run(accuracy, feed_dict={x: trainImages, y_: trainLabels})
+for i in range(50000):
+    batch_xs = np.array(list(itertools.islice(trainImagesCycle, 50*i, 50*i+50)))
+    batch_ys = np.array(list(itertools.islice(trainLabelsCycle, 50*i, 50*i+50)))
+    train_step.run(feed_dict={x: batch_xs, y_: batch_ys, keep_prob: 0.5})
+    if (i % 100 == 0):
+        train_accuracy = accuracy.eval(feed_dict={x:batch_xs, y_: batch_ys, keep_prob: 1.0})
+        print("step %d, training accuracy %g"%(i, train_accuracy))
+        testacc = accuracy.eval(feed_dict={x: testImages, y_: testLabels, keep_prob: 1.0})
+        print("test accuracy %g"%(testacc))
         a.append(testacc)
-        print(i, str(testacc) + " " + str(trainacc))
+print("test accuracy %g"%accuracy.eval(feed_dict={x: testImages, y_: testLabels, keep_prob: 1.0}))
 
-batch_xs1 = testImages
-batch_ys1 = testLabels
-print(sess.run(y, feed_dict={x: batch_xs1, y_: batch_ys1}))
-yy = sess.run(y, feed_dict={x: testImages, y_: testLabels})
-
-#EVALUATING THE MODEL
-correct_prediction = tf.equal(tf.argmax(y,1), tf.argmax(y_,1))
-accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-print(sess.run(accuracy, feed_dict={x: testImages, y_: testLabels}))
-
-
-yy = sess.run(y, feed_dict={x: testImages, y_: testLabels})
-cp = sess.run(correct_prediction, feed_dict={x: testImages, y_: testLabels})
+yy = y_conv.eval(feed_dict={x: testImages, y_: testLabels, keep_prob: 1.0})
+cp = correct_prediction.eval(feed_dict={x: testImages, y_: testLabels, keep_prob: 1.0})
 print(cp)
 for i in range(len(cp)):
     if (cp[i] == False):
@@ -120,44 +142,40 @@ for i in range(len(cp)):
         print(i, testTypeNames[i], typeNamesList[predictedIndex])
 
 
-#ACTUAL ACCURACY, SUBTYPE ACCURACY, AGE ACCURACY
-typeAndAgeCorrect = 0
-typeCorrect
+allCorrect = 0
 subTypeCorrect = 0
 subTypeAndAgeCorrect = 0
+#ACTUAL ACCURACY, SUBTYPE ACCURACY, AGE ACCURACY
 for i in range(len(testTypeNames)):
     predictedIndex = np.argmax(yy[i])
     testSubType = testTypeNames[i][0:2]
     actualSubType = typeNamesList[predictedIndex][0:2]
-    testType = testTypeNames[i].split(': ')[0]
-    actualType = typeNamesList[predictedIndex].split(': ')[0]
     testAge = testTypeNames[i].split(': ')[1]
     actualAge = typeNamesList[predictedIndex].split(': ')[1]
     
     if (testTypeNames[i] == typeNamesList[predictedIndex]):
-        typeAndAgeCorrect += 1
-    if (testType == actualType): #correct type
-        typeCorrect += 1
+        allCorrect += 1
     if (testSubType == actualSubType): #correct subtype
         subTypeCorrect += 1
         if testAge == actualAge:
             subTypeAndAgeCorrect += 1
 
-typeAndAgeAccuracy = float(typeAndAgeCorrect)/len(testTypeNames)
-typeAccuracy = float(typeAndAgeCorrect)/len(testTypeNames)
+allAccuracy = float(allCorrect)/len(testTypeNames)
 subTypeAccuracy = float(subTypeCorrect)/len(testTypeNames)
 subTypeAndAgeAccuracy = float(subTypeAndAgeCorrect)/len(testTypeNames)
 
 print("allAccuracy : " + str(allAccuracy))
-print("typeAccuracy : " + str(typeAccuracy))
 print("subTypeAccuracy : " + str(subTypeAccuracy))
 print("subTypeAndAgeAccuracy: " + str(subTypeAndAgeAccuracy))
-    
+
+
+
+
 
 ############################################################
-yInputRedshift = sess.run(y, feed_dict={x: inputImages})
+yInputRedshift = y_conv.eval(feed_dict={x: inputImages, y_: inputLabels, keep_prob: 1.0})
 print(yInputRedshift)
-print(sess.run(accuracy, feed_dict={x: inputImages, y_: inputLabels}))
+print(accuracy.eval(feed_dict={x: inputImages, y_: inputLabels, keep_prob: 1.0}))
 
 #Create List of Best Types
 bestForEachType = np.zeros((ntypes,3))
@@ -184,7 +202,7 @@ for i in range(10):#ntypes):
 
 
 #Plot Each Best Type at corresponding best redshift
-for c in bestForEachType[:,0][0:2]: #[0:2] takes top 2 entries
+for c in range(2):#ntypes):
     for i in range(0,len(trainImages)):
         if (trainLabels[i][c] == 1):
             print(i)
@@ -197,7 +215,7 @@ for c in bestForEachType[:,0][0:2]: #[0:2] takes top 2 entries
 
 #Plot Probability vs redshift for each class
 redshiftGraphs = [[[],[]] for i in range(ntypes)]
-for c in bestForEachType[:,0][0:2]: #[0:2] takes top 2 entries
+for c in range(2):#ntypes):
     redshiftGraphs[c][0] = inputRedshifts
     redshiftGraphs[c][1] = yInputRedshift[:,c]
     plt.plot(redshiftGraphs[c][0],redshiftGraphs[c][1])
@@ -208,15 +226,4 @@ for c in bestForEachType[:,0][0:2]: #[0:2] takes top 2 entries
     plt.show()
 
 redshiftGraphs = np.array(redshiftGraphs)
-
-
-
-'''
-for i in range(len(testImages)):
-	if (testLabels[i][13] == 1):
-		print i
-		plt.plot(testImages[i])
-'''
-#[ 115.   13.   14.   13.    8.   26.   26.    9.    4.   10.   18.    3.  8.   15.]
-
 
