@@ -142,7 +142,8 @@ for i in range(len(cp)):
         print(i, testTypeNames[i], typeNamesList[predictedIndex])
 
 
-allCorrect = 0
+typeAndAgeCorrect = 0
+typeCorrect
 subTypeCorrect = 0
 subTypeAndAgeCorrect = 0
 #ACTUAL ACCURACY, SUBTYPE ACCURACY, AGE ACCURACY
@@ -150,23 +151,30 @@ for i in range(len(testTypeNames)):
     predictedIndex = np.argmax(yy[i])
     testSubType = testTypeNames[i][0:2]
     actualSubType = typeNamesList[predictedIndex][0:2]
+    testType = testTypeNames[i].split(': ')[0]
+    actualType = typeNamesList[predictedIndex].split(': ')[0]
     testAge = testTypeNames[i].split(': ')[1]
     actualAge = typeNamesList[predictedIndex].split(': ')[1]
     
     if (testTypeNames[i] == typeNamesList[predictedIndex]):
-        allCorrect += 1
+        typeAndAgeCorrect += 1
+    if (testType == actualType): #correct type
+        typeCorrect += 1
     if (testSubType == actualSubType): #correct subtype
         subTypeCorrect += 1
         if testAge == actualAge:
             subTypeAndAgeCorrect += 1
 
-allAccuracy = float(allCorrect)/len(testTypeNames)
+typeAndAgeAccuracy = float(typeAndAgeCorrect)/len(testTypeNames)
+typeAccuracy = float(typeAndAgeCorrect)/len(testTypeNames)
 subTypeAccuracy = float(subTypeCorrect)/len(testTypeNames)
 subTypeAndAgeAccuracy = float(subTypeAndAgeCorrect)/len(testTypeNames)
 
 print("allAccuracy : " + str(allAccuracy))
+print("typeAccuracy : " + str(typeAccuracy))
 print("subTypeAccuracy : " + str(subTypeAccuracy))
 print("subTypeAndAgeAccuracy: " + str(subTypeAndAgeAccuracy))
+
 
 
 

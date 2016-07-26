@@ -63,13 +63,9 @@ sfFilename = 'Ia/sn1981b.max.dat'
 
 filename = sfFilename
 
-nTypes = 14
-w0 = 2500. #wavelength range in Angstroms
-w1 = 11000.
-nw = 1024. #number of wavelength bins
-minAge = -50
-maxAge = 50
-ageBinSize = 4.
+with open('training_params.pickle') as f:
+    nTypes, w0, w1, nw, minAge, maxAge, ageBinSize = pickle.load(f)
+    
 minZ = 0
 maxZ = 0.5
 
