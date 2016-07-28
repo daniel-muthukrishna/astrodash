@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'design.ui'
 #
-# Created: Sun Jul 24 23:31:50 2016
+# Created: Fri Jul 29 01:18:00 2016
 #      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -268,9 +268,9 @@ class Ui_MainWindow(object):
         self.label_7.setText(_translate("MainWindow", "SN Types", None))
         self.checkBox_2.setText(_translate("MainWindow", "Type Ia-norm", None))
         self.checkBox.setText(_translate("MainWindow", "Type Ia-91bg", None))
-        self.checkBox_9.setText(_translate("MainWindow", "CheckBox", None))
-        self.checkBox_4.setText(_translate("MainWindow", "CheckBox", None))
-        self.checkBox_3.setText(_translate("MainWindow", "CheckBox", None))
+        self.checkBox_9.setText(_translate("MainWindow", "Type Ia-pec", None))
+        self.checkBox_4.setText(_translate("MainWindow", "Type Ib-norm", None))
+        self.checkBox_3.setText(_translate("MainWindow", "Type IIb", None))
         self.checkBox_10.setText(_translate("MainWindow", "CheckBox", None))
         self.checkBox_8.setText(_translate("MainWindow", "CheckBox", None))
         self.checkBox_12.setText(_translate("MainWindow", "CheckBox", None))

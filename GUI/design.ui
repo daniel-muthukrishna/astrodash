@@ -180,21 +180,21 @@
                    <item>
                     <widget class="QCheckBox" name="checkBox_9">
                      <property name="text">
-                      <string>CheckBox</string>
+                      <string>Type Ia-pec</string>
                      </property>
                     </widget>
                    </item>
                    <item>
                     <widget class="QCheckBox" name="checkBox_4">
                      <property name="text">
-                      <string>CheckBox</string>
+                      <string>Type Ib-norm</string>
                      </property>
                     </widget>
                    </item>
                    <item>
                     <widget class="QCheckBox" name="checkBox_3">
                      <property name="text">
-                      <string>CheckBox</string>
+                      <string>Type IIb</string>
                      </property>
                     </widget>
                    </item>
@@ -309,8 +309,6 @@
                     </widget>
                    </item>
                   </layout>
-                  <zorder>scrollArea</zorder>
-                  <zorder>scrollArea</zorder>
                   <zorder>checkBox_7</zorder>
                   <zorder>checkBox_14</zorder>
                   <zorder>checkBox_15</zorder>

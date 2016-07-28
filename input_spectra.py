@@ -1,4 +1,5 @@
 import numpy as np
+import pickle
 from create_arrays import *
 
 
@@ -21,8 +22,8 @@ class InputSpectra(object):
         self.numOfRedshifts = (self.maxZ - self.minZ) * self.redshiftPrecision
         self.createLabels = CreateLabels(self.nTypes, self.minAge, self.maxAge, self.ageBinSize)
         self.fileType = 'fits or twocolumn etc.' #Will use later on
-
-        self.saveArrays()
+        self.typeNamesList = self.createLabels.type_names_list()
+        
 
     def redshifting(self):
         images = np.empty((0, int(self.nw)), np.float32)  # Number of pixels
@@ -56,7 +57,8 @@ class InputSpectra(object):
     def saveArrays(self):
         inputImages, inputLabels, inputFilenames, inputTypeNames, inputRedshifts = self.redshifting()
         np.savez_compressed('input_data.npz', inputImages=inputImages, inputLabels=inputLabels,
-                            inputFilenames=inputFilenames, inputTypeNames=inputTypeNames, inputRedshifts=inputRedshifts)
+                            inputFilenames=inputFilenames, inputTypeNames=inputTypeNames, inputRedshifts=inputRedshifts,
+                            typeNamesList = self.typeNamesList)
 
 sfTemplateLocation = '/home/dan/Desktop/SNClassifying_Pre-alpha/templates/superfit_templates/sne/'
 sfFilename = 'Ia/sn1981b.max.dat'
@@ -69,4 +71,4 @@ with open('training_params.pickle') as f:
 minZ = 0
 maxZ = 0.5
 
-InputSpectra(filename, minZ, maxZ, nTypes, minAge, maxAge, ageBinSize, w0, w1, nw)
+InputSpectra(filename, minZ, maxZ, nTypes, minAge, maxAge, ageBinSize, w0, w1, nw).saveArrays()

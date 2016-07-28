@@ -1,37 +1,7 @@
-"""Functions for downloading and reading MNIST data."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
-import gzip
-import os
-import tempfile
-
-import numpy
-from six.moves import urllib
-from six.moves import xrange  # pylint: disable=redefined-builtin
-import tensorflow as tf
-from tensorflow.contrib.learn.python.learn.datasets.mnist import read_data_sets
-
-#10 classes
-#784 (28x28) pixels in each image
-#None (55000) images
-
-####################################################
-#mnist = read_data_sets("MNIST_data/", one_hot=True)
-
 import matplotlib.pyplot as plt
 import numpy as np
 import itertools
 import tensorflow as tf
-#import create_arrays
-
-inputLoaded = np.load('input_data.npz')
-inputImages = inputLoaded['inputImages']
-inputLabels = inputLoaded['inputLabels']
-inputFilenames = inputLoaded['inputFilenames']
-inputTypeNames = inputLoaded['inputTypeNames']
-inputRedshifts = inputLoaded['inputRedshifts']
 
 snidtempfilelist = r'/home/dan/Desktop/SNClassifying/templates/templist'
 loaded = np.load('file_w_ages2.npz')
@@ -47,9 +17,6 @@ typeNamesList = loaded['typeNamesList']
 #validateImages = sortData[2][0]
 #validateLabels = sortData[2][1]
 
-testLabels1 = []
-trainLabels1 = []
-inputLabels1 = []
 
 
 print("Completed creatingArrays")
@@ -88,7 +55,7 @@ print(sess.run(y, feed_dict={x: batch_xs1, y_: batch_ys1}))
 #Train 1000 times
 trainImagesCycle = itertools.cycle(trainImages)
 trainLabelsCycle = itertools.cycle(trainLabels)
-for i in range(20000):
+for i in range(10000):
     batch_xs = np.array(list(itertools.islice(trainImagesCycle, 5000*i, 5000*i+5000)))
     batch_ys = np.array(list(itertools.islice(trainLabelsCycle, 5000*i, 5000*i+5000)))
     sess.run(train_step, feed_dict={x: batch_xs, y_: batch_ys})
@@ -122,7 +89,7 @@ for i in range(len(cp)):
 
 #ACTUAL ACCURACY, SUBTYPE ACCURACY, AGE ACCURACY
 typeAndAgeCorrect = 0
-typeCorrect
+typeCorrect = 0
 subTypeCorrect = 0
 subTypeAndAgeCorrect = 0
 for i in range(len(testTypeNames)):
@@ -148,75 +115,15 @@ typeAccuracy = float(typeAndAgeCorrect)/len(testTypeNames)
 subTypeAccuracy = float(subTypeCorrect)/len(testTypeNames)
 subTypeAndAgeAccuracy = float(subTypeAndAgeCorrect)/len(testTypeNames)
 
-print("allAccuracy : " + str(allAccuracy))
+print("typeAndAgeAccuracy : " + str(typeAndAgeAccuracy))
 print("typeAccuracy : " + str(typeAccuracy))
 print("subTypeAccuracy : " + str(subTypeAccuracy))
 print("subTypeAndAgeAccuracy: " + str(subTypeAndAgeAccuracy))
     
 
-############################################################
-yInputRedshift = sess.run(y, feed_dict={x: inputImages})
-print(yInputRedshift)
-print(sess.run(accuracy, feed_dict={x: inputImages, y_: inputLabels}))
-
-#Create List of Best Types
-bestForEachType = np.zeros((ntypes,3))
-index = np.zeros(ntypes)
-for i in range(len(yInputRedshift)):
-    prob = yInputRedshift[i]
-    z = inputRedshifts[i]
-    bestIndex = np.argmax(prob)
-    if prob[bestIndex] > bestForEachType[bestIndex][2]:
-        bestForEachType[bestIndex][2] = prob[bestIndex]
-        bestForEachType[bestIndex][1] = z
-        bestForEachType[bestIndex][0] = bestIndex #inputTypeNames
-        index[bestIndex] = i
-
-idx = np.argsort(bestForEachType[:,2])
-bestForEachType = bestForEachType[idx[::-1]]
-
-print ("Type          Redshift      Rel. Prob.")
-print(bestForEachType)
-for i in range(10):#ntypes):
-    bestIndex = bestForEachType[i][0]
-    print(typeNamesList[bestIndex] + '\t' + str(bestForEachType[i][1]) + str(bestForEachType[i][2]))
-
-
-
-#Plot Each Best Type at corresponding best redshift
-for c in bestForEachType[:,0][0:2]: #[0:2] takes top 2 entries
-    for i in range(0,len(trainImages)):
-        if (trainLabels[i][c] == 1):
-            print(i)
-            plt.plot(trainImages[i])
-            plt.plot(inputImages[index[c]])
-            plt.title(str(bestForEachType[c][0])+": " + str(bestForEachType[c][1]))
-            plt.show()
-            break
-        
-
-#Plot Probability vs redshift for each class
-redshiftGraphs = [[[],[]] for i in range(ntypes)]
-for c in bestForEachType[:,0][0:2]: #[0:2] takes top 2 entries
-    redshiftGraphs[c][0] = inputRedshifts
-    redshiftGraphs[c][1] = yInputRedshift[:,c]
-    plt.plot(redshiftGraphs[c][0],redshiftGraphs[c][1])
-    plt.xlabel("z")
-    plt.ylabel("Probability")
-    bestIndex = bestForEachType[c][0]
-    plt.title("Type: " + typeNamesList[bestIndex])
-    plt.show()
-
-redshiftGraphs = np.array(redshiftGraphs)
-
-
-
-'''
-for i in range(len(testImages)):
-	if (testLabels[i][13] == 1):
-		print i
-		plt.plot(testImages[i])
-'''
-#[ 115.   13.   14.   13.    8.   26.   26.    9.    4.   10.   18.    3.  8.   15.]
+#SAVE THE MODEL
+saver = tf.train.Saver()
+save_path = saver.save(sess, "/tmp/model.ckpt")
+print("Model saved in file: %s" % save_path)
 
 

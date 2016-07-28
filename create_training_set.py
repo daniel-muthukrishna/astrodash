@@ -1,4 +1,5 @@
 from create_arrays import *
+import pickle
 
 class CreateTrainingSet(object):
 
