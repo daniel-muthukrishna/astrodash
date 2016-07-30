@@ -6,17 +6,17 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1089</width>
-    <height>732</height>
+    <width>1186</width>
+    <height>861</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="1,3">
+   <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="2,8">
     <item>
-     <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0">
+     <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0">
       <property name="sizeConstraint">
        <enum>QLayout::SetMaximumSize</enum>
       </property>
@@ -74,8 +74,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>236</width>
-              <height>471</height>
+              <width>202</width>
+              <height>567</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -117,7 +117,7 @@
                 </widget>
                </item>
                <item row="1" column="1">
-                <widget class="QLineEdit" name="lineEdit_2">
+                <widget class="QLineEdit" name="lineEditMaxZ">
                  <property name="text">
                   <string>0.5</string>
                  </property>
@@ -131,7 +131,7 @@
                 </widget>
                </item>
                <item row="0" column="1">
-                <widget class="QLineEdit" name="lineEdit">
+                <widget class="QLineEdit" name="lineEditMinZ">
                  <property name="text">
                   <string>0</string>
                  </property>
@@ -158,7 +158,7 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>198</width>
+                    <width>164</width>
                     <height>348</height>
                    </rect>
                   </property>
@@ -168,12 +168,18 @@
                      <property name="text">
                       <string>Type Ia-norm</string>
                      </property>
+                     <property name="checked">
+                      <bool>true</bool>
+                     </property>
                     </widget>
                    </item>
                    <item>
                     <widget class="QCheckBox" name="checkBox">
                      <property name="text">
                       <string>Type Ia-91bg</string>
+                     </property>
+                     <property name="checked">
+                      <bool>true</bool>
                      </property>
                     </widget>
                    </item>
@@ -182,12 +188,18 @@
                      <property name="text">
                       <string>Type Ia-pec</string>
                      </property>
+                     <property name="checked">
+                      <bool>true</bool>
+                     </property>
                     </widget>
                    </item>
                    <item>
                     <widget class="QCheckBox" name="checkBox_4">
                      <property name="text">
                       <string>Type Ib-norm</string>
+                     </property>
+                     <property name="checked">
+                      <bool>true</bool>
                      </property>
                     </widget>
                    </item>
@@ -196,12 +208,18 @@
                      <property name="text">
                       <string>Type IIb</string>
                      </property>
+                     <property name="checked">
+                      <bool>true</bool>
+                     </property>
                     </widget>
                    </item>
                    <item>
                     <widget class="QCheckBox" name="checkBox_10">
                      <property name="text">
                       <string>CheckBox</string>
+                     </property>
+                     <property name="checked">
+                      <bool>true</bool>
                      </property>
                     </widget>
                    </item>
@@ -210,12 +228,24 @@
                      <property name="text">
                       <string>CheckBox</string>
                      </property>
+                     <property name="checked">
+                      <bool>true</bool>
+                     </property>
                     </widget>
                    </item>
                    <item>
                     <widget class="QCheckBox" name="checkBox_12">
                      <property name="text">
                       <string>CheckBox</string>
+                     </property>
+                     <property name="checked">
+                      <bool>true</bool>
+                     </property>
+                     <property name="autoRepeat">
+                      <bool>false</bool>
+                     </property>
+                     <property name="autoExclusive">
+                      <bool>false</bool>
                      </property>
                     </widget>
                    </item>
@@ -224,12 +254,18 @@
                      <property name="text">
                       <string>CheckBox</string>
                      </property>
+                     <property name="checked">
+                      <bool>true</bool>
+                     </property>
                     </widget>
                    </item>
                    <item>
                     <widget class="QCheckBox" name="checkBox_13">
                      <property name="text">
                       <string>CheckBox</string>
+                     </property>
+                     <property name="checked">
+                      <bool>true</bool>
                      </property>
                     </widget>
                    </item>
@@ -238,12 +274,18 @@
                      <property name="text">
                       <string>CheckBox</string>
                      </property>
+                     <property name="checked">
+                      <bool>true</bool>
+                     </property>
                     </widget>
                    </item>
                    <item>
                     <widget class="QCheckBox" name="checkBox_11">
                      <property name="text">
                       <string>CheckBox</string>
+                     </property>
+                     <property name="checked">
+                      <bool>true</bool>
                      </property>
                     </widget>
                    </item>
@@ -268,8 +310,8 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>198</width>
-                    <height>152</height>
+                    <width>180</width>
+                    <height>178</height>
                    </rect>
                   </property>
                   <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -278,12 +320,18 @@
                      <property name="text">
                       <string>CheckBox</string>
                      </property>
+                     <property name="checked">
+                      <bool>true</bool>
+                     </property>
                     </widget>
                    </item>
                    <item>
                     <widget class="QCheckBox" name="checkBox_14">
                      <property name="text">
                       <string>CheckBox</string>
+                     </property>
+                     <property name="checked">
+                      <bool>true</bool>
                      </property>
                     </widget>
                    </item>
@@ -292,6 +340,9 @@
                      <property name="text">
                       <string>CheckBox</string>
                      </property>
+                     <property name="checked">
+                      <bool>true</bool>
+                     </property>
                     </widget>
                    </item>
                    <item>
@@ -299,12 +350,18 @@
                      <property name="text">
                       <string>CheckBox</string>
                      </property>
+                     <property name="checked">
+                      <bool>true</bool>
+                     </property>
                     </widget>
                    </item>
                    <item>
                     <widget class="QCheckBox" name="checkBox_15">
                      <property name="text">
                       <string>CheckBox</string>
+                     </property>
+                     <property name="checked">
+                      <bool>true</bool>
                      </property>
                     </widget>
                    </item>
@@ -324,7 +381,7 @@
           </widget>
          </item>
          <item alignment="Qt::AlignHCenter|Qt::AlignVCenter">
-          <widget class="QPushButton" name="pushButton">
+          <widget class="QPushButton" name="btnRefit">
            <property name="maximumSize">
             <size>
              <width>150</width>
@@ -339,6 +396,25 @@
         </layout>
        </widget>
       </item>
+      <item alignment="Qt::AlignHCenter">
+       <widget class="QPushButton" name="btnCancel">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>100</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Cancel</string>
+        </property>
+       </widget>
+      </item>
       <item>
        <widget class="QProgressBar" name="progressBar">
         <property name="value">
@@ -349,7 +425,7 @@
      </layout>
     </item>
     <item>
-     <layout class="QVBoxLayout" name="verticalLayout_2" stretch="1,3">
+     <layout class="QVBoxLayout" name="verticalLayout_2" stretch="1,4">
       <property name="sizeConstraint">
        <enum>QLayout::SetDefaultConstraint</enum>
       </property>
@@ -379,7 +455,7 @@
         <property name="title">
          <string>Analyse selection</string>
         </property>
-        <layout class="QVBoxLayout" name="verticalLayout_9">
+        <layout class="QVBoxLayout" name="verticalLayout_9" stretch="0,0,1,3">
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_9">
            <property name="bottomMargin">
@@ -462,6 +538,9 @@
           </layout>
          </item>
          <item>
+          <widget class="PlotWidget" name="graphicsView_2"/>
+         </item>
+         <item>
           <widget class="PlotWidget" name="graphicsView"/>
          </item>
         </layout>
@@ -476,7 +555,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1089</width>
+     <width>1186</width>
      <height>25</height>
     </rect>
    </property>

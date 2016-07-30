@@ -59,16 +59,16 @@ class InputSpectra(object):
         np.savez_compressed('input_data.npz', inputImages=inputImages, inputLabels=inputLabels,
                             inputFilenames=inputFilenames, inputTypeNames=inputTypeNames, inputRedshifts=inputRedshifts,
                             typeNamesList = self.typeNamesList)
-
+##
 sfTemplateLocation = '/home/dan/Desktop/SNClassifying_Pre-alpha/templates/superfit_templates/sne/'
-sfFilename = 'Ia/sn1981b.max.dat'
-
-filename = sfFilename
-
-with open('training_params.pickle') as f:
-    nTypes, w0, w1, nw, minAge, maxAge, ageBinSize = pickle.load(f)
-    
-minZ = 0
-maxZ = 0.5
-
-InputSpectra(filename, minZ, maxZ, nTypes, minAge, maxAge, ageBinSize, w0, w1, nw).saveArrays()
+##sfFilename = 'Ia/sn1981b.max.dat'
+##
+##filename = sfFilename
+##
+##with open('training_params.pickle') as f:
+##    nTypes, w0, w1, nw, minAge, maxAge, ageBinSize = pickle.load(f)
+##    
+##minZ = 0
+##maxZ = 0.5
+##
+##InputSpectra(filename, minZ, maxZ, nTypes, minAge, maxAge, ageBinSize, w0, w1, nw).saveArrays()

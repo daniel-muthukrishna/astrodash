@@ -14,36 +14,49 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
         super(MainApp, self).__init__(parent)
         self.setupUi(self)
 
-        self.inputFilename = self.btnBrowse.clicked.connect(self.select_input_file)
-        self.typeIndex = self.listWidget.itemClicked.connect(self.list_item_clicked)
-        ######INPUT_SPECTRA_DETAILS######
-        with open('../training_params.pickle') as f:
-            self.nTypes, self.w0, self.w1, self.nw, self.minAge, self.maxAge, self.ageBinSize = pickle.load(f)
+        self.btnBrowse.clicked.connect(self.select_input_file)
+        self.listWidget.itemClicked.connect(self.list_item_clicked)
+        self.btnRefit.clicked.connect(self.fit_spectra)
+        self.inputFilename = "DefaultFilename"
 
-        self.bestTypesList = BestTypesList("/tmp/model.ckpt")
-
-        self.templateFluxes, self.inputFluxes = self.bestTypesList.plot_best_types()
         
-
     def select_input_file(self):
         inputFilename = QtGui.QFileDialog.getOpenFileName(self,"Select a spectrum file")
-        self.lblInputFilename.setText(inputFilename.split('/')[-1])
+        print(inputFilename)
+        print(self.inputFilename)
+        if (inputFilename == self.inputFilename) or (inputFilename == ""):
+            pass
+        else:
+            self.inputFilename = inputFilename
+            self.lblInputFilename.setText(inputFilename.split('/')[-1])
 
-        #Run InputSpectra
+            #Run InputSpectra
 
+            self.fit_spectra()
+
+    def fit_spectra(self):
+        self.minZ = float(self.lineEditMinZ.text())
+        self.maxZ = float(self.lineEditMaxZ.text())
+        print (self.minZ, self.maxZ)
+        
+        self.loadInputSpectra = LoadInputSpectra('Ia/sn1981b.max.dat', self.minZ, self.maxZ)
+        self.inputImages, self.inputLabels, self.inputRedshifts = self.loadInputSpectra.input_spectra()
+        self.bestTypesList = BestTypesList("/tmp/model.ckpt", self.inputImages, self.inputLabels, self.inputRedshifts)
+        self.bestForEachType, self.typeNamesList, self.redshiftIndex = self.bestTypesList.print_list()
+        self.templateFluxes, self.inputFluxes = self.bestTypesList.plot_best_types()
+        self.inputRedshifts, self.redshiftGraphs = self.bestTypesList.redshift_graph()
+                
         self.list_best_matches()
         self.plot_best_matches(0)
-
-        return inputFilename
+        self.plot_redshift_graphs(0)
 
     def list_best_matches(self):
         self.listWidget.clear()
-        bestForEachType, typeNamesList, redshiftIndex = self.bestTypesList.create_list()
         self.listWidget.addItem("".join(word.ljust(25) for word in ['No.', 'Type', 'Age', 'Redshift', 'Rel. Prob.']))
         for i in range(20): #len(bestForEachType)
-            bestIndex = int(bestForEachType[i][0])
+            bestIndex = int(self.bestForEachType[i][0])
             name, age = typeNamesList[bestIndex].split(': ')
-            self.listWidget.addItem("".join(word.ljust(25) for word in [str(i+1), name, age , str(bestForEachType[i][1]), str(bestForEachType[i][2])]))
+            self.listWidget.addItem("".join(word.ljust(25) for word in [str(i+1), name, age , str(self.bestForEachType[i][1]), str(self.bestForEachType[i][2])]))
 
     def list_item_clicked(self, item):
         try:
@@ -51,6 +64,7 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
         except ValueError:
             indexToPlot = 0
         self.plot_best_matches(indexToPlot)
+        self.plot_redshift_graphs(indexToPlot)
         
     def plot_best_matches(self, indexToPlot):
         self.graphicsView.clear()
@@ -59,6 +73,12 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
         self.graphicsView.plot(self.inputFluxes[indexToPlot], name='Input Spectra', pen={'color': (0,255,0)})
         self.graphicsView.plot(self.templateFluxes[indexToPlot], name='Template', pen={'color': (255,0,0)})
 
+    def plot_redshift_graphs(self, indexToPlot):
+        print(len(self.inputRedshifts), len(self.redshiftGraphs[indexToPlot]))
+        self.graphicsView_2.clear()
+        self.graphicsView_2.plot(self.inputRedshifts, self.redshiftGraphs[indexToPlot])
+        self.graphicsView_2.setLabels(left=("Rel. Prob."), bottom=("z"))
+        
     def browse_folder(self):
         self.listWidget.clear()
         directory = QtGui.QFileDialog.getExistingDirectory(self,"Pick a folder")
