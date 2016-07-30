@@ -113,7 +113,7 @@ class BestTypesList(object):
             for i in range(0,len(trainLabels)): #Checking through templates
                 if (trainLabels[i][c] == 1):    #to find template for the best Type
                     templateFlux = trainImages[i]  #plot template
-                    inputFlux = self.inputImages[self.redshiftIndex[c]] #Pliot inputImage at red
+                    inputFlux = self.inputImages[int(self.redshiftIndex[c])] #Pliot inputImage at red
                     print c, self.redshiftIndex[c]
                     #plt.title(typeName+ ": " + str(bestForEachType[c][1]))
                     break

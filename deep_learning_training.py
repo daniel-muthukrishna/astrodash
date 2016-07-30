@@ -92,6 +92,8 @@ typeAndAgeCorrect = 0
 typeCorrect = 0
 subTypeCorrect = 0
 subTypeAndAgeCorrect = 0
+typeAndNearAgeCorrect = 0
+subTypeAndNearAgeCorrect = 0
 for i in range(len(testTypeNames)):
     predictedIndex = np.argmax(yy[i])
     testSubType = testTypeNames[i][0:2]
@@ -100,25 +102,34 @@ for i in range(len(testTypeNames)):
     actualType = typeNamesList[predictedIndex].split(': ')[0]
     testAge = testTypeNames[i].split(': ')[1]
     actualAge = typeNamesList[predictedIndex].split(': ')[1]
+    nearTestAge = testAge.split(' to ')
     
     if (testTypeNames[i] == typeNamesList[predictedIndex]):
         typeAndAgeCorrect += 1
     if (testType == actualType): #correct type
         typeCorrect += 1
+        if ((nearTestAge[0] in actualAge) or (nearTestAge[1] in actualAge)): #check if the age is in the neigbouring bin
+            typeAndNearAgeCorrect += 1 #all correct except nearby bin
     if (testSubType == actualSubType): #correct subtype
         subTypeCorrect += 1
         if testAge == actualAge:
             subTypeAndAgeCorrect += 1
+        if ((nearTestAge[0] in actualAge) or (nearTestAge[1] in actualAge)): #check if the age is in the neigbouring bin
+            subTypeAndNearAgeCorrect += 1 #subtype and nearby bin
 
 typeAndAgeAccuracy = float(typeAndAgeCorrect)/len(testTypeNames)
-typeAccuracy = float(typeAndAgeCorrect)/len(testTypeNames)
+typeAccuracy = float(typeCorrect)/len(testTypeNames)
 subTypeAccuracy = float(subTypeCorrect)/len(testTypeNames)
 subTypeAndAgeAccuracy = float(subTypeAndAgeCorrect)/len(testTypeNames)
+typeAndNearAgeAccuracy = float(typeAndNearAgeCorrect)/len(testTypeNames)
+subTypeAndNearAgeAccuracy = float(subTypeAndNearAgeCorrect)/len(testTypeNames)
 
 print("typeAndAgeAccuracy : " + str(typeAndAgeAccuracy))
 print("typeAccuracy : " + str(typeAccuracy))
 print("subTypeAccuracy : " + str(subTypeAccuracy))
 print("subTypeAndAgeAccuracy: " + str(subTypeAndAgeAccuracy))
+print("typeAndNearAgeAccuracy : " + str(typeAndNearAgeAccuracy))
+print("subTypeAndNearAgeAccuracy : " + str(subTypeAndNearAgeAccuracy))
     
 
 #SAVE THE MODEL
