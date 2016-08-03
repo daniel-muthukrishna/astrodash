@@ -22,22 +22,22 @@ typeNamesList = loaded['typeNamesList']
 print("Completed creatingArrays")
 
 N = 1024
-ntypes = len(testLabels[0])
-print(ntypes)
+nBins = len(testLabels[0])
+print(nBins)
 
 a = []
 
 #IMPLEMENTING THE REGRESSSION
 x = tf.placeholder(tf.float32, [None, N])
 
-W = tf.Variable(tf.zeros([N, ntypes]))
-b = tf.Variable(tf.zeros([ntypes]))
+W = tf.Variable(tf.zeros([N, nBins]))
+b = tf.Variable(tf.zeros([nBins]))
 
 y = tf.nn.softmax(tf.matmul(x, W) + b)
 
 
 #TRAINING
-y_ = tf.placeholder(tf.float32, [None, ntypes]) #correct answers
+y_ = tf.placeholder(tf.float32, [None, nBins]) #correct answers
 
 cross_entropy = tf.reduce_mean(-tf.reduce_sum(y_ * tf.log(tf.clip_by_value(y,1e-10,1.0)), reduction_indices=[1]))
 
@@ -55,7 +55,7 @@ print(sess.run(y, feed_dict={x: batch_xs1, y_: batch_ys1}))
 #Train 1000 times
 trainImagesCycle = itertools.cycle(trainImages)
 trainLabelsCycle = itertools.cycle(trainLabels)
-for i in range(10000):
+for i in range(20000):
     batch_xs = np.array(list(itertools.islice(trainImagesCycle, 5000*i, 5000*i+5000)))
     batch_ys = np.array(list(itertools.islice(trainLabelsCycle, 5000*i, 5000*i+5000)))
     sess.run(train_step, feed_dict={x: batch_xs, y_: batch_ys})
@@ -134,7 +134,7 @@ print("subTypeAndNearAgeAccuracy : " + str(subTypeAndNearAgeAccuracy))
 
 #SAVE THE MODEL
 saver = tf.train.Saver()
-save_path = saver.save(sess, "/tmp/model.ckpt")
+save_path = saver.save(sess, "model.ckpt")
 print("Model saved in file: %s" % save_path)
 
 

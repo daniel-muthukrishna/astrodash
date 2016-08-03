@@ -60,7 +60,7 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
 
 
     def load_spectrum(self, spectrumInfo):
-        self.bestForEachType, self.templateFluxes, self.inputFluxes, self.inputRedshifts, self.redshiftGraphs = spectrumInfo
+        self.bestForEachType, self.templateFluxes, self.inputFluxes, self.inputRedshifts, self.redshiftGraphs, self.typeNamesList = spectrumInfo
         self.progressBar.setValue(85)#self.progressBar.value()+)
 
 
@@ -79,7 +79,7 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
         self.listWidget.addItem("".join(word.ljust(25) for word in ['No.', 'Type', 'Age', 'Redshift', 'Rel. Prob.']))
         for i in range(20): #len(bestForEachType)
             bestIndex = int(self.bestForEachType[i][0])
-            name, age = typeNamesList[bestIndex].split(': ')
+            name, age = self.typeNamesList[bestIndex].split(': ')
             self.listWidget.addItem("".join(word.ljust(25) for word in [str(i+1), name, age , str(self.bestForEachType[i][1]), str(self.bestForEachType[i][2])]))
 
     def list_item_clicked(self, item):
@@ -95,7 +95,7 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
         self.graphicsView.clear()
         self.graphicsView.addLegend()
         #templateFluxes, inputFluxes = self.bestTypesList.plot_best_types()
-        self.graphicsView.plot(self.inputFluxes[indexToPlot], name='Input Spectra', pen={'color': (0,255,0)})
+        self.graphicsView.plot(self.inputFluxes[indexToPlot], name='Input Spectrum', pen={'color': (0,255,0)})
         self.graphicsView.plot(self.templateFluxes[indexToPlot], name='Template', pen={'color': (255,0,0)})
 
     def plot_redshift_graphs(self, indexToPlot):
@@ -125,15 +125,15 @@ class FitSpectrumThread(QThread):
         self.wait()
 
     def _input_spectrum(self):
-        loadInputSpectra = LoadInputSpectra('Ia/sn1981b.max.dat', self.minZ, self.maxZ)
-        inputImages, inputLabels, inputRedshifts = loadInputSpectra.input_spectra()
-        bestTypesList = BestTypesList("/tmp/model.ckpt", inputImages, inputLabels, inputRedshifts)
-        bestForEachType, typeNamesList, redshiftIndex = bestTypesList.print_list()
+        loadInputSpectra = LoadInputSpectra(self.inputFilename, self.minZ, self.maxZ)
+        inputImages, inputRedshifts, typeNamesList, nw, nTypes = loadInputSpectra.input_spectra()
+        bestTypesList = BestTypesList("../model.ckpt", inputImages, inputRedshifts, typeNamesList, nw, nTypes)
+        bestForEachType, redshiftIndex = bestTypesList.print_list()
         templateFluxes, inputFluxes = bestTypesList.plot_best_types()
         inputRedshifts, redshiftGraphs = bestTypesList.redshift_graph()
 
         return (bestForEachType, templateFluxes, inputFluxes,
-                inputRedshifts, redshiftGraphs)
+                inputRedshifts, redshiftGraphs, typeNamesList)
 
     def run(self):
          spectrumInfo = self._input_spectrum()

@@ -7,13 +7,13 @@ from input_spectra import *
 loaded = np.load('/home/dan/Desktop/SNClassifying_Pre-alpha/file_w_ages2.npz')
 trainImages = loaded['trainImages']
 trainLabels = loaded['trainLabels']
-trainFilenames = loaded['trainFilenames']
-trainTypeNames = loaded['trainTypeNames']
-testImages = loaded['testImages']
-testLabels = loaded['testLabels']
-testFilenames = loaded['testFilenames']
-testTypeNames = loaded['testTypeNames']
-typeNamesList = loaded['typeNamesList']
+##trainFilenames = loaded['trainFilenames']
+##trainTypeNames = loaded['trainTypeNames']
+##testImages = loaded['testImages']
+##testLabels = loaded['testLabels']
+##testFilenames = loaded['testFilenames']
+##testTypeNames = loaded['testTypeNames']
+##typeNamesList = loaded['typeNamesList']
 
 ##inputLoaded = np.load('/home/dan/Desktop/SNClassifying_Pre-alpha/input_data.npz')
 ##inputImages = inputLoaded['inputImages']
@@ -23,34 +23,34 @@ typeNamesList = loaded['typeNamesList']
 ##inputRedshifts = inputLoaded['inputRedshifts']
 ##typeNamesList = inputLoaded['typeNamesList']
 
-N = 1024
-ntypes = len(trainLabels[0])
-print(ntypes)
 
 class LoadInputSpectra(object):
     def __init__(self, inputFilename, minZ, maxZ):
         with open('/home/dan/Desktop/SNClassifying_Pre-alpha/training_params.pickle') as f:
-            nTypes, w0, w1, nw, minAge, maxAge, ageBinSize = pickle.load(f)
+            nTypes, w0, w1, nw, minAge, maxAge, ageBinSize, typeList = pickle.load(f)
 
-        self.inputSpectra = InputSpectra(inputFilename, minZ, maxZ, nTypes, minAge, maxAge, ageBinSize, w0, w1, nw)
+        self.nw = nw
+        self.nTypes = nTypes
+        
+        self.inputSpectra = InputSpectra(inputFilename, minZ, maxZ, nTypes, minAge, maxAge, ageBinSize, w0, w1, nw, typeList)
 
-        self.inputImages, self.inputLabels, self.inputFilenames, self.inputTypeNames, self.inputRedshifts = self.inputSpectra.redshifting()
+        self.inputImages, self.inputFilenames, self.inputRedshifts, self.typeNamesList = self.inputSpectra.redshifting()
+        self.nBins = len(self.typeNamesList)
 
     def input_spectra(self):
-        return self.inputImages, self.inputLabels, self.inputRedshifts
+        return self.inputImages, self.inputRedshifts, self.typeNamesList, int(self.nw), self.nBins
         
 class RestoreModel(object):
-    def __init__(self, modelFilename, inputImages, inputLabels):
+    def __init__(self, modelFilename, inputImages, nw, nBins):
         self.reset()
         
         self.modelFilename = modelFilename
         self.inputImages = inputImages
-        self.inputLabels = inputLabels
-        self.x = tf.placeholder(tf.float32, [None, N])
-        self.W = tf.Variable(tf.zeros([N, ntypes]))
-        self.b = tf.Variable(tf.zeros([ntypes]))
+        self.x = tf.placeholder(tf.float32, [None, nw])
+        self.W = tf.Variable(tf.zeros([nw, nBins]))
+        self.b = tf.Variable(tf.zeros([nBins]))
         self.y = tf.nn.softmax(tf.matmul(self.x, self.W) + self.b)
-        self.y_ = tf.placeholder(tf.float32, [None, ntypes])
+        self.y_ = tf.placeholder(tf.float32, [None, nBins])
 
         self.saver = tf.train.Saver()
 
@@ -61,8 +61,7 @@ class RestoreModel(object):
             correct_prediction = tf.equal(tf.argmax(self.y,1), tf.argmax(self.y_,1))
             accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
             print(yInputRedshift)
-            print(sess.run(accuracy, feed_dict={self.x: self.inputImages, self.y_: self.inputLabels}))
-
+            
         return yInputRedshift
 
     def reset(self):
@@ -70,22 +69,22 @@ class RestoreModel(object):
 
 
 class BestTypesList(object):
-    def __init__(self, modelFilename, inputImages, inputLabels, inputRedshifts):
+    def __init__(self, modelFilename, inputImages, inputRedshifts, typeNamesList, nw, nBins):
         self.modelFilename = modelFilename
         self.inputImages = inputImages
-        self.inputLabels = inputLabels
         self.inputRedshifts = inputRedshifts
-        
-        self.restoreModel = RestoreModel(self.modelFilename, self.inputImages, self.inputLabels)
-        self.yInputRedshift = self.restoreModel.restore_variables() #softmax at each redshift
         self.typeNamesList = typeNamesList
+        self.nBins = nBins
+        
+        self.restoreModel = RestoreModel(self.modelFilename, self.inputImages, nw, nBins)
+        self.yInputRedshift = self.restoreModel.restore_variables() #softmax at each redshift
         print(len(self.yInputRedshift))
 
         self.bestForEachType, self.redshiftIndex = self.create_list()
 
     def create_list(self):
-        bestForEachType = np.zeros((ntypes,3))
-        redshiftIndex = np.zeros(ntypes)        #best redshift index for each type
+        bestForEachType = np.zeros((self.nBins,3))
+        redshiftIndex = np.zeros(self.nBins)        #best redshift index for each type
         for i in range(len(self.inputRedshifts)): #for each redshift
             z = self.inputRedshifts[i]       #redshift
             softmax = self.yInputRedshift[i] #softmax probabilities at particular redshift
@@ -101,7 +100,7 @@ class BestTypesList(object):
         return bestForEachType, redshiftIndex
 
     def print_list(self):
-        return self.bestForEachType, self.typeNamesList, self.redshiftIndex
+        return self.bestForEachType, self.redshiftIndex
 
     def plot_best_types(self):
         #bestForEachType, typeNamesList, redshiftIndex = self.create_list()
@@ -109,7 +108,7 @@ class BestTypesList(object):
         templateFluxes = []
         for j in range(len(self.bestForEachType)): #index of best Types in order
             c = int(self.bestForEachType[:,0][j])
-            typeName = typeNamesList[c] #Name of best type
+            typeName = self.typeNamesList[c] #Name of best type
             for i in range(0,len(trainLabels)): #Checking through templates
                 if (trainLabels[i][c] == 1):    #to find template for the best Type
                     templateFlux = trainImages[i]  #plot template

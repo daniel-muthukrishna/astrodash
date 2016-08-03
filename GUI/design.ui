@@ -310,8 +310,8 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>180</width>
-                    <height>178</height>
+                    <width>164</width>
+                    <height>292</height>
                    </rect>
                   </property>
                   <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -336,7 +336,27 @@
                     </widget>
                    </item>
                    <item>
+                    <widget class="QCheckBox" name="checkBox_19">
+                     <property name="text">
+                      <string>CheckBox</string>
+                     </property>
+                     <property name="checked">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
                     <widget class="QCheckBox" name="checkBox_16">
+                     <property name="text">
+                      <string>CheckBox</string>
+                     </property>
+                     <property name="checked">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QCheckBox" name="checkBox_22">
                      <property name="text">
                       <string>CheckBox</string>
                      </property>
@@ -356,7 +376,37 @@
                     </widget>
                    </item>
                    <item>
+                    <widget class="QCheckBox" name="checkBox_18">
+                     <property name="text">
+                      <string>CheckBox</string>
+                     </property>
+                     <property name="checked">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
                     <widget class="QCheckBox" name="checkBox_15">
+                     <property name="text">
+                      <string>CheckBox</string>
+                     </property>
+                     <property name="checked">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QCheckBox" name="checkBox_20">
+                     <property name="text">
+                      <string>CheckBox</string>
+                     </property>
+                     <property name="checked">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QCheckBox" name="checkBox_21">
                      <property name="text">
                       <string>CheckBox</string>
                      </property>
@@ -371,6 +421,11 @@
                   <zorder>checkBox_15</zorder>
                   <zorder>checkBox_16</zorder>
                   <zorder>checkBox_17</zorder>
+                  <zorder>checkBox_18</zorder>
+                  <zorder>checkBox_19</zorder>
+                  <zorder>checkBox_20</zorder>
+                  <zorder>checkBox_21</zorder>
+                  <zorder>checkBox_22</zorder>
                  </widget>
                 </widget>
                </item>

@@ -37,18 +37,16 @@ class AgeBinning(object):
 
 class CreateLabels(object):
 
-    def __init__(self, nTypes, minAge, maxAge, ageBinSize):
+    def __init__(self, nTypes, minAge, maxAge, ageBinSize, typeList):
         self.nTypes = nTypes
         self.minAge = minAge
         self.maxAge = maxAge
         self.ageBinSize = ageBinSize
+        self.typeList = typeList
         self.ageBinning = AgeBinning(self.minAge, self.maxAge, self.ageBinSize)
         self.numOfAgeBins = self.ageBinning.age_bin(self.maxAge) + 1
         self.nLabels = self.nTypes * self.numOfAgeBins
-        self.ageLabels = self.ageBinning.age_labels()
-        self.typeList = ['Ia-norm', 'IIb', 'Ia-pec', 'Ic-broad', 'Ia-csm', 'Ic-norm', 'IIP', 'Ib-pec',
-                  'IIL', 'Ib-norm', 'Ia-91bg', 'II-pec', 'Ia-91T', 'IIn']
-        #MAYBE CHANGE THIS TYPELIST FROM BEING HARDCODED        
+        self.ageLabels = self.ageBinning.age_labels()       
         
 
     def label_array(self, ttype, age):
@@ -151,12 +149,11 @@ class ReadSpectra(object):
         return wave, flux, minIndex, maxIndex, age, snName, ttype
 
 
-    def input_spectrum(self, sfTemplateLocation, filename):
-        data = PreProcessing(sfTemplateLocation+filename, self.w0, self.w1, self.nw, self.z)
+    def input_spectrum(self, filename):
+        data = PreProcessing(filename, self.w0, self.w1, self.nw, self.z)
         wave, flux, minIndex, maxIndex = data.two_column_data()
-        snName, ttype, age = self.sf_age(filename)
 
-        return wave, flux, minIndex, maxIndex, age, snName, ttype
+        return wave, flux, minIndex, maxIndex
 
 class ArrayTools(object):
 
@@ -241,7 +238,7 @@ class ArrayTools(object):
 
 
 class CreateArrays(object):
-    def __init__(self, w0, w1, nw, nTypes, minAge, maxAge, ageBinSize, z):
+    def __init__(self, w0, w1, nw, nTypes, minAge, maxAge, ageBinSize, typeList, z):
         self.w0 = w0
         self.w1 = w1
         self.nw = nw
@@ -249,12 +246,13 @@ class CreateArrays(object):
         self.minAge = minAge
         self.maxAge = maxAge
         self.ageBinSize = ageBinSize
+        self.typeList = typeList
         self.ageBinning = AgeBinning(self.minAge, self.maxAge, self.ageBinSize)
         self.numOfAgeBins = self.ageBinning.age_bin(self.maxAge) + 1
         self.nLabels = self.nTypes * self.numOfAgeBins
         self.z = z
         self.readSpectra = ReadSpectra(self.w0, self.w1, self.nw, self.z)
-        self.createLabels = CreateLabels(self.nTypes, self.minAge, self.maxAge, self.ageBinSize)
+        self.createLabels = CreateLabels(self.nTypes, self.minAge, self.maxAge, self.ageBinSize, self.typeList)
 
 
     def snid_templates_to_arrays(self, snidTemplateLocation, tempfilelist):
