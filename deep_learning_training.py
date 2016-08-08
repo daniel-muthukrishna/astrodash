@@ -3,15 +3,14 @@ import numpy as np
 import itertools
 import tensorflow as tf
 
-snidtempfilelist = r'/home/dan/Desktop/SNClassifying/templates/templist'
-loaded = np.load('file_w_ages2.npz')
+loaded = np.load('file_agnosticRedshiftTrained.npz')
 trainImages = loaded['trainImages']
 trainLabels = loaded['trainLabels']
-trainFilenames = loaded['trainFilenames']
-trainTypeNames = loaded['trainTypeNames']
+#trainFilenames = loaded['trainFilenames']
+#trainTypeNames = loaded['trainTypeNames']
 testImages = loaded['testImages']
 testLabels = loaded['testLabels']
-testFilenames = loaded['testFilenames']
+#testFilenames = loaded['testFilenames']
 testTypeNames = loaded['testTypeNames']
 typeNamesList = loaded['typeNamesList']
 #validateImages = sortData[2][0]
@@ -48,14 +47,14 @@ init = tf.initialize_all_variables()
 sess = tf.Session()
 sess.run(init)
 
-batch_xs1 = trainImages
-batch_ys1 = trainLabels
-print(sess.run(y, feed_dict={x: batch_xs1, y_: batch_ys1}))
+#batch_xs1 = trainImages
+#batch_ys1 = trainLabels
+#print(sess.run(y, feed_dict={x: batch_xs1, y_: batch_ys1}))
 
 #Train 1000 times
 trainImagesCycle = itertools.cycle(trainImages)
 trainLabelsCycle = itertools.cycle(trainLabels)
-for i in range(20000):
+for i in range(10000):
     batch_xs = np.array(list(itertools.islice(trainImagesCycle, 5000*i, 5000*i+5000)))
     batch_ys = np.array(list(itertools.islice(trainLabelsCycle, 5000*i, 5000*i+5000)))
     sess.run(train_step, feed_dict={x: batch_xs, y_: batch_ys})
@@ -63,13 +62,13 @@ for i in range(20000):
         correct_prediction = tf.equal(tf.argmax(y,1), tf.argmax(y_,1))
         accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
         testacc = sess.run(accuracy, feed_dict={x: testImages, y_: testLabels})
-        trainacc = sess.run(accuracy, feed_dict={x: trainImages, y_: trainLabels})
+        trainacc = sess.run(accuracy, feed_dict={x: trainImages[0:1000], y_: trainLabels[0:1000]})
         a.append(testacc)
         print(i, str(testacc) + " " + str(trainacc))
 
 batch_xs1 = testImages
 batch_ys1 = testLabels
-print(sess.run(y, feed_dict={x: batch_xs1, y_: batch_ys1}))
+#print(sess.run(y, feed_dict={x: batch_xs1, y_: batch_ys1}))
 yy = sess.run(y, feed_dict={x: testImages, y_: testLabels})
 
 #EVALUATING THE MODEL
@@ -134,7 +133,7 @@ print("subTypeAndNearAgeAccuracy : " + str(subTypeAndNearAgeAccuracy))
 
 #SAVE THE MODEL
 saver = tf.train.Saver()
-save_path = saver.save(sess, "model.ckpt")
+save_path = saver.save(sess, "model_zAgnostic.ckpt")
 print("Model saved in file: %s" % save_path)
 
 

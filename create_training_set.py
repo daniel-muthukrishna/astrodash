@@ -3,7 +3,7 @@ import pickle
 
 class CreateTrainingSet(object):
 
-    def __init__(self, snidTemplateLocation, snidtempfilelist, sfTemplateLocation, sftempfilelist, w0, w1, nw, nTypes, minAge, maxAge, ageBinSize, typeList):
+    def __init__(self, snidTemplateLocation, snidtempfilelist, sfTemplateLocation, sftempfilelist, w0, w1, nw, nTypes, minAge, maxAge, ageBinSize, typeList, minZ, maxZ):
         self.snidTemplateLocation = snidTemplateLocation
         self.snidtempfilelist = snidtempfilelist
         self.sfTemplateLocation = sfTemplateLocation
@@ -19,9 +19,8 @@ class CreateTrainingSet(object):
         self.ageBinning = AgeBinning(self.minAge, self.maxAge, self.ageBinSize)
         self.numOfAgeBins = self.ageBinning.age_bin(self.maxAge) + 1
         self.nLabels = self.nTypes * self.numOfAgeBins
-        self.z = 0
-        self.createArrays = CreateArrays(self.w0, self.w1, self.nw, self.nTypes, self.minAge, self.maxAge, self.ageBinSize, self.typeList, self.z)
-        self.arrayTools = ArrayTools(self.nLabels)
+        self.createArrays = CreateArrays(w0, w1, nw, nTypes, minAge, maxAge, ageBinSize, typeList, minZ, maxZ)
+        self.arrayTools = ArrayTools(self.nLabels, self.nw)
         
     def type_amounts(self, labels):
         counts = self.arrayTools.count_labels(labels)
@@ -87,7 +86,7 @@ class CreateTrainingSet(object):
 
 
 class SaveTrainingSet(object):
-    def __init__(self, snidTemplateLocation, snidtempfilelist, sfTemplateLocation, sftempfilelist, w0, w1, nw, nTypes, minAge, maxAge, ageBinSize, typeList):
+    def __init__(self, snidTemplateLocation, snidtempfilelist, sfTemplateLocation, sftempfilelist, w0, w1, nw, nTypes, minAge, maxAge, ageBinSize, typeList, minZ, maxZ):
         self.snidTemplateLocation = snidTemplateLocation
         self.snidtempfilelist = snidtempfilelist
         self.sfTemplateLocation = sfTemplateLocation
@@ -102,7 +101,7 @@ class SaveTrainingSet(object):
         self.typeList = typeList
         self.createLabels = CreateLabels(self.nTypes, self.minAge, self.maxAge, self.ageBinSize, self.typeList)
         
-        self.createTrainingSet = CreateTrainingSet(self.snidTemplateLocation, self.snidtempfilelist, self.sfTemplateLocation, self.sftempfilelist, self.w0, self.w1, self.nw, self.nTypes, self.minAge, self.maxAge, self.ageBinSize, self.typeList)
+        self.createTrainingSet = CreateTrainingSet(self.snidTemplateLocation, self.snidtempfilelist, self.sfTemplateLocation, self.sftempfilelist, self.w0, self.w1, self.nw, self.nTypes, self.minAge, self.maxAge, self.ageBinSize, self.typeList, minZ, maxZ)
         self.sortData = self.createTrainingSet.sort_data()
         self.trainImages = self.sortData[0][0]
         self.trainLabels = self.sortData[0][1]
@@ -127,23 +126,27 @@ class SaveTrainingSet(object):
         return self.typeNamesList, self.typeAmounts
 
     def save_arrays(self):
-        np.savez_compressed('file_w_ages2.npz', trainImages=self.trainImages, trainLabels=self.trainLabels,
+        saveFilename = 'file_agnosticRedshiftTrained.npz'
+        np.savez_compressed(saveFilename, trainImages=self.trainImages, trainLabels=self.trainLabels,
                         trainFilenames=self.trainFilenames, trainTypeNames=self.trainTypeNames,
                         testImages=self.testImages, testLabels=self.testLabels,
                         testFilenames=self.testFilenames, testTypeNames=self.testTypeNames,
                         typeNamesList = self.typeNamesList)
+        print("Saved Training Set to: " + saveFilename)
         
 
 
 with open('training_params.pickle') as f:
     nTypes, w0, w1, nw, minAge, maxAge, ageBinSize, typeList = pickle.load(f)
-    
+minZ = 0
+maxZ = 0.3
+
 snidTemplateLocation = '/home/dan/Desktop/SNClassifying_Pre-alpha/templates/'
 sfTemplateLocation = '/home/dan/Desktop/SNClassifying_Pre-alpha/templates/superfit_templates/sne/'
 snidtempfilelist1 = snidTemplateLocation + 'templist'
 sftempfilelist1 = sfTemplateLocation + 'templist.txt'
 
-saveTrainingSet = SaveTrainingSet(snidTemplateLocation, snidtempfilelist1, sfTemplateLocation, sftempfilelist1, w0, w1, nw, nTypes, minAge, maxAge, ageBinSize, typeList)
+saveTrainingSet = SaveTrainingSet(snidTemplateLocation, snidtempfilelist1, sfTemplateLocation, sftempfilelist1, w0, w1, nw, nTypes, minAge, maxAge, ageBinSize, typeList, minZ, maxZ)
 typeNamesList, typeAmounts = saveTrainingSet.type_amounts()
 
 saveTrainingSet.save_arrays()

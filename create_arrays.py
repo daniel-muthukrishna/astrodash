@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
 from random import shuffle
 from sn_processing import PreProcessing
 
@@ -157,25 +156,34 @@ class ReadSpectra(object):
 
 class ArrayTools(object):
 
-    def __init__(self, nLabels):
+    def __init__(self, nLabels, nw):
         self.nLabels = nLabels
+        self.nw = nw
 
     def shuffle_arrays(self, images, labels, filenames, typeNames):
-        imagesShuf = []
-        labelsShuf = []
-        filenamesShuf = []
-        typeNamesShuf = []
-
+        arraySize = len(labels)
+        imagesShuf = np.empty((arraySize, int(self.nw)), np.float16)
+        labelsShuf = np.empty((arraySize, self.nLabels), np.uint8)
+        filenamesShuf = np.empty(arraySize, dtype=object)
+        typeNamesShuf = np.empty(arraySize, dtype=object)
+        idx = 0
+        print("Shuffle2")
         # Randomise order
-        indexShuf = range(len(images))
+        indexShuf = range(arraySize)
         shuffle(indexShuf)
         for i in indexShuf:
-            imagesShuf.append(images[i])
-            labelsShuf.append(labels[i])
-            filenamesShuf.append(filenames[i])
-            typeNamesShuf.append(typeNames[i])
-
-        return np.array(imagesShuf), np.array(labelsShuf), np.array(filenamesShuf), np.array(typeNamesShuf)
+            imagesShuf[idx] = images[i]
+            labelsShuf[idx] = labels[i]
+            filenamesShuf[idx] = filenames[i]
+            typeNamesShuf[idx] = typeNames[i]
+            idx += 1
+        print ("LenLabels")
+        print(len(labels), idx)
+            
+        print(imagesShuf)
+        print(typeNamesShuf)
+        print("Shuffle3")    
+        return imagesShuf, labelsShuf, filenamesShuf, typeNamesShuf
 
 
     def count_labels(self, labels):
@@ -197,19 +205,26 @@ class ArrayTools(object):
 
     def over_sample_arrays(self, images, labels, filenames, typeNames):
         counts = self.count_labels(labels)
+        idx = 0
         print "Before OverSample"  #
         print counts  #
 
+
         overSampleAmount = self.div0(1 * max(counts), counts)  # ignore zeros in counts
-        imagesOverSampled = []
-        labelsOverSampled = []
-        filenamesOverSampled = []
-        typeNamesOverSampled = []
+        overSampleArraySize = int(sum(np.array(overSampleAmount, int) * counts))
+        print(np.array(overSampleAmount, int) * counts)
+        print(np.array(overSampleAmount, int))
+        print(overSampleArraySize, len(labels))
+        imagesOverSampled = np.zeros((overSampleArraySize, int(self.nw)), np.float16)
+        labelsOverSampled = np.zeros((overSampleArraySize, self.nLabels), np.uint8)
+        filenamesOverSampled = np.empty(overSampleArraySize, dtype=object)
+        typeNamesOverSampled = np.empty(overSampleArraySize, dtype=object)
+        
 
         counts1 = np.zeros(self.nLabels)
 
         imagesShuf, labelsShuf, filenamesShuf, typeNamesShuf = self.shuffle_arrays(images, labels, filenames, typeNames)
-
+        print(len(labelsShuf))
         for i in range(len(labelsShuf)):
             label = labelsShuf[i]
             image = imagesShuf[i]
@@ -217,28 +232,29 @@ class ArrayTools(object):
             typeName = typeNamesShuf[i]
 
             labelIndex = np.argmax(label)
-
+            
+            print(idx, i, int(overSampleAmount[labelIndex]))
             for r in range(int(overSampleAmount[labelIndex])):
-                imagesOverSampled.append(image)
-                labelsOverSampled.append(label)
-                filenamesOverSampled.append(filename)
-                typeNamesOverSampled.append(typeName)
+                imagesOverSampled[idx] = image #np.concatenate(imagesOverSampled, np.array([image]), axis=0)
+                labelsOverSampled[idx] = label #np.concatenate(labelsOverSampled, np.array([label]), axis=0)
+                filenamesOverSampled[idx] = filename #filenamesOverSampled = np.append(filenamesOverSampled, filename)
+                typeNamesOverSampled[idx] = typeName #typeNamesOverSampled = np.append(typeNamesOverSampled, typeName)
                 counts1 = label + counts1
+                idx += 1
+            
+
+                
         print "After OverSample"  #
         print counts1  #
 
-        # [ 372.    8.   22.   12.    1.   22.   26.    6.    1.    7.   34.    5.  44.    6.]
-        imagesOverSampled = np.array(imagesOverSampled)
-        labelsOverSampled = np.array(labelsOverSampled)
-        filenamesOverSampled = np.array(filenamesOverSampled)
-        typeNamesOverSampled = np.array(typeNamesOverSampled)
+        print("Before Shuffling")
         imagesOverSampledShuf, labelsOverSampledShuf, filenamesOverSampledShuf, typeNamesOverSampledShuf = self.shuffle_arrays(imagesOverSampled, labelsOverSampled, filenamesOverSampled, typeNamesOverSampled)
-
+        print("After Shuffling")
         return imagesOverSampledShuf, labelsOverSampledShuf, filenamesOverSampledShuf, typeNamesOverSampledShuf
 
 
 class CreateArrays(object):
-    def __init__(self, w0, w1, nw, nTypes, minAge, maxAge, ageBinSize, typeList, z):
+    def __init__(self, w0, w1, nw, nTypes, minAge, maxAge, ageBinSize, typeList, minZ, maxZ):
         self.w0 = w0
         self.w1 = w1
         self.nw = nw
@@ -247,11 +263,13 @@ class CreateArrays(object):
         self.maxAge = maxAge
         self.ageBinSize = ageBinSize
         self.typeList = typeList
+        self.minZ = minZ
+        self.maxZ = maxZ
+        self.redshiftPrecision = 50
+        self.numOfRedshifts = (self.maxZ - self.minZ) * self.redshiftPrecision
         self.ageBinning = AgeBinning(self.minAge, self.maxAge, self.ageBinSize)
         self.numOfAgeBins = self.ageBinning.age_bin(self.maxAge) + 1
         self.nLabels = self.nTypes * self.numOfAgeBins
-        self.z = z
-        self.readSpectra = ReadSpectra(self.w0, self.w1, self.nw, self.z)
         self.createLabels = CreateLabels(self.nTypes, self.minAge, self.maxAge, self.ageBinSize, self.typeList)
 
 
@@ -259,42 +277,46 @@ class CreateArrays(object):
         ''' This function is for the SNID processed files, which
             have been preprocessed to negatives, and so cannot be
             imaged yet '''
-        templist = self.readSpectra.temp_list(tempfilelist)
+
+        templist = ReadSpectra(self.w0, self.w1, self.nw, 0).temp_list(tempfilelist) #Arbrirary redshift to read filelist
         typeList = []
         images = np.empty((0, int(self.nw)), np.float32)  # Number of pixels
-        labels = np.empty((0, self.nLabels), float)  # Number of labels (SN types)
-        filenames = []
-        typeNames = []
+        labels = np.empty((0, self.nLabels), np.uint8)  # Number of labels (SN types)
+        filenames = []#np.empty(0)
+        typeNames = []#np.empty(0)
         agesList = []
 
         for i in range(0, len(templist)):
             ncols = 15
             for ageidx in range(0, 100):
                 if (ageidx < ncols):
-                    tempwave, tempflux, ncols, ages, ttype, tminindex, tmaxindex = self.readSpectra.snid_template_data(snidTemplateLocation, templist[i], ageidx)
-                    agesList.append(ages[ageidx])
-
-                    if ((float(ages[ageidx]) > self.minAge and float(ages[ageidx]) < self.maxAge)):
-                        label, typeName = self.createLabels.label_array(ttype, ages[ageidx])
-                        nonzeroflux = tempflux[tminindex:tmaxindex + 1]
-                        newflux = (nonzeroflux - min(nonzeroflux)) / (max(nonzeroflux) - min(nonzeroflux))
-                        newflux2 = np.concatenate((tempflux[0:tminindex], newflux, tempflux[tmaxindex + 1:]))
-                        images = np.append(images, np.array([newflux2]), axis=0)  # images.append(newflux2)
-                        labels = np.append(labels, np.array([label]), axis=0)  # labels.append(ttype)
-                        filenames.append(templist[i] + '_' + ttype + '_' + str(ages[ageidx]))
-                        typeNames.append(typeName)
+                    for z in np.linspace(self.minZ, self.maxZ, self.numOfRedshifts + 1):
+                        readSpectra = ReadSpectra(self.w0, self.w1, self.nw, z)
+                        tempwave, tempflux, ncols, ages, ttype, tminindex, tmaxindex = readSpectra.snid_template_data(snidTemplateLocation, templist[i], ageidx)
+                        agesList.append(ages[ageidx])
+                        
+                    
+                        if ((float(ages[ageidx]) > self.minAge and float(ages[ageidx]) < self.maxAge)):
+                            label, typeName = self.createLabels.label_array(ttype, ages[ageidx])
+                            nonzeroflux = tempflux[tminindex:tmaxindex + 1]
+                            newflux = (nonzeroflux - min(nonzeroflux)) / (max(nonzeroflux) - min(nonzeroflux))
+                            newflux2 = np.concatenate((tempflux[0:tminindex], newflux, tempflux[tmaxindex + 1:]))
+                            images = np.append(images, np.array([newflux2]), axis=0)  # images.append(newflux2)
+                            labels = np.append(labels, np.array([label]), axis=0)  # labels.append(ttype)
+                            filenames.append(templist[i] + '_' + ttype + '_' + str(ages[ageidx]) + '_z' + str(z))
+                            typeNames.append(typeName)
 
             print templist[i]
             # Create List of all SN types
             if ttype not in typeList:
                 typeList.append(ttype)
 
-        return typeList, images, labels, np.array(filenames), typeNames
+        return typeList, images, labels, np.array(filenames), np.array(typeNames)
 
     def superfit_templates_to_arrays(self, sfTemplateLocation, sftempfilelist):
         templist = self.readSpectra.temp_list(sftempfilelist)
         images = np.empty((0, self.nw), np.float32)  # Number of pixels
-        labels = np.empty((0, self.nLabels), float)  # Number of labels (SN types)
+        labels = np.empty((0, self.nLabels), np.float32)  # Number of labels (SN types)
         filenames = []
         typeNames = []
 

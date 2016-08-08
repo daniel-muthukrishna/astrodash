@@ -1,10 +1,5 @@
 import numpy as np
 
-c = 3e8
-filelocation = 'C:\Users\Daniel\OneDrive\Documents\Thesis Project\superfit\sne\Ia\\'
-snfilename ='sn2002bo.m01.dat' #sn2003jo.dat
-templatefilename = 'sn1999ee.m08.dat'
-
 class Redshifting(object):
     def __init__(self, wave, flux, z):
         self.wave = wave
@@ -88,6 +83,10 @@ class ReadInputSpectra(object):
 
         for i in range(0, len(arr[0])-1):
             flux[i] = arr[:,i+1]
+
+
+        redshifting = Redshifting(wave, flux, self.z)
+        wave, flux = redshifting.redshift_spectrum()
 
         return wave, flux, len(ages), ages, ttype
 
