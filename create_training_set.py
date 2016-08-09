@@ -126,7 +126,7 @@ class SaveTrainingSet(object):
         return self.typeNamesList, self.typeAmounts
 
     def save_arrays(self):
-        saveFilename = 'type_age_atRedshiftZero.npz'
+        saveFilename = 'file_agnosticRedshiftTrained.npz'
         np.savez_compressed(saveFilename, trainImages=self.trainImages, trainLabels=self.trainLabels,
                         trainFilenames=self.trainFilenames, trainTypeNames=self.trainTypeNames,
                         testImages=self.testImages, testLabels=self.testLabels,
@@ -139,7 +139,7 @@ class SaveTrainingSet(object):
 with open('training_params.pickle') as f:
     nTypes, w0, w1, nw, minAge, maxAge, ageBinSize, typeList = pickle.load(f)
 minZ = 0
-maxZ = 0.0
+maxZ = 0.3
 
 snidTemplateLocation = '/home/dan/Desktop/SNClassifying_Pre-alpha/templates/'
 sfTemplateLocation = '/home/dan/Desktop/SNClassifying_Pre-alpha/templates/superfit_templates/sne/'
