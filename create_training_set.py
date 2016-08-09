@@ -126,7 +126,7 @@ class SaveTrainingSet(object):
         return self.typeNamesList, self.typeAmounts
 
     def save_arrays(self):
-        saveFilename = 'file_agnosticRedshiftTrained.npz'
+        saveFilename = 'type_age_atRedshiftZero.npz'
         np.savez_compressed(saveFilename, trainImages=self.trainImages, trainLabels=self.trainLabels,
                         trainFilenames=self.trainFilenames, trainTypeNames=self.trainTypeNames,
                         testImages=self.testImages, testLabels=self.testLabels,

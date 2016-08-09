@@ -3,7 +3,7 @@ import numpy as np
 import itertools
 import tensorflow as tf
 
-loaded = np.load('file_agnosticRedshiftTrained.npz')
+loaded = np.load('type_age_atRedshiftZero.npz')
 trainImages = loaded['trainImages']
 trainLabels = loaded['trainLabels']
 #trainFilenames = loaded['trainFilenames']
