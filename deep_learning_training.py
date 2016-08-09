@@ -54,7 +54,7 @@ sess.run(init)
 #Train 1000 times
 trainImagesCycle = itertools.cycle(trainImages)
 trainLabelsCycle = itertools.cycle(trainLabels)
-for i in range(10000):
+for i in range(20000):
     batch_xs = np.array(list(itertools.islice(trainImagesCycle, 5000*i, 5000*i+5000)))
     batch_ys = np.array(list(itertools.islice(trainLabelsCycle, 5000*i, 5000*i+5000)))
     sess.run(train_step, feed_dict={x: batch_xs, y_: batch_ys})
@@ -133,7 +133,7 @@ print("subTypeAndNearAgeAccuracy : " + str(subTypeAndNearAgeAccuracy))
 
 #SAVE THE MODEL
 saver = tf.train.Saver()
-save_path = saver.save(sess, "model_zAgnostic.ckpt")
+save_path = saver.save(sess, "model.ckpt")
 print("Model saved in file: %s" % save_path)
 
 

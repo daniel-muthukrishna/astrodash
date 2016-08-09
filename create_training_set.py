@@ -139,7 +139,7 @@ class SaveTrainingSet(object):
 with open('training_params.pickle') as f:
     nTypes, w0, w1, nw, minAge, maxAge, ageBinSize, typeList = pickle.load(f)
 minZ = 0
-maxZ = 0.3
+maxZ = 0.0
 
 snidTemplateLocation = '/home/dan/Desktop/SNClassifying_Pre-alpha/templates/'
 sfTemplateLocation = '/home/dan/Desktop/SNClassifying_Pre-alpha/templates/superfit_templates/sne/'
