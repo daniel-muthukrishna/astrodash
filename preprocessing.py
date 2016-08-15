@@ -15,11 +15,10 @@ class Redshifting(object):
 
 class ReadInputSpectra(object):
 
-    def __init__(self, filename, w0, w1, z):
+    def __init__(self, filename, w0, w1):
         self.filename = filename
         self.w0 = w0
         self.w1 = w1
-        self.z = z
 
     def read_fits_file(self):
         #filename = unicode(self.filename.toUtf8(), encoding="UTF-8")
@@ -48,18 +47,22 @@ class ReadInputSpectra(object):
 
         return wave, flux
 
-
-    def two_col_input_spectrum(self):
+    def file_extension(self):
         extension = self.filename.split('.')[-1]
-
         if extension == 'dat':
             wave, flux = self.read_dat_file()
         elif extension == 'fits':
             wave, flux = self.read_fits_file()
+        elif extension == 'lnw':
+            wave, flux = (0,0) #Not an input, it's a template, so more than just wave and flux are read (i.e. age etc.)
         else:
             print("Invalid Input File")
-            
-        redshifting = Redshifting(wave, flux, self.z)
+
+        return wave, flux
+
+
+    def two_col_input_spectrum(self, wave, flux, z):
+        redshifting = Redshifting(wave, flux, z)
         wave, flux = redshifting.redshift_spectrum()
 
         if max(wave) >= self.w1:
@@ -79,7 +82,7 @@ class ReadInputSpectra(object):
 
         return wave, fluxNorm
 
-    def snid_template_spectra_all(self):
+    def snid_template_spectra_all(self, z):
         """lnw file"""
         with open(self.filename) as FileObj:
         #    text = f.readlines()
@@ -105,16 +108,16 @@ class ReadInputSpectra(object):
             flux[i] = arr[:,i+1]
 
 
-        redshifting = Redshifting(wave, flux, self.z)
+        redshifting = Redshifting(wave, flux, z)
         wave, flux = redshifting.redshift_spectrum()
 
         return wave, flux, len(ages), ages, ttype
 
 
 
-    def snid_template_spectra(self, ageidx):
+    def snid_template_spectra(self, ageidx, z):
         #loop over each age instead of just first age flux
-        wave, flux, ncols, ages, ttype = self.snid_template_spectra_all()
+        wave, flux, ncols, ages, ttype = self.snid_template_spectra_all(z)
         return wave, flux[ageidx], ncols, ages, ttype
 
     

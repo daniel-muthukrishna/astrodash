@@ -32,10 +32,10 @@ class InputSpectra(object):
         filenames = []
         typeNames = []
         redshifts = []
+        readSpectra = ReadSpectra(self.w0, self.w1, self.nw, self.filename)
 
         for z in np.linspace(self.minZ, self.maxZ, self.numOfRedshifts + 1):
-            readSpectra = ReadSpectra(self.w0, self.w1, self.nw, z)
-            tempwave, tempflux, tminindex, tmaxindex = readSpectra.input_spectrum(self.filename)
+            tempwave, tempflux, tminindex, tmaxindex = readSpectra.input_spectrum(z)
             nonzeroflux = tempflux[tminindex:tmaxindex + 1]
             newflux = (nonzeroflux - min(nonzeroflux)) / (max(nonzeroflux) - min(nonzeroflux))
             newflux2 = np.concatenate((tempflux[0:tminindex], newflux, tempflux[tmaxindex + 1:]))

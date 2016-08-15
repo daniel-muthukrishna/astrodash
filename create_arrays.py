@@ -92,16 +92,7 @@ class CreateLabels(object):
         return typeNamesList
         
 
-
-class ReadSpectra(object):
-
-    def __init__(self, w0, w1, nw, z):
-        self.w0 = w0
-        self.w1 = w1
-        self.nw = nw
-        self.z = z
-
-
+class TempList():
     def temp_list(self, tempFileList):
         f = open(tempFileList, 'rU')
 
@@ -112,17 +103,27 @@ class ReadSpectra(object):
         f.close()
 
         return fileList
+    
 
-    def snid_template_data(self, snidTemplateLocation, filename, ageIdx):
+class ReadSpectra(object):
+
+    def __init__(self, w0, w1, nw, filename):
+        self.w0 = w0
+        self.w1 = w1
+        self.nw = nw
+        self.filename = filename
+        self.data = PreProcessing(filename, self.w0, self.w1, self.nw)
+
+
+    def snid_template_data(self, ageIdx, z):
         """ lnw template files """
-        data = PreProcessing(snidTemplateLocation+filename, self.w0, self.w1, self.nw, self.z)
-        wave, flux, nCols, ages, tType, minIndex, maxIndex = data.snid_template_data(ageIdx)
+        wave, flux, nCols, ages, tType, minIndex, maxIndex = self.data.snid_template_data(ageIdx, z)
 
         return wave, flux, nCols, ages, tType, minIndex, maxIndex
 
 
-    def sf_age(self, filename):
-        snName, extension = filename.strip('.dat').split('.')
+    def sf_age(self):
+        snName, extension = self.filename.strip('.dat').split('.')
         ttype, snName = snName.split('/')
 
         if (extension == 'max'):
@@ -132,25 +133,23 @@ class ReadSpectra(object):
         elif (extension[0] == 'm'):
             age = -float(extension[1:])
         else:
-            print "Invalid Superfit Filename: " + filename
+            print "Invalid Superfit Filename: " + self.filename
 
         return snName, ttype, age
 
 
-    def superfit_template_data(self, sfTemplateLocation, filename):
+    def superfit_template_data(self, z):
         """ Returns wavelength and flux after all preprocessing """
-        data = PreProcessing(sfTemplateLocation + filename, self.w0, self.w1, self.nw, self.z)
-        wave, flux, minIndex, maxIndex = data.two_column_data()
-        snName, ttype, age = self.sf_age(filename)
+        wave, flux, minIndex, maxIndex = self.data.two_column_data(z)
+        snName, ttype, age = self.sf_age()
 
         print snName, ttype, age
 
         return wave, flux, minIndex, maxIndex, age, snName, ttype
 
 
-    def input_spectrum(self, filename):
-        data = PreProcessing(filename, self.w0, self.w1, self.nw, self.z)
-        wave, flux, minIndex, maxIndex = data.two_column_data()
+    def input_spectrum(self, z):
+        wave, flux, minIndex, maxIndex = self.data.two_column_data(z)
 
         return wave, flux, minIndex, maxIndex
 
@@ -278,7 +277,7 @@ class CreateArrays(object):
             have been preprocessed to negatives, and so cannot be
             imaged yet '''
 
-        templist = ReadSpectra(self.w0, self.w1, self.nw, 0).temp_list(tempfilelist) #Arbrirary redshift to read filelist
+        templist = TempList().temp_list(tempfilelist) #Arbrirary redshift to read filelist
         typeList = []
         images = np.empty((0, int(self.nw)), np.float32)  # Number of pixels
         labels = np.empty((0, self.nLabels), np.uint8)  # Number of labels (SN types)
@@ -288,11 +287,12 @@ class CreateArrays(object):
 
         for i in range(0, len(templist)):
             ncols = 15
+            readSpectra = ReadSpectra(self.w0, self.w1, self.nw, snidTemplateLocation + templist[i])
+            
             for ageidx in range(0, 100):
                 if (ageidx < ncols):
                     for z in np.linspace(self.minZ, self.maxZ, self.numOfRedshifts + 1):
-                        readSpectra = ReadSpectra(self.w0, self.w1, self.nw, z)
-                        tempwave, tempflux, ncols, ages, ttype, tminindex, tmaxindex = readSpectra.snid_template_data(snidTemplateLocation, templist[i], ageidx)
+                        tempwave, tempflux, ncols, ages, ttype, tminindex, tmaxindex = readSpectra.snid_template_data(ageidx, z)
                         agesList.append(ages[ageidx])
                         
                     
@@ -314,15 +314,15 @@ class CreateArrays(object):
         return typeList, images, labels, np.array(filenames), np.array(typeNames)
 
     def superfit_templates_to_arrays(self, sfTemplateLocation, sftempfilelist):
-        templist = self.readSpectra.temp_list(sftempfilelist)
+        templist = TempList().temp_list(sftempfilelist)
         images = np.empty((0, self.nw), np.float32)  # Number of pixels
         labels = np.empty((0, self.nLabels), np.float32)  # Number of labels (SN types)
         filenames = []
         typeNames = []
 
         for i in range(0, len(templist)):
-            tempwave, tempflux, tminindex, tmaxindex, age, snName, ttype = self.readSpectra.superfit_template_data(
-                sfTemplateLocation, templist[i])
+            readSpectra = ReadSpectra(self.w0, self.w1, self.nw, sfTemplateLocation + templist[i])
+            tempwave, tempflux, tminindex, tmaxindex, age, snName, ttype = self.readSpectra.superfit_template_data(z)
 
             if ((float(ages[ageidx]) > minAge and float(ages[ageidx]) > maxAge)):
                 label, typeName = label_array(ttype, ages[ageidx])

@@ -116,7 +116,7 @@ class BestTypesList(object):
                     #plt.title(typeName+ ": " + str(bestForEachType[c][1]))
                     break
             if (i == len(trainLabels)-1):
-                print("No Template")
+                #print("No Template") #NEED TO GET TEMPLATE PLOTS IN A BETTER WAY
                 templateFlux = np.zeros(len(trainImages[0]))
                 inputFlux = self.inputImages[int(self.redshiftIndex[c])]
 
