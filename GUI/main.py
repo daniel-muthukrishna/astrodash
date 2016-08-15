@@ -84,7 +84,7 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
 
     def list_item_clicked(self, item):
         try:
-            indexToPlot = int(item.text()[0]) - 1
+            indexToPlot = int(item.text()[0:2]) - 1 #Two digit numbers
         except ValueError:
             indexToPlot = 0
         self.plot_best_matches(indexToPlot)
@@ -117,7 +117,7 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
 class FitSpectrumThread(QThread):
     def __init__(self, inputFilename, minZ, maxZ):
         QThread.__init__(self)
-        self.inputFilename = inputFilename
+        self.inputFilename = str(inputFilename)
         self.minZ = minZ
         self.maxZ = maxZ
 

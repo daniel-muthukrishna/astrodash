@@ -1,4 +1,5 @@
 import numpy as np
+from specutils.io import read_fits
 
 class Redshifting(object):
     def __init__(self, wave, flux, z):
@@ -20,11 +21,16 @@ class ReadInputSpectra(object):
         self.w1 = w1
         self.z = z
 
-    def two_col_input_spectra(self):
-        """
-        Takes a two column file of wavelength and flux as an input
-        and returns the numpy arrays of the wavelength and normalised flux.
-        """
+    def read_fits_file(self):
+        #filename = unicode(self.filename.toUtf8(), encoding="UTF-8")
+        spectrum = read_fits.read_fits_spectrum1d(self.filename)
+        wave = np.array(spectrum.wavelength)
+        flux = np.array(spectrum.flux)
+        flux[np.isnan(flux)] = 0 #convert nan's to zeros
+
+        return wave, flux
+
+    def read_dat_file(self):
         wave = []
         flux = []
         try:
@@ -39,6 +45,20 @@ class ReadInputSpectra(object):
 
         wave = np.array(wave)
         flux = np.array(flux)
+
+        return wave, flux
+
+
+    def two_col_input_spectrum(self):
+        extension = self.filename.split('.')[-1]
+
+        if extension == 'dat':
+            wave, flux = self.read_dat_file()
+        elif extension == 'fits':
+            wave, flux = self.read_fits_file()
+        else:
+            print("Invalid Input File")
+            
         redshifting = Redshifting(wave, flux, self.z)
         wave, flux = redshifting.redshift_spectrum()
 

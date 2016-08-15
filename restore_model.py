@@ -1,6 +1,5 @@
 import tensorflow as tf
 import numpy as np
-import matplotlib.pyplot as plt
 import pickle
 from input_spectra import *
 
@@ -116,6 +115,11 @@ class BestTypesList(object):
                     print c, self.redshiftIndex[c]
                     #plt.title(typeName+ ": " + str(bestForEachType[c][1]))
                     break
+            if (i == len(trainLabels)-1):
+                print("No Template")
+                templateFlux = np.zeros(len(trainImages[0]))
+                inputFlux = self.inputImages[int(self.redshiftIndex[c])]
+
             templateFluxes.append(templateFlux)
             inputFluxes.append(inputFlux)
             

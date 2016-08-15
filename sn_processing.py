@@ -18,7 +18,7 @@ class PreProcessing(object):
         self.preProcess = PreProcessSpectrum(self.w0, self.w1, self.nw)
 
     def two_column_data(self):
-        wave, flux = self.readInputSpectra.two_col_input_spectra()
+        wave, flux = self.readInputSpectra.two_col_input_spectrum()
         binnedwave, binnedflux, minindex, maxindex = self.preProcess.log_wavelength(wave, flux)
         newflux = self.preProcess.continuum_removal(binnedwave, binnedflux, self.polyorder, minindex, maxindex)
         meanzero = self.preProcess.mean_zero(binnedwave, newflux, minindex, maxindex)
