@@ -16,10 +16,11 @@ class PreProcessing(object):
         self.readInputSpectra = ReadInputSpectra(self.filename, self.w0, self.w1)
         self.preProcess = PreProcessSpectrum(self.w0, self.w1, self.nw)
 
-        self.wave, self.flux = self.readInputSpectra.file_extension()
+        self.spectrum = self.readInputSpectra.file_extension()
 
 
     def two_column_data(self, z):
+        self.wave, self.flux = self.spectrum
         wave, flux = self.readInputSpectra.two_col_input_spectrum(self.wave, self.flux, z)
         binnedwave, binnedflux, minindex, maxindex = self.preProcess.log_wavelength(wave, flux)
         newflux = self.preProcess.continuum_removal(binnedwave, binnedflux, self.polyorder, minindex, maxindex)
@@ -30,8 +31,8 @@ class PreProcessing(object):
 
     def snid_template_data(self, ageidx, z):
         """lnw templates """
-        
-        wave, flux, ncols, ages, ttype = self.readInputSpectra.snid_template_spectra(ageidx, z)
+        wave, fluxes, ncols, ages, ttype = self.spectrum
+        wave, flux = self.readInputSpectra.snid_template_spectra(wave, fluxes[ageidx], z)
         binnedwave, binnedflux, minindex, maxindex = self.preProcess.log_wavelength(wave, flux)
         
         return binnedwave, binnedflux, ncols, ages, ttype, minindex, maxindex

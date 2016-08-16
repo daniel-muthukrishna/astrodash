@@ -50,15 +50,14 @@ class ReadInputSpectra(object):
     def file_extension(self):
         extension = self.filename.split('.')[-1]
         if extension == 'dat':
-            wave, flux = self.read_dat_file()
+            return self.read_dat_file()
         elif extension == 'fits':
-            wave, flux = self.read_fits_file()
+            return self.read_fits_file()
         elif extension == 'lnw':
-            wave, flux = (0,0) #Not an input, it's a template, so more than just wave and flux are read (i.e. age etc.)
+            return self.snid_template_spectra_all()
         else:
             print("Invalid Input File")
-
-        return wave, flux
+            return 0
 
 
     def two_col_input_spectrum(self, wave, flux, z):
@@ -82,7 +81,7 @@ class ReadInputSpectra(object):
 
         return wave, fluxNorm
 
-    def snid_template_spectra_all(self, z):
+    def snid_template_spectra_all(self):
         """lnw file"""
         with open(self.filename) as FileObj:
         #    text = f.readlines()
@@ -102,23 +101,22 @@ class ReadInputSpectra(object):
         arr = np.delete(arr, 0 ,0)
 
         wave = arr[:,0]
-        flux = np.zeros(shape=(len(ages),len(arr))) # initialise 2D array
+        fluxes = np.zeros(shape=(len(ages),len(arr))) # initialise 2D array
 
         for i in range(0, len(arr[0])-1):
-            flux[i] = arr[:,i+1]
+            fluxes[i] = arr[:,i+1]
 
+
+        return wave, fluxes, len(ages), ages, ttype
+
+
+
+    def snid_template_spectra(self, wave, flux, z):
 
         redshifting = Redshifting(wave, flux, z)
-        wave, flux = redshifting.redshift_spectrum()
-
-        return wave, flux, len(ages), ages, ttype
-
-
-
-    def snid_template_spectra(self, ageidx, z):
-        #loop over each age instead of just first age flux
-        wave, flux, ncols, ages, ttype = self.snid_template_spectra_all(z)
-        return wave, flux[ageidx], ncols, ages, ttype
+        waveRedshifted, fluxRedshifted = redshifting.redshift_spectrum()
+        
+        return waveRedshifted, fluxRedshifted
 
     
 
