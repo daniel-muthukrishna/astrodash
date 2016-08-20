@@ -34,14 +34,15 @@ class InputSpectra(object):
         redshifts = []
         readSpectra = ReadSpectra(self.w0, self.w1, self.nw, self.filename)
 
-        for z in np.linspace(self.minZ, self.maxZ, self.numOfRedshifts + 1):
+        #Actually negative redshifting input wave (to undo it's previous redshift)
+        for z in np.linspace(-self.maxZ, -self.minZ, self.numOfRedshifts + 1):
             tempwave, tempflux, tminindex, tmaxindex = readSpectra.input_spectrum(z)
             nonzeroflux = tempflux[tminindex:tmaxindex + 1]
             newflux = (nonzeroflux - min(nonzeroflux)) / (max(nonzeroflux) - min(nonzeroflux))
             newflux2 = np.concatenate((tempflux[0:tminindex], newflux, tempflux[tmaxindex + 1:]))
             images = np.append(images, np.array([newflux2]), axis=0)  # images.append(newflux2)
-            filenames.append(self.filename + "_" + str(z))
-            redshifts.append(z)
+            filenames.append(self.filename + "_" + str(-z))
+            redshifts.append(-z)
 
         inputImages = np.array(images)
         inputFilenames = np.array(filenames)

@@ -1,0 +1,16 @@
+# Conversion from age from maximum to age past explosion
+# [see also snid-5.0/doc/age.info]
+#
+#SN	tmax		texp
+sn87A	46934.18 	46849.82
+sn92H	48665.9  	48661	
+sn93J	49095.0  	49074.0	
+sn96cb	50453    	50430	
+sn98S	50891    	50872.5	
+sn99em	51485.5	 	51475.6	
+sn99gi	51530.0	 	51518.3	
+sn04dj	53234.89	53187		! NOTE: tmax is date of first spectrum
+sn04et	53286.58 	53270.5	
+sn05bf	53498.39 	53458	
+sn05cs	53553.62 	53547.6	
+sn06bp	53842.49 	53833.2	
