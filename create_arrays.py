@@ -10,7 +10,7 @@ class AgeBinning(object):
         self.ageBinSize = ageBinSize
 
     def age_bin(self, age):
-        ageBin = int(age / self.ageBinSize) - int(self.minAge / self.ageBinSize)  # around zero has double bin siz
+        ageBin = int(round(age / self.ageBinSize)) - int(round(self.minAge / self.ageBinSize))
 
         return ageBin
 
@@ -19,11 +19,11 @@ class AgeBinning(object):
 
         ageBinPrev = 0
         ageLabelMin = self.minAge
-        for age in np.arange(self.minAge, self.maxAge):
+        for age in np.arange(self.minAge, self.maxAge, 0.5):
             ageBin = self.age_bin(age)
 
             if (ageBin != ageBinPrev):
-                ageLabelMax = age
+                ageLabelMax = int(round(age))
                 ageLabels.append(str(ageLabelMin) + " to " + str(ageLabelMax))
                 ageLabelMin = ageLabelMax
 
@@ -58,21 +58,6 @@ class CreateLabels(object):
         except ValueError as err:
             print("INVALID TYPE: {0}".format(err))
 
-
-        #THIS IS FOR SUPERFIT TEMPLATES - REMOVE THESE IF STATEMENTS LATER
-        if (ttype == 'Ia'):
-            typeIndex = 0
-
-        elif (ttype == 'Ib'):
-            typeIndex = 9
-
-        elif (ttype == 'Ic'):
-            typeIndex = 5
-
-        elif (ttype == 'II'):
-            typeIndex = 13
-
-        ######################################
             
         labelarray[typeIndex][ageBin] = 1
         labelarray = labelarray.flatten()

@@ -2,13 +2,14 @@ import pickle
 
 
 typeList = ['Ia-norm', 'IIb', 'Ia-pec', 'Ic-broad', 'Ia-csm', 'Ic-norm', 'IIP', 'Ib-pec',
-                  'IIL', 'Ib-norm', 'Ia-91bg', 'II-pec', 'Ia-91T', 'IIn']
+                'IIL', 'Ib-norm', 'Ia-91bg', 'II-pec', 'Ia-91T', 'IIn',
+                'Ic-pec', 'Ibn', 'Ia-02cx']
 nTypes = len(typeList)
 w0 = 2500. #wavelength range in Angstroms
 w1 = 11000.
 nw = 1024. #number of wavelength bins
-minAge = -50
-maxAge = 50
+minAge = -20.
+maxAge = 50.
 ageBinSize = 4.
 
 

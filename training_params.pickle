@@ -1,10 +1,10 @@
 (lp0
-I14
+I17
 aF2500.0
 aF11000.0
 aF1024.0
-aI-50
-aI50
+aF-20.0
+aF50.0
 aF4.0
 a(lp1
 S'Ia-norm'
@@ -35,4 +35,10 @@ aS'Ia-91T'
 p14
 aS'IIn'
 p15
+aS'Ic-pec'
+p16
+aS'Ibn'
+p17
+aS'Ia-02cx'
+p18
 aa.

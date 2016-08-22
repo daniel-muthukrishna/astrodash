@@ -141,9 +141,9 @@ with open('training_params.pickle') as f:
 minZ = 0
 maxZ = 0.0
 
-snidTemplateLocation = '/home/dan/Desktop/SNClassifying_Pre-alpha/templates/'
+snidTemplateLocation = '/home/dan/Desktop/SNClassifying_Pre-alpha/templates/snid_templates_Modjaz_BSNIP/'
 sfTemplateLocation = '/home/dan/Desktop/SNClassifying_Pre-alpha/templates/superfit_templates/sne/'
-snidtempfilelist1 = snidTemplateLocation + 'templist'
+snidtempfilelist1 = snidTemplateLocation + 'templist.txt'
 sftempfilelist1 = sfTemplateLocation + 'templist.txt'
 
 saveTrainingSet = SaveTrainingSet(snidTemplateLocation, snidtempfilelist1, sfTemplateLocation, sftempfilelist1, w0, w1, nw, nTypes, minAge, maxAge, ageBinSize, typeList, minZ, maxZ)

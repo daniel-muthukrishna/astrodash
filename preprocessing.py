@@ -106,6 +106,8 @@ class ReadInputSpectra(object):
         for i in range(0, len(arr[0])-1):
             fluxes[i] = arr[:,i+1]
 
+        if ttype == 'Ia-99aa':
+            ttype = 'Ia-91T'
 
         return wave, fluxes, len(ages), ages, ttype
 
