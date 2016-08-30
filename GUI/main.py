@@ -21,6 +21,20 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
         self.inputFilename = "DefaultFilename"
         self.progressBar.setValue(100)
 
+        self.checkBoxKnownZ.stateChanged.connect(self.enable_redshifts)
+
+
+
+    def enable_redshifts(self):
+        if (self.checkBoxKnownZ.isChecked() == True):
+            self.redshiftFlag = True
+            self.lineEditMinZ.setEnabled(False)
+            self.lineEditMaxZ.setEnabled(False)
+        else:
+            self.redshiftFlag = False
+            self.lineEditMinZ.setEnabled(True)
+            self.lineEditMaxZ.setEnabled(True)
+
         
     def select_input_file(self):
         inputFilename = QtGui.QFileDialog.getOpenFileName(self,"Select a spectrum file")
@@ -42,7 +56,6 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
         self.progressBar.setValue(36)
         
         if (self.checkBoxKnownZ.isChecked() == True):
-            self.redshiftFlag = True
             knownZ = float(self.lineEditKnownZ.text())
             self.minZ = knownZ
             self.maxZ = knownZ
@@ -53,7 +66,6 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
             self.connect(self.fitThread, SIGNAL("finished()"), self.done_fit_thread_single_redshift)
             print "here1"
         else:
-            self.redshiftFlag = False
             self.minZ = float(self.lineEditMinZ.text())
             self.maxZ = float(self.lineEditMaxZ.text())
             print (self.minZ, self.maxZ)
