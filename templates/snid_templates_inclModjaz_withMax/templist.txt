@@ -1,4 +1,3 @@
-iPTF13bvn.lnw
 PTF10bzf.lnw
 PTF10qts.lnw
 PTF10vgv.lnw

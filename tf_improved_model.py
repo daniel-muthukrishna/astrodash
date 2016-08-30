@@ -25,26 +25,20 @@ import numpy as np
 import itertools
 import tensorflow as tf
 
-inputLoaded = np.load('input_data.npz')
-inputImages = inputLoaded['inputImages']
-inputLabels = inputLoaded['inputLabels']
-inputFilenames = inputLoaded['inputFilenames']
-inputTypeNames = inputLoaded['inputTypeNames']
-inputRedshifts = inputLoaded['inputRedshifts']
 
-snidtempfilelist = r'/home/dan/Desktop/SNClassifying/templates/templist'
-loaded = np.load('file_w_ages2.npz')
+loaded = np.load('type_age_atRedshiftZero.npz')
 trainImages = loaded['trainImages']
 trainLabels = loaded['trainLabels']
-trainFilenames = loaded['trainFilenames']
-trainTypeNames = loaded['trainTypeNames']
+#trainFilenames = loaded['trainFilenames']
+#trainTypeNames = loaded['trainTypeNames']
 testImages = loaded['testImages']
 testLabels = loaded['testLabels']
-testFilenames = loaded['testFilenames']
+#testFilenames = loaded['testFilenames']
 testTypeNames = loaded['testTypeNames']
 typeNamesList = loaded['typeNamesList']
 #validateImages = sortData[2][0]
 #validateLabels = sortData[2][1]
+
 
 print("Completed creatingArrays")
 
@@ -121,7 +115,7 @@ sess.run(tf.initialize_all_variables())
 
 trainImagesCycle = itertools.cycle(trainImages)
 trainLabelsCycle = itertools.cycle(trainLabels)
-for i in range(50000):
+for i in range(25000):
     batch_xs = np.array(list(itertools.islice(trainImagesCycle, 50*i, 50*i+50)))
     batch_ys = np.array(list(itertools.islice(trainLabelsCycle, 50*i, 50*i+50)))
     train_step.run(feed_dict={x: batch_xs, y_: batch_ys, keep_prob: 0.5})
@@ -142,11 +136,13 @@ for i in range(len(cp)):
         print(i, testTypeNames[i], typeNamesList[predictedIndex])
 
 
+#ACTUAL ACCURACY, SUBTYPE ACCURACY, AGE ACCURACY
 typeAndAgeCorrect = 0
-typeCorrect
+typeCorrect = 0
 subTypeCorrect = 0
 subTypeAndAgeCorrect = 0
-#ACTUAL ACCURACY, SUBTYPE ACCURACY, AGE ACCURACY
+typeAndNearAgeCorrect = 0
+subTypeAndNearAgeCorrect = 0
 for i in range(len(testTypeNames)):
     predictedIndex = np.argmax(yy[i])
     testSubType = testTypeNames[i][0:2]
@@ -155,83 +151,37 @@ for i in range(len(testTypeNames)):
     actualType = typeNamesList[predictedIndex].split(': ')[0]
     testAge = testTypeNames[i].split(': ')[1]
     actualAge = typeNamesList[predictedIndex].split(': ')[1]
+    nearTestAge = testAge.split(' to ')
     
     if (testTypeNames[i] == typeNamesList[predictedIndex]):
         typeAndAgeCorrect += 1
     if (testType == actualType): #correct type
         typeCorrect += 1
+        if ((nearTestAge[0] in actualAge) or (nearTestAge[1] in actualAge)): #check if the age is in the neigbouring bin
+            typeAndNearAgeCorrect += 1 #all correct except nearby bin
     if (testSubType == actualSubType): #correct subtype
         subTypeCorrect += 1
         if testAge == actualAge:
             subTypeAndAgeCorrect += 1
+        if ((nearTestAge[0] in actualAge) or (nearTestAge[1] in actualAge)): #check if the age is in the neigbouring bin
+            subTypeAndNearAgeCorrect += 1 #subtype and nearby bin
 
 typeAndAgeAccuracy = float(typeAndAgeCorrect)/len(testTypeNames)
-typeAccuracy = float(typeAndAgeCorrect)/len(testTypeNames)
+typeAccuracy = float(typeCorrect)/len(testTypeNames)
 subTypeAccuracy = float(subTypeCorrect)/len(testTypeNames)
 subTypeAndAgeAccuracy = float(subTypeAndAgeCorrect)/len(testTypeNames)
+typeAndNearAgeAccuracy = float(typeAndNearAgeCorrect)/len(testTypeNames)
+subTypeAndNearAgeAccuracy = float(subTypeAndNearAgeCorrect)/len(testTypeNames)
 
-print("allAccuracy : " + str(allAccuracy))
+print("typeAndAgeAccuracy : " + str(typeAndAgeAccuracy))
 print("typeAccuracy : " + str(typeAccuracy))
 print("subTypeAccuracy : " + str(subTypeAccuracy))
 print("subTypeAndAgeAccuracy: " + str(subTypeAndAgeAccuracy))
+print("typeAndNearAgeAccuracy : " + str(typeAndNearAgeAccuracy))
+print("subTypeAndNearAgeAccuracy : " + str(subTypeAndNearAgeAccuracy))
+    
 
-
-
-
-
-
-############################################################
-yInputRedshift = y_conv.eval(feed_dict={x: inputImages, y_: inputLabels, keep_prob: 1.0})
-print(yInputRedshift)
-print(accuracy.eval(feed_dict={x: inputImages, y_: inputLabels, keep_prob: 1.0}))
-
-#Create List of Best Types
-bestForEachType = np.zeros((ntypes,3))
-index = np.zeros(ntypes)
-for i in range(len(yInputRedshift)):
-    prob = yInputRedshift[i]
-    z = inputRedshifts[i]
-    bestIndex = np.argmax(prob)
-    if prob[bestIndex] > bestForEachType[bestIndex][2]:
-        bestForEachType[bestIndex][2] = prob[bestIndex]
-        bestForEachType[bestIndex][1] = z
-        bestForEachType[bestIndex][0] = bestIndex #inputTypeNames
-        index[bestIndex] = i
-
-idx = np.argsort(bestForEachType[:,2])
-bestForEachType = bestForEachType[idx[::-1]]
-
-print ("Type          Redshift      Rel. Prob.")
-print(bestForEachType)
-for i in range(10):#ntypes):
-    bestIndex = bestForEachType[i][0]
-    print(typeNamesList[bestIndex] + '\t' + str(bestForEachType[i][1]) + str(bestForEachType[i][2]))
-
-
-
-#Plot Each Best Type at corresponding best redshift
-for c in range(2):#ntypes):
-    for i in range(0,len(trainImages)):
-        if (trainLabels[i][c] == 1):
-            print(i)
-            plt.plot(trainImages[i])
-            plt.plot(inputImages[index[c]])
-            plt.title(str(bestForEachType[c][0])+": " + str(bestForEachType[c][1]))
-            plt.show()
-            break
-        
-
-#Plot Probability vs redshift for each class
-redshiftGraphs = [[[],[]] for i in range(ntypes)]
-for c in range(2):#ntypes):
-    redshiftGraphs[c][0] = inputRedshifts
-    redshiftGraphs[c][1] = yInputRedshift[:,c]
-    plt.plot(redshiftGraphs[c][0],redshiftGraphs[c][1])
-    plt.xlabel("z")
-    plt.ylabel("Probability")
-    bestIndex = bestForEachType[c][0]
-    plt.title("Type: " + typeNamesList[bestIndex])
-    plt.show()
-
-redshiftGraphs = np.array(redshiftGraphs)
-
+#SAVE THE MODEL
+saver = tf.train.Saver()
+save_path = saver.save(sess, "model.ckpt")
+print("Model saved in file: %s" % save_path)

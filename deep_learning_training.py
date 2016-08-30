@@ -54,7 +54,7 @@ sess.run(init)
 #Train 1000 times
 trainImagesCycle = itertools.cycle(trainImages)
 trainLabelsCycle = itertools.cycle(trainLabels)
-for i in range(20000):
+for i in range(4000):
     batch_xs = np.array(list(itertools.islice(trainImagesCycle, 5000*i, 5000*i+5000)))
     batch_ys = np.array(list(itertools.islice(trainLabelsCycle, 5000*i, 5000*i+5000)))
     sess.run(train_step, feed_dict={x: batch_xs, y_: batch_ys})

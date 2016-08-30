@@ -43,7 +43,7 @@ class CreateLabels(object):
         self.ageBinSize = ageBinSize
         self.typeList = typeList
         self.ageBinning = AgeBinning(self.minAge, self.maxAge, self.ageBinSize)
-        self.numOfAgeBins = self.ageBinning.age_bin(self.maxAge) + 1
+        self.numOfAgeBins = self.ageBinning.age_bin(self.maxAge-0.1) + 1
         self.nLabels = self.nTypes * self.numOfAgeBins
         self.ageLabels = self.ageBinning.age_labels()       
         
@@ -252,10 +252,9 @@ class CreateArrays(object):
         self.redshiftPrecision = 50
         self.numOfRedshifts = (self.maxZ - self.minZ) * self.redshiftPrecision
         self.ageBinning = AgeBinning(self.minAge, self.maxAge, self.ageBinSize)
-        self.numOfAgeBins = self.ageBinning.age_bin(self.maxAge) + 1
+        self.numOfAgeBins = self.ageBinning.age_bin(self.maxAge-0.1) + 1
         self.nLabels = self.nTypes * self.numOfAgeBins
         self.createLabels = CreateLabels(self.nTypes, self.minAge, self.maxAge, self.ageBinSize, self.typeList)
-
 
     def snid_templates_to_arrays(self, snidTemplateLocation, tempfilelist):
         ''' This function is for the SNID processed files, which

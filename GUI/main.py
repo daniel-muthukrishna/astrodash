@@ -37,16 +37,30 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
             self.fit_spectra()
 
     def fit_spectra(self):
-        self.minZ = float(self.lineEditMinZ.text())
-        self.maxZ = float(self.lineEditMaxZ.text())
-        print (self.minZ, self.maxZ)
         self.cancelledFitting = False
-
         self.progressBar.setMaximum(100) #
         self.progressBar.setValue(36)
-        self.fitThread = FitSpectrumThread(self.inputFilename, self.minZ, self.maxZ)
-        self.connect(self.fitThread, SIGNAL("load_spectrum(PyQt_PyObject)"), self.load_spectrum)
-        self.connect(self.fitThread, SIGNAL("finished()"), self.done_fit_thread)
+        
+        if (self.checkBoxKnownZ.isChecked() == True):
+            self.redshiftFlag = True
+            knownZ = float(self.lineEditKnownZ.text())
+            self.minZ = knownZ
+            self.maxZ = knownZ
+            self.fitThread = FitSpectrumThread(self.inputFilename, self.minZ, self.maxZ, self.redshiftFlag)
+            print "before"
+            self.connect(self.fitThread, SIGNAL("load_spectrum_single_redshift(PyQt_PyObject)"), self.load_spectrum_single_redshift)
+            print "after"
+            self.connect(self.fitThread, SIGNAL("finished()"), self.done_fit_thread_single_redshift)
+            print "here1"
+        else:
+            self.redshiftFlag = False
+            self.minZ = float(self.lineEditMinZ.text())
+            self.maxZ = float(self.lineEditMaxZ.text())
+            print (self.minZ, self.maxZ)
+            self.fitThread = FitSpectrumThread(self.inputFilename, self.minZ, self.maxZ, self.redshiftFlag)
+            self.connect(self.fitThread, SIGNAL("load_spectrum(PyQt_PyObject)"), self.load_spectrum)
+            self.connect(self.fitThread, SIGNAL("finished()"), self.done_fit_thread)
+
         self.fitThread.start()
 
         self.btnCancel.clicked.connect(self.cancel)
@@ -59,10 +73,31 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
             QtGui.QMessageBox.information(self, "Cancelled!", "Stopped Fitting Input Spectrum")
 
 
+    def load_spectrum_single_redshift(self, spectrumInfo):
+        self.bestTypes, self.softmax, self.idx, self.templateFluxes, self.inputFluxes, self.typeNamesList = spectrumInfo
+        self.progressBar.setValue(85)#self.progressBar.value()+)
+        print "here"
+
+    def done_fit_thread_single_redshift(self):
+        print "done"
+        if (self.cancelledFitting == False):
+            self.list_best_matches_single_redshift()
+            self.plot_best_matches(0)
+            self.progressBar.setValue(100)
+            QtGui.QMessageBox.information(self, "Done!", "Finished Fitting Input Spectrum")        
+
+    def list_best_matches_single_redshift(self):
+        print("listing best matches...")
+        self.listWidget.clear()
+        self.listWidget.addItem("".join(word.ljust(25) for word in ['No.', 'Type', 'Age', 'Softmax Prob..']))
+        for i in range(20):
+            name, age = self.bestTypes[i].split(': ')
+            self.listWidget.addItem("".join(word.ljust(25) for word in [str(i+1), name, age, str(self.softmax[i])]))
+
+
     def load_spectrum(self, spectrumInfo):
         self.bestForEachType, self.templateFluxes, self.inputFluxes, self.inputRedshifts, self.redshiftGraphs, self.typeNamesList = spectrumInfo
-        self.progressBar.setValue(85)#self.progressBar.value()+)
-
+        self.progressBar.setValue(85)#self.progressBar.value()+)    
 
     def done_fit_thread(self):
         if (self.cancelledFitting == False):
@@ -88,10 +123,13 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
         except ValueError:
             indexToPlot = 0
         self.plot_best_matches(indexToPlot)
-        self.plot_redshift_graphs(indexToPlot)
+        if self.redshiftFlag == False:
+            self.plot_redshift_graphs(indexToPlot)
         
     def plot_best_matches(self, indexToPlot):
+        print self.templateFluxes[indexToPlot]
         print("plotting best matches...")
+        print self.inputFluxes[indexToPlot]
         self.graphicsView.clear()
         self.graphicsView.addLegend()
         #templateFluxes, inputFluxes = self.bestTypesList.plot_best_types()
@@ -115,11 +153,12 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
 
     
 class FitSpectrumThread(QThread):
-    def __init__(self, inputFilename, minZ, maxZ):
+    def __init__(self, inputFilename, minZ, maxZ, redshiftFlag):
         QThread.__init__(self)
         self.inputFilename = str(inputFilename)
         self.minZ = minZ
         self.maxZ = maxZ
+        self.redshiftFlag = redshiftFlag
 
     def __del__(self):
         self.wait()
@@ -135,9 +174,29 @@ class FitSpectrumThread(QThread):
         return (bestForEachType, templateFluxes, inputFluxes,
                 inputRedshifts, redshiftGraphs, typeNamesList)
 
+    def _input_spectrum_single_redshift(self):
+        loadInputSpectra = LoadInputSpectra(self.inputFilename, self.minZ, self.maxZ)
+        inputImage, inputRedshift, typeNamesList, nw, nBins = loadInputSpectra.input_spectra()
+        bestTypesList = BestTypesListSingleRedshift("../model.ckpt", inputImage, typeNamesList, nw, nBins)
+        bestTypes = bestTypesList.bestTypes
+        softmax = bestTypesList.softmaxOrdered
+        idx = bestTypesList.idx
+        templateFluxes, inputFluxes = bestTypesList.plot_best_types()
+
+        return bestTypes, softmax, idx, templateFluxes, inputFluxes, typeNamesList
+
+    def run_single_redshift(self):
+        spectrumInfo = self._input_spectrum_single_redshift()
+        self.emit(SIGNAL('load_spectrum_single_redshift(PyQt_PyObject)'), spectrumInfo)
+
+
     def run(self):
-         spectrumInfo = self._input_spectrum()
-         self.emit(SIGNAL('load_spectrum(PyQt_PyObject)'), spectrumInfo)
+        if self.redshiftFlag == True:
+            spectrumInfo = self._input_spectrum_single_redshift()
+            self.emit(SIGNAL('load_spectrum_single_redshift(PyQt_PyObject)'), spectrumInfo)
+        else:
+            spectrumInfo = self._input_spectrum()
+            self.emit(SIGNAL('load_spectrum(PyQt_PyObject)'), spectrumInfo)
         
 
 

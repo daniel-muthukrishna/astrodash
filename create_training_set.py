@@ -17,7 +17,7 @@ class CreateTrainingSet(object):
         self.ageBinSize = ageBinSize
         self.typeList = typeList
         self.ageBinning = AgeBinning(self.minAge, self.maxAge, self.ageBinSize)
-        self.numOfAgeBins = self.ageBinning.age_bin(self.maxAge) + 1
+        self.numOfAgeBins = self.ageBinning.age_bin(self.maxAge-0.1) + 1
         self.nLabels = self.nTypes * self.numOfAgeBins
         self.createArrays = CreateArrays(w0, w1, nw, nTypes, minAge, maxAge, ageBinSize, typeList, minZ, maxZ)
         self.arrayTools = ArrayTools(self.nLabels, self.nw)

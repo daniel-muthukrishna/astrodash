@@ -3,7 +3,7 @@ import numpy as np
 import pickle
 from input_spectra import *
 
-loaded = np.load('/home/dan/Desktop/SNClassifying_Pre-alpha/file_w_ages2.npz')
+loaded = np.load('/home/dan/Desktop/SNClassifying_Pre-alpha/type_age_atRedshiftZero.npz')
 trainImages = loaded['trainImages']
 trainLabels = loaded['trainLabels']
 ##trainFilenames = loaded['trainFilenames']
@@ -45,27 +45,219 @@ class RestoreModel(object):
         
         self.modelFilename = modelFilename
         self.inputImages = inputImages
-        self.x = tf.placeholder(tf.float32, [None, nw])
-        self.W = tf.Variable(tf.zeros([nw, nBins]))
-        self.b = tf.Variable(tf.zeros([nBins]))
-        self.y = tf.nn.softmax(tf.matmul(self.x, self.W) + self.b)
-        self.y_ = tf.placeholder(tf.float32, [None, nBins])
+##        self.x = tf.placeholder(tf.float32, [None, nw])
+##        self.W = tf.Variable(tf.zeros([nw, nBins]))
+##        self.b = tf.Variable(tf.zeros([nBins]))
+##        self.y = tf.nn.softmax(tf.matmul(self.x, self.W) + self.b)
+##        self.y_ = tf.placeholder(tf.float32, [None, nBins])
+
+        self.nw = nw
+        self.nBins = nBins
+        self.imWidthReduc = 8
+        self.imWidth = 32 #Image size and width
+        
+        self.x = tf.placeholder(tf.float32, shape=[None, nw])
+        self.y_ = tf.placeholder(tf.float32, shape=[None, nBins])
+
+        #FIRST CONVOLUTIONAL LAYER
+        W_conv1 = self.weight_variable([5, 5, 1, 32])
+        b_conv1 = self.bias_variable([32])
+        x_image = tf.reshape(self.x, [-1,self.imWidth,self.imWidth,1])
+        h_conv1 = tf.nn.relu(self.conv2d(x_image, W_conv1) + b_conv1)
+        h_pool1 = self.max_pool_2x2(h_conv1)
+
+         #SECOND CONVOLUTIONAL LAYER
+        W_conv2 = self.weight_variable([5, 5, 32, 64])
+        b_conv2 = self.bias_variable([64])
+        h_conv2 = tf.nn.relu(self.conv2d(h_pool1, W_conv2) + b_conv2)
+        h_pool2 = self.max_pool_2x2(h_conv2)
+
+
+        #DENSELY CONNECTED LAYER
+        W_fc1 = self.weight_variable([self.imWidthReduc * self.imWidthReduc * 64, 1024])
+        b_fc1 = self.bias_variable([1024])
+        h_pool2_flat = tf.reshape(h_pool2, [-1, self.imWidthReduc*self.imWidthReduc*64])
+        h_fc1 = tf.nn.relu(tf.matmul(h_pool2_flat, W_fc1) + b_fc1)
+
+        #DROPOUT
+        self.keep_prob = tf.placeholder(tf.float32)
+        h_fc1_drop = tf.nn.dropout(h_fc1, self.keep_prob)
+
+        #READOUT LAYER
+        W_fc2 = self.weight_variable([1024, nBins])
+        b_fc2 = self.bias_variable([nBins])
+
+        self.y_conv = tf.nn.softmax(tf.matmul(h_fc1_drop, W_fc2) + b_fc2)
+
+
+        self.saver = tf.train.Saver()
+
+    #WEIGHT INITIALISATION
+    def weight_variable(self, shape):
+        initial = tf.truncated_normal(shape, stddev=0.1)
+        return tf.Variable(initial)
+
+    def bias_variable(self, shape):
+        initial = tf.constant(0.1, shape=shape)
+        return tf.Variable(initial)
+
+    #CONVOLUTION AND POOLING
+    def conv2d(self, x, W):
+        return tf.nn.conv2d(x, W, strides=[1, 1, 1, 1], padding='SAME')
+
+    def max_pool_2x2(self, x):
+        return tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
+
 
         self.saver = tf.train.Saver()
 
     def restore_variables(self):
         with tf.Session() as sess:
             self.saver.restore(sess, self.modelFilename)
-            yInputRedshift = sess.run(self.y, feed_dict={self.x: self.inputImages})
-            correct_prediction = tf.equal(tf.argmax(self.y,1), tf.argmax(self.y_,1))
-            accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-            print(yInputRedshift)
+##            softmax = sess.run(self.y, feed_dict={self.x: self.inputImages})
+##            correct_prediction = tf.equal(tf.argmax(self.y,1), tf.argmax(self.y_,1))
+##            accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+##            print(softmax)
+            softmax = self.y_conv.eval(feed_dict={self.x: self.inputImages, self.keep_prob: 1.0})
+            print(softmax)
             
-        return yInputRedshift
+        return softmax
 
     def reset(self):
         tf.reset_default_graph()
 
+
+class RestoreModelSingleRedshift(object):
+    def __init__(self, modelFilename, inputImage, nw, nBins):
+        self.reset()
+        
+        self.modelFilename = modelFilename
+        self.inputImage = inputImage
+        self.nw = nw
+        self.nBins = nBins
+        self.imWidthReduc = 8
+        self.imWidth = 32 #Image size and width
+        
+        self.x = tf.placeholder(tf.float32, shape=[None, nw])
+        self.y_ = tf.placeholder(tf.float32, shape=[None, nBins])
+
+        #FIRST CONVOLUTIONAL LAYER
+        W_conv1 = self.weight_variable([5, 5, 1, 32])
+        b_conv1 = self.bias_variable([32])
+        x_image = tf.reshape(self.x, [-1,self.imWidth,self.imWidth,1])
+        h_conv1 = tf.nn.relu(self.conv2d(x_image, W_conv1) + b_conv1)
+        h_pool1 = self.max_pool_2x2(h_conv1)
+
+         #SECOND CONVOLUTIONAL LAYER
+        W_conv2 = self.weight_variable([5, 5, 32, 64])
+        b_conv2 = self.bias_variable([64])
+        h_conv2 = tf.nn.relu(self.conv2d(h_pool1, W_conv2) + b_conv2)
+        h_pool2 = self.max_pool_2x2(h_conv2)
+
+
+        #DENSELY CONNECTED LAYER
+        W_fc1 = self.weight_variable([self.imWidthReduc * self.imWidthReduc * 64, 1024])
+        b_fc1 = self.bias_variable([1024])
+        h_pool2_flat = tf.reshape(h_pool2, [-1, self.imWidthReduc*self.imWidthReduc*64])
+        h_fc1 = tf.nn.relu(tf.matmul(h_pool2_flat, W_fc1) + b_fc1)
+
+        #DROPOUT
+        self.keep_prob = tf.placeholder(tf.float32)
+        h_fc1_drop = tf.nn.dropout(h_fc1, self.keep_prob)
+
+        #READOUT LAYER
+        W_fc2 = self.weight_variable([1024, nBins])
+        b_fc2 = self.bias_variable([nBins])
+
+        self.y_conv = tf.nn.softmax(tf.matmul(h_fc1_drop, W_fc2) + b_fc2)
+
+
+        self.saver = tf.train.Saver()
+
+    #WEIGHT INITIALISATION
+    def weight_variable(self, shape):
+        initial = tf.truncated_normal(shape, stddev=0.1)
+        return tf.Variable(initial)
+
+    def bias_variable(self, shape):
+        initial = tf.constant(0.1, shape=shape)
+        return tf.Variable(initial)
+
+    #CONVOLUTION AND POOLING
+    def conv2d(self, x, W):
+        return tf.nn.conv2d(x, W, strides=[1, 1, 1, 1], padding='SAME')
+
+    def max_pool_2x2(self, x):
+        return tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
+
+
+    def restore_variables(self):
+        with tf.Session() as sess:
+            self.saver.restore(sess, self.modelFilename)
+
+            softmax = self.y_conv.eval(feed_dict={self.x: self.inputImage, self.keep_prob: 1.0})
+            print(softmax)
+            
+        return softmax
+
+    def reset(self):
+        tf.reset_default_graph()
+        
+
+        
+
+class BestTypesListSingleRedshift(object):
+    def __init__(self, modelFilename, inputImage, typeNamesList, nw, nBins):
+        self.modelFilename = modelFilename
+        self.inputImage = inputImage
+        self.typeNamesList = typeNamesList
+        self.nBins = nBins
+
+        self.restoreModel = RestoreModelSingleRedshift(self.modelFilename, self.inputImage, nw, nBins)
+        self.typeNamesList = np.array(typeNamesList)
+        self.inputImage = self.inputImage[0]
+        self.softmax = self.restoreModel.restore_variables()[0]
+        print(len(self.softmax))
+
+        self.bestTypes, self.idx, self.softmaxOrdered = self.create_list()
+
+
+    def create_list(self):
+        idx = np.argsort(self.softmax) #list of the index of the highest probabiites
+        bestTypes = self.typeNamesList[idx[::-1]] #reordered in terms of softmax probability columns
+        print idx
+        print bestTypes
+        print self.softmax[idx[::-1]]
+        print self.softmax
+        return bestTypes, idx, self.softmax[idx[::-1]]
+
+    def plot_best_types(self):
+        inputFluxes = []
+        templateFluxes = []
+        for j in range(20):#len(self.bestTypes)): #index of best Types in order
+            c = self.idx[::-1][j]
+            print c
+            typeName = self.typeNamesList[c] #Name of best type
+            for i in range(len(trainLabels)): #Checking through templates
+                if (trainLabels[i][c] == 1):    #to find template for the best Type
+                    templateFlux = trainImages[i]  #plot template
+                    inputFlux = self.inputImage #Plot inputImage at red
+                    print c
+                    break
+            if (i == len(trainLabels)-1):
+                print("No Template") #NEED TO GET TEMPLATE PLOTS IN A BETTER WAY
+                templateFlux = np.zeros(len(trainImages[0]))
+                inputFlux = self.inputImage
+
+            templateFluxes.append(templateFlux)
+            inputFluxes.append(inputFlux)
+        print self.idx[::-1]
+            
+        templateFluxes = np.array(templateFluxes)
+        inputFluxes = np.array(inputFluxes)
+        return templateFluxes, inputFluxes
+
+    
 
 class BestTypesList(object):
     def __init__(self, modelFilename, inputImages, inputRedshifts, typeNamesList, nw, nBins):
@@ -124,7 +316,7 @@ class BestTypesList(object):
             inputFluxes.append(inputFlux)
             
         templateFluxes = np.array(templateFluxes)
-        inputFluxes.append(inputFluxes)
+        inputFluxes = np.array(inputFluxes)
         return templateFluxes, inputFluxes
 
     def redshift_graph(self):
