@@ -65,14 +65,37 @@
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_6">
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0">
+          <widget class="QCheckBox" name="checkBoxZeroZTrained">
+           <property name="text">
+            <string>Trained at z = 0</string>
+           </property>
+           <property name="checked">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,0">
            <property name="bottomMargin">
             <number>0</number>
            </property>
            <item>
+            <spacer name="horizontalSpacer">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>1000</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
             <widget class="QCheckBox" name="checkBoxKnownZ">
              <property name="text">
-              <string>Known Redshift</string>
+              <string>Known z</string>
              </property>
             </widget>
            </item>
@@ -80,6 +103,33 @@
             <widget class="QLineEdit" name="lineEditKnownZ"/>
            </item>
           </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0">
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QCheckBox" name="checkBoxAgnosticZTrained">
+             <property name="text">
+              <string>Agnostic Redshift Model</string>
+             </property>
+             <property name="checkable">
+              <bool>true</bool>
+             </property>
+             <property name="tristate">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="checkBoxGalTrained">
+           <property name="text">
+            <string>SN + Gal Trained Model</string>
+           </property>
+          </widget>
          </item>
          <item>
           <widget class="QScrollArea" name="scrollArea_3">
@@ -91,8 +141,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>205</width>
-              <height>527</height>
+              <width>202</width>
+              <height>441</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -175,7 +225,7 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>167</width>
+                    <width>164</width>
                     <height>348</height>
                    </rect>
                   </property>
@@ -327,7 +377,7 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>167</width>
+                    <width>164</width>
                     <height>292</height>
                    </rect>
                   </property>

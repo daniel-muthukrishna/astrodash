@@ -2,7 +2,6 @@ from PyQt4 import QtGui
 from PyQt4.QtCore import QThread, SIGNAL
 import sys
 import os
-import pickle
 
 import design
 import sys
@@ -21,17 +20,50 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
         self.inputFilename = "DefaultFilename"
         self.progressBar.setValue(100)
 
-        self.checkBoxKnownZ.stateChanged.connect(self.enable_redshift_range)
+        self.checkBoxZeroZTrained.stateChanged.connect(self.zero_redshift_model)
+        self.checkBoxKnownZ.stateChanged.connect(self.zero_redshift_model)
+        self.checkBoxAgnosticZTrained.stateChanged.connect(self.agnostic_redshift_model)
+
+        self.checkBoxZeroZTrained.setChecked(True)
+        self.checkBoxAgnosticZTrained.setEnabled(False)
+
+
+    def zero_redshift_model(self):
+        if (self.checkBoxZeroZTrained.isChecked() == True):
+            self.modelFilename = "../model.ckpt"
+            self.checkBoxKnownZ.setEnabled(True)
+            self.lineEditKnownZ.setEnabled(True)
+            self.checkBoxAgnosticZTrained.setEnabled(False)
+            self.checkBoxAgnosticZTrained.setChecked(False)
+
+            if (self.checkBoxKnownZ.isChecked() == True):
+                self.lineEditMinZ.setEnabled(False)
+                self.lineEditMaxZ.setEnabled(False)
+            else:
+                self.lineEditMinZ.setEnabled(True)
+                self.lineEditMaxZ.setEnabled(True)
+
+        elif (self.checkBoxZeroZTrained.isChecked() == False):
+            self.checkBoxKnownZ.setEnabled(False)
+            self.lineEditKnownZ.setEnabled(False)
+            self.checkBoxZeroZTrained.setEnabled(False)
+            self.checkBoxZeroZTrained.setChecked(False)
+            self.checkBoxAgnosticZTrained.setEnabled(True)
+            self.checkBoxAgnosticZTrained.setChecked(True)
+            self.agnostic_redshift_model()
+
+    def agnostic_redshift_model(self):
+        if (self.checkBoxAgnosticZTrained.isChecked() == True):
+            self.checkBoxZeroZTrained.setEnabled(False)
+            self.checkBoxZeroZTrained.setChecked(False)
+            self.modelFilename = "../model_agnostic_redshift.ckpt"
+        elif (self.checkBoxAgnosticZTrained.isChecked() == False):
+            self.checkBoxZeroZTrained.setEnabled(True)
+            self.checkBoxZeroZTrained.setChecked(True)
+            self.zero_redshift_model()
 
 
 
-    def enable_redshift_range(self):
-        if (self.checkBoxKnownZ.isChecked() == True):
-            self.lineEditMinZ.setEnabled(False)
-            self.lineEditMaxZ.setEnabled(False)
-        else:
-            self.lineEditMinZ.setEnabled(True)
-            self.lineEditMaxZ.setEnabled(True)
 
         
     def select_input_file(self):
@@ -58,7 +90,7 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
             knownZ = float(self.lineEditKnownZ.text())
             self.minZ = knownZ
             self.maxZ = knownZ
-            self.fitThread = FitSpectrumThread(self.inputFilename, self.minZ, self.maxZ, self.redshiftFlag)
+            self.fitThread = FitSpectrumThread(self.inputFilename, self.minZ, self.maxZ, self.redshiftFlag, self.modelFilename)
             print "before"
             self.connect(self.fitThread, SIGNAL("load_spectrum_single_redshift(PyQt_PyObject)"), self.load_spectrum_single_redshift)
             print "after"
@@ -69,7 +101,7 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
             self.minZ = float(self.lineEditMinZ.text())
             self.maxZ = float(self.lineEditMaxZ.text())
             print (self.minZ, self.maxZ)
-            self.fitThread = FitSpectrumThread(self.inputFilename, self.minZ, self.maxZ, self.redshiftFlag)
+            self.fitThread = FitSpectrumThread(self.inputFilename, self.minZ, self.maxZ, self.redshiftFlag, self.modelFilename)
             self.connect(self.fitThread, SIGNAL("load_spectrum(PyQt_PyObject)"), self.load_spectrum)
             self.connect(self.fitThread, SIGNAL("finished()"), self.done_fit_thread)
 
@@ -165,12 +197,13 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
 
     
 class FitSpectrumThread(QThread):
-    def __init__(self, inputFilename, minZ, maxZ, redshiftFlag):
+    def __init__(self, inputFilename, minZ, maxZ, redshiftFlag, modelFilename):
         QThread.__init__(self)
         self.inputFilename = str(inputFilename)
         self.minZ = minZ
         self.maxZ = maxZ
         self.redshiftFlag = redshiftFlag
+        self.modelFilename = modelFilename
 
     def __del__(self):
         self.wait()
@@ -178,7 +211,7 @@ class FitSpectrumThread(QThread):
     def _input_spectrum(self):
         loadInputSpectra = LoadInputSpectra(self.inputFilename, self.minZ, self.maxZ)
         inputImages, inputRedshifts, typeNamesList, nw, nTypes = loadInputSpectra.input_spectra()
-        bestTypesList = BestTypesList("../model.ckpt", inputImages, inputRedshifts, typeNamesList, nw, nTypes)
+        bestTypesList = BestTypesList(self.modelFilename, inputImages, inputRedshifts, typeNamesList, nw, nTypes)
         bestForEachType, redshiftIndex = bestTypesList.print_list()
         templateFluxes, inputFluxes = bestTypesList.plot_best_types()
         inputRedshifts, redshiftGraphs = bestTypesList.redshift_graph()
@@ -189,7 +222,7 @@ class FitSpectrumThread(QThread):
     def _input_spectrum_single_redshift(self):
         loadInputSpectra = LoadInputSpectra(self.inputFilename, self.minZ, self.maxZ)
         inputImage, inputRedshift, typeNamesList, nw, nBins = loadInputSpectra.input_spectra()
-        bestTypesList = BestTypesListSingleRedshift("../model.ckpt", inputImage, typeNamesList, nw, nBins)
+        bestTypesList = BestTypesListSingleRedshift(self.modelFilename, inputImage, typeNamesList, nw, nBins)
         bestTypes = bestTypesList.bestTypes
         softmax = bestTypesList.softmaxOrdered
         idx = bestTypesList.idx

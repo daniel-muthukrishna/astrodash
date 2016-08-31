@@ -147,6 +147,10 @@ for i in range(len(testTypeNames)):
     predictedIndex = np.argmax(yy[i])
     testSubType = testTypeNames[i][0:2]
     actualSubType = typeNamesList[predictedIndex][0:2]
+    if testTypeNames[i][0:3] == 'IIb':
+        testSubType = 'Ib'
+    if typeNamesList[predictedIndex][0:3] == 'IIb':
+        actualSubType = 'Ib'
     testType = testTypeNames[i].split(': ')[0]
     actualType = typeNamesList[predictedIndex].split(': ')[0]
     testAge = testTypeNames[i].split(': ')[1]
