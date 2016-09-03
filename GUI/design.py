@@ -39,6 +39,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_7 = QtGui.QVBoxLayout(self.groupBox_2)
         self.verticalLayout_7.setObjectName(_fromUtf8("verticalLayout_7"))
         self.lblInputFilename = QtGui.QLabel(self.groupBox_2)
+        self.lblInputFilename.setMaximumSize(QtCore.QSize(200, 16777215))
         self.lblInputFilename.setObjectName(_fromUtf8("lblInputFilename"))
         self.verticalLayout_7.addWidget(self.lblInputFilename, QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter)
         self.btnBrowse = QtGui.QPushButton(self.groupBox_2)

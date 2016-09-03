@@ -31,6 +31,12 @@
         <layout class="QVBoxLayout" name="verticalLayout_7">
          <item alignment="Qt::AlignHCenter|Qt::AlignVCenter">
           <widget class="QLabel" name="lblInputFilename">
+           <property name="maximumSize">
+            <size>
+             <width>200</width>
+             <height>16777215</height>
+            </size>
+           </property>
            <property name="text">
             <string>Select SN File...</string>
            </property>

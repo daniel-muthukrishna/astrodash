@@ -84,8 +84,8 @@ h_conv2 = tf.nn.relu(conv2d(h_pool1, W_conv2) + b_conv2)
 h_pool2 = max_pool_2x2(h_conv2)
 
 #DENSELY CONNECTED LAYER
-W_fc1 = weight_variable([imWidthReduc * imWidthReduc * 64, 1024])
-b_fc1 = bias_variable([1024])
+W_fc1 = weight_variable([imWidthReduc * imWidthReduc * 64, N])
+b_fc1 = bias_variable([N])
 h_pool2_flat = tf.reshape(h_pool2, [-1, imWidthReduc*imWidthReduc*64])
 h_fc1 = tf.nn.relu(tf.matmul(h_pool2_flat, W_fc1) + b_fc1)
 
@@ -94,7 +94,7 @@ keep_prob = tf.placeholder(tf.float32)
 h_fc1_drop = tf.nn.dropout(h_fc1, keep_prob)
 
 #READOUT LAYER
-W_fc2 = weight_variable([1024, ntypes])
+W_fc2 = weight_variable([N, ntypes])
 b_fc2 = bias_variable([ntypes])
 
 y_conv = tf.nn.softmax(tf.matmul(h_fc1_drop, W_fc2) + b_fc2)
@@ -115,7 +115,7 @@ sess.run(tf.initialize_all_variables())
 
 trainImagesCycle = itertools.cycle(trainImages)
 trainLabelsCycle = itertools.cycle(trainLabels)
-for i in range(25000):
+for i in range(100000):
     batch_xs = np.array(list(itertools.islice(trainImagesCycle, 50*i, 50*i+50)))
     batch_ys = np.array(list(itertools.islice(trainLabelsCycle, 50*i, 50*i+50)))
     train_step.run(feed_dict={x: batch_xs, y_: batch_ys, keep_prob: 0.5})
@@ -187,5 +187,5 @@ print("subTypeAndNearAgeAccuracy : " + str(subTypeAndNearAgeAccuracy))
 
 #SAVE THE MODEL
 saver = tf.train.Saver()
-save_path = saver.save(sess, "model.ckpt")
+save_path = saver.save(sess, "model_trainedAtZeroZ.ckpt")
 print("Model saved in file: %s" % save_path)
