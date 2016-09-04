@@ -1,7 +1,7 @@
 import numpy as np
 import itertools
 import tensorflow as tf
-from multilayer_convnet import ConvNetLayer
+from multilayer_convnet import convnet_variables
 
 loaded = np.load('type_age_atRedshiftZero.npz')
 trainImages = loaded['trainImages']
@@ -28,28 +28,8 @@ a = []
 
 sess = tf.InteractiveSession()
 
-x = tf.placeholder(tf.float32, shape=[None, N])
-y_ = tf.placeholder(tf.float32, shape=[None, ntypes])
+x, y_, keep_prob, y_conv = convnet_variables(imWidth, imWidthReduc, N, ntypes)
 
-x_image = tf.reshape(x, [-1, imWidth, imWidth, 1])
-
-Layer1 = ConvNetLayer(N, ntypes, imWidth, imWidthReduc)
-h_pool1 = Layer1.build_layer(x_image, 1, 32)
-
-Layer2 = ConvNetLayer(N, ntypes, imWidth, imWidthReduc)
-h_pool2 = Layer2.build_layer(h_pool1, 32, 64)
-h_fc1 = Layer2.connect_layers(h_pool2, 64, 1)
-
-Layer3 = ConvNetLayer(N, ntypes, imWidth, imWidthReduc)
-h_pool3 = Layer3.build_layer(h_pool2, 64, 64)
-h_fc2 = Layer3.connect_layers(h_pool3, 64, 2)
-
-
-# READOUT LAYER
-keep_prob, h_fc2_drop = Layer3.dropout(h_fc2)
-W_fc3, b_fc3 = Layer3.readout_layer()
-
-y_conv = tf.nn.softmax(tf.matmul(h_fc2_drop, W_fc3) + b_fc3)
 
 
 # TRAIN AND EVALUATE MODEL
@@ -134,5 +114,5 @@ print("subTypeAndNearAgeAccuracy : " + str(subTypeAndNearAgeAccuracy))
 
 # SAVE THE MODEL
 saver = tf.train.Saver()
-save_path = saver.save(sess, "model_trainedAtZeroZ_multilayer.ckpt")
+save_path = saver.save(sess, "model_trainedAtZeroZ.ckpt")
 print("Model saved in file: %s" % save_path)

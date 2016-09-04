@@ -30,7 +30,7 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
 
     def zero_redshift_model(self):
         if (self.checkBoxZeroZTrained.isChecked() == True):
-            self.modelFilename = "../model.ckpt"
+            self.modelFilename = "../model_trainedAtZeroZ.ckpt"
             self.checkBoxKnownZ.setEnabled(True)
             self.lineEditKnownZ.setEnabled(True)
             self.checkBoxAgnosticZTrained.setEnabled(False)
