@@ -6,7 +6,7 @@ typeList = ['Ia-norm', 'IIb', 'Ia-pec', 'Ic-broad', 'Ia-csm', 'Ic-norm', 'IIP', 
                 'Ic-pec', 'Ibn', 'Ia-02cx']
 nTypes = len(typeList)
 w0 = 2500. #wavelength range in Angstroms
-w1 = 11000.
+w1 = 10000.
 nw = 1024. #number of wavelength bins
 minAge = -20.
 maxAge = 50.

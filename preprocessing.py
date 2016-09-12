@@ -114,6 +114,7 @@ class ReadInputSpectra(object):
 
 
     def snid_template_spectra(self, wave, flux, z):
+        #Undo Binning function -> then add galaxy -> then redshift
 
         redshifting = Redshifting(wave, flux, z)
         waveRedshifted, fluxRedshifted = redshifting.redshift_spectrum()
@@ -188,8 +189,7 @@ class PreProcessSpectrum(object):
                 break
             j -= 1
 
-
-        return (wlog, fluxout, minindex, maxindex)
+        return wlog, fluxout, minindex, maxindex
 
     def poly_fit(self, wave, flux, order, minindex, maxindex):
         polyCoeff = np.polyfit(wave[minindex:maxindex], flux[minindex:maxindex], order)
@@ -198,7 +198,7 @@ class PreProcessSpectrum(object):
         x = np.linspace(min(wave), max(wave), 100)
         y = p(wave)
 
-        return (wave, y)
+        return wave, y
 
     def continuum_removal(self, wave, flux, order, minindex, maxindex):
         """Fit polynomial"""
@@ -213,7 +213,7 @@ class PreProcessSpectrum(object):
         for i in range(maxindex,len(flux)):
             newflux[i] = 0
 
-        return (newflux)
+        return (newflux, polyy)
 
     def mean_zero(self, wave, flux, minindex, maxindex):
         """mean zero flux"""
