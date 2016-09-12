@@ -4,7 +4,7 @@ from create_arrays import *
 
 
 class InputSpectra(object):
-    def __init__(self, filename, minZ, maxZ, nTypes, minAge, maxAge, ageBinSize, w0, w1, nw, typeList):
+    def __init__(self, filename, minZ, maxZ, nTypes, minAge, maxAge, ageBinSize, w0, w1, nw, typeList, smooth):
         self.filename = filename
         self.minZ = minZ
         self.maxZ = maxZ
@@ -24,6 +24,7 @@ class InputSpectra(object):
         self.createLabels = CreateLabels(self.nTypes, self.minAge, self.maxAge, self.ageBinSize, self.typeList)
         self.fileType = 'fits or twocolumn etc.' #Will use later on
         self.typeNamesList = self.createLabels.type_names_list()
+        self.smooth = smooth
         
 
     def redshifting(self):
@@ -36,7 +37,7 @@ class InputSpectra(object):
 
         #Actually negative redshifting input wave (to undo it's previous redshift)
         for z in np.linspace(-self.maxZ, -self.minZ, self.numOfRedshifts + 1):
-            tempwave, tempflux, tminindex, tmaxindex = readSpectra.input_spectrum(z)
+            tempwave, tempflux, tminindex, tmaxindex = readSpectra.input_spectrum(z, self.smooth)
             nonzeroflux = tempflux[tminindex:tmaxindex + 1]
             newflux = (nonzeroflux - min(nonzeroflux)) / (max(nonzeroflux) - min(nonzeroflux))
             newflux2 = np.concatenate((tempflux[0:tminindex], newflux, tempflux[tmaxindex + 1:]))

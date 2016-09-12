@@ -25,14 +25,14 @@ trainLabels = loaded['trainLabels']
 
 
 class LoadInputSpectra(object):
-    def __init__(self, inputFilename, minZ, maxZ):
+    def __init__(self, inputFilename, minZ, maxZ, smooth):
         with open('/home/dan/Desktop/SNClassifying_Pre-alpha/training_params.pickle') as f:
             nTypes, w0, w1, nw, minAge, maxAge, ageBinSize, typeList = pickle.load(f)
 
         self.nw = nw
         self.nTypes = nTypes
         
-        self.inputSpectra = InputSpectra(inputFilename, minZ, maxZ, nTypes, minAge, maxAge, ageBinSize, w0, w1, nw, typeList)
+        self.inputSpectra = InputSpectra(inputFilename, minZ, maxZ, nTypes, minAge, maxAge, ageBinSize, w0, w1, nw, typeList, smooth)
 
         self.inputImages, self.inputFilenames, self.inputRedshifts, self.typeNamesList = self.inputSpectra.redshifting()
         self.nBins = len(self.typeNamesList)

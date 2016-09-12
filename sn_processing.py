@@ -22,7 +22,7 @@ class PreProcessing(object):
         self.spectrum = self.readInputSpectra.file_extension()
 
 
-    def two_column_data(self, z):
+    def two_column_data(self, z, smooth):
         self.wave, self.flux = self.spectrum
         wave, flux = self.readInputSpectra.two_col_input_spectrum(self.wave, self.flux, z)
         binnedwave, binnedflux, minindex, maxindex = self.preProcess.log_wavelength(wave, flux)
@@ -30,7 +30,8 @@ class PreProcessing(object):
         meanzero = self.preProcess.mean_zero(binnedwave, newflux, minindex, maxindex)
         apodized = self.preProcess.apodize(binnedwave, meanzero, minindex, maxindex)
 
-        medianFiltered = medfilt(apodized, kernel_size=3)
+        filterSize = smooth*2 + 1
+        medianFiltered = medfilt(apodized, kernel_size=filterSize)
 
         # print wave
         # print binnedwave
@@ -50,7 +51,7 @@ class PreProcessing(object):
         # plt.figure('filtered')
         # plt.plot(medianFiltered)
         # plt.figure()
-        # plt.plot(medfilt(apodized,kernel_size=5))
+        # plt.plot(medfilt(apodized,kernel_size=3))
         # plt.show()
 
         return binnedwave, medianFiltered, minindex, maxindex

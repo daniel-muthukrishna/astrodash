@@ -178,16 +178,15 @@ class PreProcessSpectrum(object):
         j = 0
         for i in zeros:
             if (i != j):
-                minindex = j
-                maxindex = i
                 break
             j += 1
+            minindex = j
         j = int(self.nw) - 1
         for i in zeros[::-1]:
             if (i != j):
-                maxindex = j
                 break
             j -= 1
+            maxindex = j
 
         return wlog, fluxout, minindex, maxindex
 
@@ -202,7 +201,6 @@ class PreProcessSpectrum(object):
 
     def continuum_removal(self, wave, flux, order, minindex, maxindex):
         """Fit polynomial"""
-
         polyx, polyy = self.poly_fit(wave, flux, order, minindex, maxindex)
 
         newflux = flux - polyy

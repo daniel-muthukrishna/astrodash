@@ -133,8 +133,8 @@ class ReadSpectra(object):
         return wave, flux, minIndex, maxIndex, age, snName, ttype
 
 
-    def input_spectrum(self, z):
-        wave, flux, minIndex, maxIndex = self.data.two_column_data(z)
+    def input_spectrum(self, z, smooth):
+        wave, flux, minIndex, maxIndex = self.data.two_column_data(z, smooth)
 
         return wave, flux, minIndex, maxIndex
 

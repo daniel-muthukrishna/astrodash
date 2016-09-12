@@ -27,6 +27,17 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
         self.checkBoxZeroZTrained.setChecked(True)
         self.checkBoxAgnosticZTrained.setEnabled(False)
 
+        self.horizontalSliderSmooth.valueChanged.connect(self.smooth_slider_changed)
+        self.lineEditSmooth.textChanged.connect(self.smooth_text_changed)
+
+    def smooth_slider_changed(self):
+        self.lineEditSmooth.setText(str(self.horizontalSliderSmooth.value()))
+
+    def smooth_text_changed(self):
+        try:
+            self.horizontalSliderSmooth.setValue(int(self.lineEditSmooth.text()))
+        except ValueError:
+            pass
 
     def zero_redshift_model(self):
         if (self.checkBoxZeroZTrained.isChecked() == True):
@@ -84,13 +95,17 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
         self.cancelledFitting = False
         self.progressBar.setMaximum(100) #
         self.progressBar.setValue(36)
-        
+        try:
+            self.smooth = int(self.lineEditSmooth.text())
+        except ValueError:
+            QtGui.QMessageBox.information(self, "Smooth must be positive integer")
+
         if (self.checkBoxKnownZ.isChecked() == True):
             self.redshiftFlag = True
             knownZ = float(self.lineEditKnownZ.text())
             self.minZ = knownZ
             self.maxZ = knownZ
-            self.fitThread = FitSpectrumThread(self.inputFilename, self.minZ, self.maxZ, self.redshiftFlag, self.modelFilename)
+            self.fitThread = FitSpectrumThread(self.inputFilename, self.minZ, self.maxZ, self.redshiftFlag, self.modelFilename, self.smooth)
             print "before"
             self.connect(self.fitThread, SIGNAL("load_spectrum_single_redshift(PyQt_PyObject)"), self.load_spectrum_single_redshift)
             print "after"
@@ -101,7 +116,7 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
             self.minZ = float(self.lineEditMinZ.text())
             self.maxZ = float(self.lineEditMaxZ.text())
             print (self.minZ, self.maxZ)
-            self.fitThread = FitSpectrumThread(self.inputFilename, self.minZ, self.maxZ, self.redshiftFlag, self.modelFilename)
+            self.fitThread = FitSpectrumThread(self.inputFilename, self.minZ, self.maxZ, self.redshiftFlag, self.modelFilename, self.smooth)
             self.connect(self.fitThread, SIGNAL("load_spectrum(PyQt_PyObject)"), self.load_spectrum)
             self.connect(self.fitThread, SIGNAL("finished()"), self.done_fit_thread)
 
@@ -197,19 +212,20 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
 
     
 class FitSpectrumThread(QThread):
-    def __init__(self, inputFilename, minZ, maxZ, redshiftFlag, modelFilename):
+    def __init__(self, inputFilename, minZ, maxZ, redshiftFlag, modelFilename, smooth):
         QThread.__init__(self)
         self.inputFilename = str(inputFilename)
         self.minZ = minZ
         self.maxZ = maxZ
         self.redshiftFlag = redshiftFlag
         self.modelFilename = modelFilename
+        self.smooth = smooth
 
     def __del__(self):
         self.wait()
 
     def _input_spectrum(self):
-        loadInputSpectra = LoadInputSpectra(self.inputFilename, self.minZ, self.maxZ)
+        loadInputSpectra = LoadInputSpectra(self.inputFilename, self.minZ, self.maxZ, self.smooth)
         inputImages, inputRedshifts, typeNamesList, nw, nTypes = loadInputSpectra.input_spectra()
         bestTypesList = BestTypesList(self.modelFilename, inputImages, inputRedshifts, typeNamesList, nw, nTypes)
         bestForEachType, redshiftIndex = bestTypesList.print_list()
@@ -220,7 +236,7 @@ class FitSpectrumThread(QThread):
                 inputRedshifts, redshiftGraphs, typeNamesList)
 
     def _input_spectrum_single_redshift(self):
-        loadInputSpectra = LoadInputSpectra(self.inputFilename, self.minZ, self.maxZ)
+        loadInputSpectra = LoadInputSpectra(self.inputFilename, self.minZ, self.maxZ, self.smooth)
         inputImage, inputRedshift, typeNamesList, nw, nBins = loadInputSpectra.input_spectra()
         bestTypesList = BestTypesListSingleRedshift(self.modelFilename, inputImage, typeNamesList, nw, nBins)
         bestTypes = bestTypesList.bestTypes
