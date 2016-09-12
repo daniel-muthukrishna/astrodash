@@ -15,7 +15,7 @@ class PreProcessing(object):
         self.w0 = w0
         self.w1 = w1
         self.nw = nw
-        self.polyorder = 4
+        self.polyorder = 10
         self.readInputSpectra = ReadInputSpectra(self.filename, self.w0, self.w1)
         self.preProcess = PreProcessSpectrum(self.w0, self.w1, self.nw)
 
@@ -24,14 +24,17 @@ class PreProcessing(object):
 
     def two_column_data(self, z, smooth):
         self.wave, self.flux = self.spectrum
-        wave, flux = self.readInputSpectra.two_col_input_spectrum(self.wave, self.flux, z)
+
+        filterSize = int(len(self.wave)/self.nw) * smooth * 2 + 1
+        preFiltered = medfilt(self.flux, kernel_size=filterSize)
+        wave, flux = self.readInputSpectra.two_col_input_spectrum(self.wave, preFiltered, z)
         binnedwave, binnedflux, minindex, maxindex = self.preProcess.log_wavelength(wave, flux)
         newflux, poly = self.preProcess.continuum_removal(binnedwave, binnedflux, self.polyorder, minindex, maxindex)
         meanzero = self.preProcess.mean_zero(binnedwave, newflux, minindex, maxindex)
         apodized = self.preProcess.apodize(binnedwave, meanzero, minindex, maxindex)
 
-        filterSize = smooth*2 + 1
-        medianFiltered = medfilt(apodized, kernel_size=filterSize)
+        #filterSize = smooth * 2 + 1
+        medianFiltered = medfilt(apodized, kernel_size=1)#filterSize)
 
         # print wave
         # print binnedwave
