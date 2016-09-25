@@ -2,7 +2,6 @@
 
 from preprocessing import *
 import matplotlib.pyplot as plt
-from scipy.fftpack import fft
 from scipy.signal import medfilt, blackmanharris
 
 
@@ -15,7 +14,7 @@ class PreProcessing(object):
         self.w0 = w0
         self.w1 = w1
         self.nw = nw
-        self.polyorder = 10
+        self.polyorder = 6
         self.readInputSpectra = ReadInputSpectra(self.filename, self.w0, self.w1)
         self.preProcess = PreProcessSpectrum(self.w0, self.w1, self.nw)
 
