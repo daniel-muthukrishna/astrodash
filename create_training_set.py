@@ -135,18 +135,18 @@ class SaveTrainingSet(object):
         print("Saved Training Set to: " + saveFilename)
         
 
+if __name__ == '__main__':
+    with open('training_params.pickle') as f:
+        nTypes, w0, w1, nw, minAge, maxAge, ageBinSize, typeList = pickle.load(f)
+    minZ = 0
+    maxZ = 0.0
 
-with open('training_params.pickle') as f:
-    nTypes, w0, w1, nw, minAge, maxAge, ageBinSize, typeList = pickle.load(f)
-minZ = 0
-maxZ = 0.0
+    snidTemplateLocation = '/home/dan/Desktop/SNClassifying_Pre-alpha/templates/snid_templates_Modjaz_BSNIP/'
+    sfTemplateLocation = '/home/dan/Desktop/SNClassifying_Pre-alpha/templates/superfit_templates/sne/'
+    snidtempfilelist1 = snidTemplateLocation + 'templist.txt'
+    sftempfilelist1 = sfTemplateLocation + 'templist.txt'
 
-snidTemplateLocation = '/home/dan/Desktop/SNClassifying_Pre-alpha/templates/snid_templates_Modjaz_BSNIP/'
-sfTemplateLocation = '/home/dan/Desktop/SNClassifying_Pre-alpha/templates/superfit_templates/sne/'
-snidtempfilelist1 = snidTemplateLocation + 'templist.txt'
-sftempfilelist1 = sfTemplateLocation + 'templist.txt'
+    saveTrainingSet = SaveTrainingSet(snidTemplateLocation, snidtempfilelist1, sfTemplateLocation, sftempfilelist1, w0, w1, nw, nTypes, minAge, maxAge, ageBinSize, typeList, minZ, maxZ)
+    typeNamesList, typeAmounts = saveTrainingSet.type_amounts()
 
-saveTrainingSet = SaveTrainingSet(snidTemplateLocation, snidtempfilelist1, sfTemplateLocation, sftempfilelist1, w0, w1, nw, nTypes, minAge, maxAge, ageBinSize, typeList, minZ, maxZ)
-typeNamesList, typeAmounts = saveTrainingSet.type_amounts()
-
-saveTrainingSet.save_arrays()
+    saveTrainingSet.save_arrays()

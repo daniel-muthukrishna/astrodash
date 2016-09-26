@@ -2,7 +2,7 @@
 
 from preprocessing import *
 import matplotlib.pyplot as plt
-from scipy.signal import medfilt, blackmanharris
+from scipy.signal import medfilt
 
 
 
@@ -14,7 +14,7 @@ class PreProcessing(object):
         self.w0 = w0
         self.w1 = w1
         self.nw = nw
-        self.polyorder = 6
+        self.numSplinePoints = 13
         self.readInputSpectra = ReadInputSpectra(self.filename, self.w0, self.w1)
         self.preProcess = PreProcessSpectrum(self.w0, self.w1, self.nw)
 
@@ -28,23 +28,40 @@ class PreProcessing(object):
         preFiltered = medfilt(self.flux, kernel_size=filterSize)
         wave, flux = self.readInputSpectra.two_col_input_spectrum(self.wave, preFiltered, z)
         binnedwave, binnedflux, minindex, maxindex = self.preProcess.log_wavelength(wave, flux)
-        newflux, poly = self.preProcess.continuum_removal(binnedwave, binnedflux, self.polyorder, minindex, maxindex)
+        newflux, continuum = self.preProcess.continuum_removal(binnedwave, binnedflux, self.numSplinePoints, minindex, maxindex)
         meanzero = self.preProcess.mean_zero(binnedwave, newflux, minindex, maxindex)
         apodized = self.preProcess.apodize(binnedwave, meanzero, minindex, maxindex)
+
 
         #filterSize = smooth * 2 + 1
         medianFiltered = medfilt(apodized, kernel_size=1)#filterSize)
 
+
+        # from scipy.interpolate import interp1d
+        #
+        # plt.plot(self.flux)
+        #
+        # spline = interp1d(binnedwave[minindex:maxindex], binnedflux[minindex:maxindex], kind='cubic')
+        # waveSpline = np.linspace(binnedwave[minindex],binnedwave[maxindex-1],num=13)
+        # print spline
+        # print '###'
+        # print spline(binnedwave[minindex:maxindex])
+        # plt.figure('1')
+        # plt.plot(waveSpline, spline(waveSpline), '--', label='spline')
+        #
         # print wave
         # print binnedwave
         # print binnedflux
         # print len(binnedwave)
-        # plt.figure('1')
         # plt.plot(wave,flux)
         # plt.figure('2')
         # plt.plot(binnedwave, binnedflux, label='binned')
         # plt.plot(binnedwave, newflux, label='continuumSubtract1')
-        # plt.plot(binnedwave, poly, label='polyfit1')
+        # plt.plot(binnedwave, continuum, label='polyfit1')
+        # print len(binnedwave)
+        # print (min(binnedwave), max(binnedwave))
+        # print len(newflux)
+        #
         # #newflux2, poly2 = self.preProcess.continuum_removal(binnedwave, binnedflux, 6, minindex, maxindex)
         # #plt.plot(binnedwave, newflux2, label='continuumSubtract2')
         # #plt.plot(binnedwave, poly2, label='polyfit2')
@@ -52,7 +69,7 @@ class PreProcessing(object):
         # plt.legend()
         # plt.figure('filtered')
         # plt.plot(medianFiltered)
-        # plt.figure()
+        # plt.figure('3')
         # plt.plot(medfilt(apodized,kernel_size=3))
         # plt.show()
 
@@ -67,6 +84,7 @@ class PreProcessing(object):
 
         return binnedwave, medianFiltered, ncols, ages, ttype, minindex, maxindex
 
-
-
+f = '/home/dan/Desktop/SNClassifying_Pre-alpha/templates/superfit_templates/sne/Ia/sn1999ee.p03.dat'
+pre = PreProcessing(f, 2500, 10000, 1024)
+pre.two_column_data(0, 0)
 

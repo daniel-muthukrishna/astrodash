@@ -1,5 +1,6 @@
 import numpy as np
 from specutils.io import read_fits
+from scipy.interpolate import interp1d
 
 class Redshifting(object):
     def __init__(self, wave, flux, z):
@@ -190,28 +191,29 @@ class PreProcessSpectrum(object):
 
         return wlog, fluxout, minindex, maxindex
 
-    def poly_fit(self, wave, flux, order, minindex, maxindex):
-        polyCoeff = np.polyfit(wave[minindex:maxindex], flux[minindex:maxindex], order)
-        p = np.poly1d(polyCoeff)
 
-        x = np.linspace(min(wave), max(wave), 100)
-        y = p(wave)
+    def spline_fit(self, wave, flux, numSplinePoints, minindex, maxindex):
+        continuum = np.zeros(self.nw)
+        spline = interp1d(wave[minindex:maxindex+1], flux[minindex:maxindex+1], kind = 'cubic')
+        splineWave = np.linspace(wave[minindex], wave[maxindex], num=numSplinePoints, endpoint=True)
+        splinePoints = spline(splineWave)
 
-        return wave, y
+        splineMore = interp1d(splineWave, splinePoints, kind='linear')
+        splinePointsMore = splineMore(wave[minindex:maxindex])
 
-    def continuum_removal(self, wave, flux, order, minindex, maxindex):
-        """Fit polynomial"""
-        polyx, polyy = self.poly_fit(wave, flux, order, minindex, maxindex)
+        continuum[minindex:maxindex] = splinePointsMore
 
-        newflux = flux - polyy
+        return continuum
 
-        # don't do subtraction where the data has not begun and the flux is still zero
-        for i in range(0,minindex):
-            newflux[i] = 0
-        for i in range(maxindex,len(flux)):
-            newflux[i] = 0
 
-        return (newflux, polyy)
+    def continuum_removal(self, wave, flux, numSplinePoints, minindex, maxindex):
+        newflux = np.zeros(self.nw)
+
+        splineFit = self.spline_fit(wave, flux, numSplinePoints, minindex, maxindex)
+        newflux[minindex:maxindex] = flux[minindex:maxindex] - splineFit[minindex:maxindex]
+
+        return newflux, splineFit
+
 
     def mean_zero(self, wave, flux, minindex, maxindex):
         """mean zero flux"""
