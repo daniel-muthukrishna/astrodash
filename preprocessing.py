@@ -193,7 +193,7 @@ class PreProcessSpectrum(object):
 
 
     def spline_fit(self, wave, flux, numSplinePoints, minindex, maxindex):
-        continuum = np.zeros(self.nw)
+        continuum = np.zeros(int(self.nw))
         spline = interp1d(wave[minindex:maxindex+1], flux[minindex:maxindex+1], kind = 'cubic')
         splineWave = np.linspace(wave[minindex], wave[maxindex], num=numSplinePoints, endpoint=True)
         splinePoints = spline(splineWave)
@@ -207,7 +207,7 @@ class PreProcessSpectrum(object):
 
 
     def continuum_removal(self, wave, flux, numSplinePoints, minindex, maxindex):
-        newflux = np.zeros(self.nw)
+        newflux = np.zeros(int(self.nw))
 
         splineFit = self.spline_fit(wave, flux, numSplinePoints, minindex, maxindex)
         newflux[minindex:maxindex] = flux[minindex:maxindex] - splineFit[minindex:maxindex]

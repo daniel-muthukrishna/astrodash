@@ -84,7 +84,8 @@ class PreProcessing(object):
 
         return binnedwave, medianFiltered, ncols, ages, ttype, minindex, maxindex
 
-f = '/home/dan/Desktop/SNClassifying_Pre-alpha/templates/superfit_templates/sne/Ia/sn1999ee.p03.dat'
-pre = PreProcessing(f, 2500, 10000, 1024)
-pre.two_column_data(0, 0)
+if __name__ == '__main__':
+    f = '/home/dan/Desktop/SNClassifying_Pre-alpha/templates/superfit_templates/sne/Ia/sn1999ee.p03.dat'
+    pre = PreProcessing(f, 2500, 10000, 1024)
+    pre.two_column_data(0, 0)
 
