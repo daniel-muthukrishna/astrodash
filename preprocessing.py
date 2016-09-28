@@ -2,24 +2,43 @@ import numpy as np
 from specutils.io import read_fits
 from scipy.interpolate import interp1d
 
-class Redshifting(object):
-    def __init__(self, wave, flux, z):
-        self.wave = wave
-        self.flux = flux
-        self.z = z
 
-    def redshift_spectrum(self):
-        wave_new = self.wave * (self.z + 1)
+class ProcessingTools(object):
+    def __init__(self, nw):
+        self.nw = nw
 
-        return wave_new, self.flux
+    def redshift_spectrum(self, wave, flux, z):
+        wave_new = wave * (z + 1)
+
+        return wave_new, flux
+
+    def min_max_index(self, flux):
+        minindex, maxindex = (0, self.nw - 1)
+        zeros = np.where(flux == 0)[0]
+        j = 0
+        for i in zeros:
+            if (i != j):
+                break
+            j += 1
+            minindex = j
+        j = int(self.nw) - 1
+        for i in zeros[::-1]:
+            if (i != j):
+                break
+            j -= 1
+            maxindex = j
+
+        return minindex, maxindex
 
 
-class ReadInputSpectra(object):
+class ReadSpectrumFile(object):
 
-    def __init__(self, filename, w0, w1):
+    def __init__(self, filename, w0, w1, nw):
         self.filename = filename
         self.w0 = w0
         self.w1 = w1
+        self.nw = nw
+        self.processingTools = ProcessingTools(nw)
 
     def read_fits_file(self):
         #filename = unicode(self.filename.toUtf8(), encoding="UTF-8")
@@ -62,8 +81,7 @@ class ReadInputSpectra(object):
 
 
     def two_col_input_spectrum(self, wave, flux, z):
-        redshifting = Redshifting(wave, flux, z)
-        wave, flux = redshifting.redshift_spectrum()
+        wave, flux = self.processingTools.redshift_spectrum(wave, flux, z)
 
         if max(wave) >= self.w1:
             for i in range(0,len(wave)):
@@ -85,24 +103,43 @@ class ReadInputSpectra(object):
     def snid_template_spectra_all(self):
         """lnw file"""
         with open(self.filename) as FileObj:
-        #    text = f.readlines()
-            linecount = 0
-            for lines in FileObj:
-                if linecount == 0:
-                    header = (lines.strip('\n')).split(' ')
+            for i, line in enumerate(FileObj):
+                # Read Header Info
+                if i == 0:
+                    header = (line.strip('\n')).split(' ')
                     header = [x for x in header if x != '']
-                    nepoch, nwx, w0x, w1x, mostknots, tname, dta, ttype, ittype, itstype = header
-                if lines[1] != ' ':
-                    break
-                linecount += 1
+                    numAges, nwx, w0x, w1x, mostknots, tname, dta, ttype, ittype, itstype = header
+                    numAges, mostknots = map(int, (numAges, mostknots))
+                    nk = np.zeros(numAges)
+                    fmean = np.zeros(numAges)
+                    xk = np.zeros((mostknots,numAges))
+                    yk = np.zeros((mostknots,numAges))
 
-        arr=np.loadtxt(self.filename, skiprows=linecount-1)
+                # Read Spline Info
+                if i == 1:
+                    splineInfo = (line.strip('\n')).split(' ')
+                    splineInfo = [x for x in splineInfo if x != '']
+                    for j in range(numAges):
+                        nk[j], fmean[j] = (splineInfo[2*j+1], splineInfo[2*j+2])
+                if i in range(2, mostknots+2):
+                    splineInfo = (line.strip('\n')).split(' ')
+                    splineInfo = [x for x in splineInfo if x != '']
+                    for j in range(numAges):
+                        xk[i-2,j], yk[i-2,j] = (splineInfo[2*j+1], splineInfo[2*j+2])
+
+                if i == mostknots+2:
+                    break
+
+        splineInfo = (nk, fmean, xk, yk)
+
+        # Read Normalized spectra
+        arr=np.loadtxt(self.filename, skiprows=mostknots+2)
         ages = arr[0]
         ages = np.delete(ages, 0)
         arr = np.delete(arr, 0 ,0)
 
         wave = arr[:,0]
-        fluxes = np.zeros(shape=(len(ages),len(arr))) # initialise 2D array
+        fluxes = np.zeros(shape=(numAges,len(arr))) # initialise 2D array
 
         for i in range(0, len(arr[0])-1):
             fluxes[i] = arr[:,i+1]
@@ -110,16 +147,15 @@ class ReadInputSpectra(object):
         if ttype == 'Ia-99aa':
             ttype = 'Ia-91T'
 
-        return wave, fluxes, len(ages), ages, ttype
+        return wave, fluxes, numAges, ages, ttype, splineInfo
 
 
 
-    def snid_template_spectra(self, wave, flux, z):
+    def snid_template_spectra(self, wave, flux, z, splineInfo):
         #Undo Binning function -> then add galaxy -> then redshift
 
-        redshifting = Redshifting(wave, flux, z)
-        waveRedshifted, fluxRedshifted = redshifting.redshift_spectrum()
-        
+        waveRedshifted, fluxRedshifted = self.processingTools.redshift_spectrum(wave, flux, z)
+
         return waveRedshifted, fluxRedshifted
 
     
@@ -129,7 +165,8 @@ class PreProcessSpectrum(object):
         self.w0 = w0
         self.w1 = w1
         self.nw = nw
-        self.dwlog = np.log(self.w1 / self.w0) / self.nw
+        self.dwlog = np.log(w1/w0) / nw
+        self.processingTools = ProcessingTools(nw)
 
     def log_wavelength(self, wave, flux):
         fluxout = np.zeros(int(self.nw))
@@ -173,21 +210,9 @@ class PreProcessSpectrum(object):
     ##            print (min(s1log, j+1), max(s0log, j), alen, s1log-s0log)
     ##            print ('--------------------------')
 
-        # Find min and max index of range
-        minindex, maxindex = (0, len(wlog)-1)
-        zeros = np.where(fluxout == 0)[0]
-        j = 0
-        for i in zeros:
-            if (i != j):
-                break
-            j += 1
-            minindex = j
-        j = int(self.nw) - 1
-        for i in zeros[::-1]:
-            if (i != j):
-                break
-            j -= 1
-            maxindex = j
+
+        minindex, maxindex = self.processingTools.min_max_index(fluxout)
+
 
         return wlog, fluxout, minindex, maxindex
 
@@ -198,7 +223,7 @@ class PreProcessSpectrum(object):
         splineWave = np.linspace(wave[minindex], wave[maxindex], num=numSplinePoints, endpoint=True)
         splinePoints = spline(splineWave)
 
-        splineMore = interp1d(splineWave, splinePoints, kind='linear')
+        splineMore = interp1d(splineWave, splinePoints, kind='cubic')
         splinePointsMore = splineMore(wave[minindex:maxindex])
 
         continuum[minindex:maxindex] = splinePointsMore
@@ -240,5 +265,6 @@ class PreProcessSpectrum(object):
             fluxout[maxindex-i] = factor*fluxout[maxindex-i]
 
         return fluxout
+
 
 

@@ -14,6 +14,15 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
         super(MainApp, self).__init__(parent)
         self.setupUi(self)
 
+        self.w0, self.w1, self.nw = (2500., 10000., 1024.)
+        dwlog = np.log(self.w1/self.w0)/self.nw
+        self.wave = self.w0 * np.exp(np.arange(0,self.nw) * dwlog)
+        self.indexToPlot = 0
+        self.plotZ = 0
+        self.templateFluxes = np.zeros((2, int(self.nw)))
+        self.inputFluxes = np.zeros((2, int(self.nw)))
+
+
         self.btnBrowse.clicked.connect(self.select_input_file)
         self.listWidget.itemClicked.connect(self.list_item_clicked)
         self.btnRefit.clicked.connect(self.fit_spectra)
@@ -29,6 +38,27 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
 
         self.horizontalSliderSmooth.valueChanged.connect(self.smooth_slider_changed)
         self.lineEditSmooth.textChanged.connect(self.smooth_text_changed)
+
+        self.horizontalSliderRedshift.valueChanged.connect(self.redshift_slider_changed)
+        self.lineEditRedshift.textChanged.connect(self.redshift_text_changed)
+
+    def redshift_slider_changed(self):
+        self.plotZ = self.horizontalSliderRedshift.value()/1000.
+        self.lineEditRedshift.setText(str(self.plotZ))
+
+
+    def redshift_text_changed(self):
+        try:
+            self.plotZ = float(self.lineEditRedshift.text())
+            self.horizontalSliderRedshift.setValue(int(self.plotZ*1000))
+            self.plot_best_matches()
+        except ValueError:
+            pass
+    def set_plot_redshift(self, plotZ):
+        self.plotZ = plotZ
+        self.lineEditRedshift.setText(str(plotZ))
+        self.horizontalSliderRedshift.setValue(int(plotZ*1000))
+        self.plot_best_matches()
 
     def smooth_slider_changed(self):
         self.lineEditSmooth.setText(str(self.horizontalSliderSmooth.value()))
@@ -102,9 +132,11 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
 
         if (self.checkBoxKnownZ.isChecked() == True):
             self.redshiftFlag = True
-            knownZ = float(self.lineEditKnownZ.text())
-            self.minZ = knownZ
-            self.maxZ = knownZ
+            self.knownZ = float(self.lineEditKnownZ.text())
+            self.minZ = self.knownZ
+            self.maxZ = self.knownZ
+            self.set_plot_redshift(self.knownZ)
+
             self.fitThread = FitSpectrumThread(self.inputFilename, self.minZ, self.maxZ, self.redshiftFlag, self.modelFilename, self.smooth)
             print "before"
             self.connect(self.fitThread, SIGNAL("load_spectrum_single_redshift(PyQt_PyObject)"), self.load_spectrum_single_redshift)
@@ -141,7 +173,7 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
         print "done"
         if (self.cancelledFitting == False):
             self.list_best_matches_single_redshift()
-            self.plot_best_matches(0)
+            self.plot_best_matches()
             self.progressBar.setValue(100)
             QtGui.QMessageBox.information(self, "Done!", "Finished Fitting Input Spectrum")        
 
@@ -161,8 +193,8 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
     def done_fit_thread(self):
         if (self.cancelledFitting == False):
             self.list_best_matches()
-            self.plot_best_matches(0)
-            self.plot_redshift_graphs(0)
+            self.plot_best_matches()
+            self.plot_redshift_graphs()
             self.progressBar.setValue(100)
             QtGui.QMessageBox.information(self, "Done!", "Finished Fitting Input Spectrum")
         
@@ -178,28 +210,29 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
 
     def list_item_clicked(self, item):
         try:
-            indexToPlot = int(item.text()[0:2]) - 1 #Two digit numbers
+            self.indexToPlot = int(item.text()[0:2]) - 1 #Two digit numbers
         except ValueError:
-            indexToPlot = 0
-        self.plot_best_matches(indexToPlot)
+            self.indexToPlot = 0
+        self.plot_best_matches()
         if self.redshiftFlag == False:
-            self.plot_redshift_graphs(indexToPlot)
+            self.plot_redshift_graphs()
+
         
-    def plot_best_matches(self, indexToPlot):
-        print self.templateFluxes[indexToPlot]
-        print("plotting best matches...")
-        print self.inputFluxes[indexToPlot]
+    def plot_best_matches(self):
+
+        wave_redshifted = self.wave * ((self.plotZ-self.knownZ) + 1)
+
         self.graphicsView.clear()
         self.graphicsView.addLegend()
         #templateFluxes, inputFluxes = self.bestTypesList.plot_best_types()
-        self.graphicsView.plot(self.inputFluxes[indexToPlot], name='Input Spectrum', pen={'color': (0,255,0)})
-        self.graphicsView.plot(self.templateFluxes[indexToPlot], name='Template', pen={'color': (255,0,0)})
+        self.graphicsView.plot(wave_redshifted, self.inputFluxes[self.indexToPlot], name='Input Spectrum', pen={'color': (0,255,0)})
+        self.graphicsView.plot(self.wave, self.templateFluxes[self.indexToPlot], name='Template', pen={'color': (255,0,0)})
 
-    def plot_redshift_graphs(self, indexToPlot):
+    def plot_redshift_graphs(self):
         print("listing Redshift Graphs...")
-        print(len(self.inputRedshifts), len(self.redshiftGraphs[indexToPlot]))
+        print(len(self.inputRedshifts), len(self.redshiftGraphs[self.indexToPlot]))
         self.graphicsView_2.clear()
-        self.graphicsView_2.plot(self.inputRedshifts, self.redshiftGraphs[indexToPlot])
+        self.graphicsView_2.plot(self.inputRedshifts, self.redshiftGraphs[self.indexToPlot])
         self.graphicsView_2.setLabels(left=("Rel. Prob."), bottom=("z"))
         
     def browse_folder(self):

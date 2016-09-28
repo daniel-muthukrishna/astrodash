@@ -382,7 +382,7 @@
                   <property name="geometry">
                    <rect>
                     <x>0</x>
-                    <y>-20</y>
+                    <y>0</y>
                     <width>164</width>
                     <height>292</height>
                    </rect>
@@ -536,7 +536,7 @@
            <item>
             <widget class="QSlider" name="horizontalSliderSmooth">
              <property name="maximum">
-              <number>8</number>
+              <number>10</number>
              </property>
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
@@ -687,14 +687,17 @@
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="lineEdit_3">
+            <widget class="QLineEdit" name="lineEditRedshift">
              <property name="text">
               <string>0</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QSlider" name="horizontalSlider">
+            <widget class="QSlider" name="horizontalSliderRedshift">
+             <property name="maximum">
+              <number>1000</number>
+             </property>
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
              </property>
