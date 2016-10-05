@@ -148,6 +148,7 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
             self.redshiftFlag = False
             self.minZ = float(self.lineEditMinZ.text())
             self.maxZ = float(self.lineEditMaxZ.text())
+            self.knownZ = self.minZ
             print (self.minZ, self.maxZ)
             self.fitThread = FitSpectrumThread(self.inputFilename, self.minZ, self.maxZ, self.redshiftFlag, self.modelFilename, self.smooth)
             self.connect(self.fitThread, SIGNAL("load_spectrum(PyQt_PyObject)"), self.load_spectrum)

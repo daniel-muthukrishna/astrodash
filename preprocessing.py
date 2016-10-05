@@ -1,6 +1,6 @@
 import numpy as np
 from specutils.io import read_fits
-from scipy.interpolate import interp1d
+from scipy.interpolate import interp1d, UnivariateSpline
 
 
 class ProcessingTools(object):
@@ -219,11 +219,11 @@ class PreProcessSpectrum(object):
 
     def spline_fit(self, wave, flux, numSplinePoints, minindex, maxindex):
         continuum = np.zeros(int(self.nw))
-        spline = interp1d(wave[minindex:maxindex+1], flux[minindex:maxindex+1], kind = 'cubic')
+        spline = UnivariateSpline(wave[minindex:maxindex+1], flux[minindex:maxindex+1], k=3)
         splineWave = np.linspace(wave[minindex], wave[maxindex], num=numSplinePoints, endpoint=True)
         splinePoints = spline(splineWave)
 
-        splineMore = interp1d(splineWave, splinePoints, kind='cubic')
+        splineMore = UnivariateSpline(splineWave, splinePoints, k=3)
         splinePointsMore = splineMore(wave[minindex:maxindex])
 
         continuum[minindex:maxindex] = splinePointsMore
