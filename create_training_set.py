@@ -140,9 +140,12 @@ if __name__ == '__main__':
         nTypes, w0, w1, nw, minAge, maxAge, ageBinSize, typeList = pickle.load(f)
     minZ = 0
     maxZ = 0.0
+    import os
 
-    snidTemplateLocation = '/home/dan/Desktop/SNClassifying_Pre-alpha/templates/snid_templates_Modjaz_BSNIP/'
-    sfTemplateLocation = '/home/dan/Desktop/SNClassifying_Pre-alpha/templates/superfit_templates/sne/'
+    scriptDirectory = os.path.dirname(os.path.abspath(__file__))
+
+    snidTemplateLocation = os.path.join(scriptDirectory, "templates/snid_templates_Modjaz_BSNIP/")
+    sfTemplateLocation = 'NOTUSED'
     snidtempfilelist1 = snidTemplateLocation + 'templist.txt'
     sftempfilelist1 = sfTemplateLocation + 'templist.txt'
 

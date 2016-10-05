@@ -22,6 +22,7 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
         self.templateFluxes = np.zeros((2, int(self.nw)))
         self.inputFluxes = np.zeros((2, int(self.nw)))
 
+        self.mainDirectory = os.path.dirname(os.path.abspath(__file__))
 
         self.btnBrowse.clicked.connect(self.select_input_file)
         self.listWidget.itemClicked.connect(self.list_item_clicked)
@@ -71,7 +72,7 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
 
     def zero_redshift_model(self):
         if (self.checkBoxZeroZTrained.isChecked() == True):
-            self.modelFilename = "../model_trainedAtZeroZ.ckpt"
+            self.modelFilename = os.path.join(self.mainDirectory, "../model_trainedAtZeroZ.ckpt")
             self.checkBoxKnownZ.setEnabled(True)
             self.lineEditKnownZ.setEnabled(True)
             self.checkBoxAgnosticZTrained.setEnabled(False)
@@ -97,7 +98,7 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
         if (self.checkBoxAgnosticZTrained.isChecked() == True):
             self.checkBoxZeroZTrained.setEnabled(False)
             self.checkBoxZeroZTrained.setChecked(False)
-            self.modelFilename = "../model_agnostic_redshift.ckpt"
+            self.modelFilename = os.path.join(self.mainDirectory, "../model_agnostic_redshift.ckpt")
         elif (self.checkBoxAgnosticZTrained.isChecked() == False):
             self.checkBoxZeroZTrained.setEnabled(True)
             self.checkBoxZeroZTrained.setChecked(True)

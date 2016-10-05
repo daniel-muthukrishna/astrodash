@@ -3,8 +3,10 @@ import numpy as np
 import pickle
 from input_spectra import *
 from multilayer_convnet import convnet_variables
+import os
 
-loaded = np.load('/home/dan/Desktop/SNClassifying_Pre-alpha/type_age_atRedshiftZero.npz')
+scriptDirectory = os.path.dirname(os.path.abspath(__file__))
+loaded = np.load(os.path.join(scriptDirectory, "type_age_atRedshiftZero.npz"))
 trainImages = loaded['trainImages']
 trainLabels = loaded['trainLabels']
 ##trainFilenames = loaded['trainFilenames']
@@ -26,7 +28,7 @@ trainLabels = loaded['trainLabels']
 
 class LoadInputSpectra(object):
     def __init__(self, inputFilename, minZ, maxZ, smooth):
-        with open('/home/dan/Desktop/SNClassifying_Pre-alpha/training_params.pickle') as f:
+        with open(os.path.join(scriptDirectory, "training_params.pickle")) as f:
             nTypes, w0, w1, nw, minAge, maxAge, ageBinSize, typeList = pickle.load(f)
 
         self.nw = nw
