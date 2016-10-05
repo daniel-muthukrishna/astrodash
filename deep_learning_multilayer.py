@@ -2,8 +2,10 @@ import numpy as np
 import itertools
 import tensorflow as tf
 from multilayer_convnet import convnet_variables
+import os
 
-loaded = np.load('type_age_atRedshiftZero.npz')
+scriptDirectory = os.path.dirname(os.path.abspath(__file__))
+loaded = np.load(os.path.join(scriptDirectory, "type_age_atRedshiftZero.npz"))
 trainImages = loaded['trainImages']
 trainLabels = loaded['trainLabels']
 # trainFilenames = loaded['trainFilenames']

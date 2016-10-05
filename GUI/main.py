@@ -5,7 +5,8 @@ import os
 
 import design
 import sys
-sys.path.insert(0, '../')
+mainDirectory = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.join(mainDirectory, ".."))
 
 from restore_model import *
 
