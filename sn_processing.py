@@ -20,6 +20,25 @@ class PreProcessing(object):
 
         self.spectrum = self.readSpectrumFile.file_extension()
 
+    def galaxy_template(self, z):
+        self.wave, self.flux = self.spectrum
+        wave, flux = self.readSpectrumFile.two_col_input_spectrum(self.wave, self.flux, z)
+        binnedwave, binnedflux, minindex, maxindex = self.preProcess.log_wavelength(wave, flux)
+        newflux, continuum = self.preProcess.continuum_removal(binnedwave, binnedflux, self.numSplinePoints, minindex, maxindex)
+        meanzero = self.preProcess.mean_zero(binnedwave, newflux, minindex, maxindex)
+        apodized = self.preProcess.apodize(binnedwave, meanzero, minindex, maxindex)
+
+        plt.figure('Galaxy_SB1')
+        plt.plot(wave,flux, label='original')
+        plt.plot(binnedwave,binnedflux, label='binned')
+        plt.plot(binnedwave, continuum, label='continuum')
+        plt.plot(binnedwave,newflux, label='continuumSubtracted')
+        plt.plot(binnedwave, meanzero, label='meanzero')
+        plt.plot(binnedwave,apodized, label='apodized')
+        plt.legend()
+        #plt.show()
+
+        return binnedwave, apodized, minindex, maxindex
 
 
     def two_column_data(self, z, smooth):
@@ -86,7 +105,33 @@ class PreProcessing(object):
         return binnedwave, medianFiltered, ncols, ages, ttype, minindex, maxindex
 
 if __name__ == '__main__':
-    f = '/home/dan/Desktop/SNClassifying_Pre-alpha/templates/superfit_templates/sne/Ia/sn2002bo.m01.dat'
-    pre = PreProcessing(f, 2500, 10000, 1024)
-    pre.two_column_data(0, 0)
+    # fData = '/home/dan/Desktop/SNClassifying_Pre-alpha/templates/superfit_templates/sne/Ia/sn2002bo.m01.dat'
+    # preData = PreProcessing(fGal, 2500, 10000, 1024)
+    # waveData,fluxData,minIData,maxIData = preData.two_column_data(0, 0)
 
+    fGal = '/home/dan/Desktop/SNClassifying_Pre-alpha/templates/galaxy_templates/GalaxyTemplates/Sa'
+    preGal = PreProcessing(fGal, 2500, 10000, 1024)
+    waveGal,fluxGal,minIGal,maxIGal = preGal.galaxy_template(0)
+
+    fSN = '/home/dan/Desktop/SNClassifying_Pre-alpha/templates/snid_templates_Modjaz_BSNIP/sn2001br.lnw'
+    preSN = PreProcessing(fSN, 2500, 10000, 1024)
+    waveSN, fluxSN, ncols, ages, ttype, minISN, maxISN = preSN.snid_template_data(0, 0)
+
+    plt.figure('SN and Galaxy Template')
+    minI = max(minIGal, minISN)
+    maxI = min(maxIGal, maxISN)
+    plt.axvline(x=waveSN[minI], color='k', linestyle='--')
+    plt.axvline(x=waveSN[maxI], color='k', linestyle='--')
+
+
+
+    plt.plot(waveGal,fluxGal, label='galaxy')
+    plt.plot(waveSN,fluxSN, label='SN')
+
+    waveSN = waveSN[minI:maxI]
+    fluxSN = fluxSN[minI:maxI]
+    fluxGal = fluxGal[minI:maxI]
+
+    plt.plot(waveSN,fluxGal+fluxSN, label='Added-50%')
+    plt.legend()
+    plt.show()

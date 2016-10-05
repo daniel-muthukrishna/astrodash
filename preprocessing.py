@@ -69,7 +69,7 @@ class ReadSpectrumFile(object):
 
     def file_extension(self):
         extension = self.filename.split('.')[-1]
-        if extension == 'dat':
+        if extension == 'dat' or extension == self.filename:
             return self.read_dat_file()
         elif extension == 'fits':
             return self.read_fits_file()
