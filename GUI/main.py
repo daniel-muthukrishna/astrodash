@@ -36,7 +36,14 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
         self.checkBoxAgnosticZTrained.stateChanged.connect(self.agnostic_redshift_model)
 
         self.checkBoxZeroZTrained.setChecked(True)
+        self.checkBoxKnownZ.setChecked(True)
         self.checkBoxAgnosticZTrained.setEnabled(False)
+        self.checkBoxGalTrained.setEnabled(False)
+        self.scrollArea.setEnabled(False)
+        self.scrollArea_2.setEnabled(False)
+        self.comboBox.setEnabled(False)
+        self.lineEditMinAge.setEnabled(False)
+        self.lineEditMaxAge.setEnabled(False)
 
         self.horizontalSliderSmooth.valueChanged.connect(self.smooth_slider_changed)
         self.lineEditSmooth.textChanged.connect(self.smooth_text_changed)
@@ -45,21 +52,21 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
         self.lineEditRedshift.textChanged.connect(self.redshift_text_changed)
 
     def redshift_slider_changed(self):
-        self.plotZ = self.horizontalSliderRedshift.value()/1000.
+        self.plotZ = self.horizontalSliderRedshift.value()/10000.
         self.lineEditRedshift.setText(str(self.plotZ))
 
 
     def redshift_text_changed(self):
         try:
             self.plotZ = float(self.lineEditRedshift.text())
-            self.horizontalSliderRedshift.setValue(int(self.plotZ*1000))
+            self.horizontalSliderRedshift.setValue(int(self.plotZ*10000))
             self.plot_best_matches()
         except ValueError:
             pass
     def set_plot_redshift(self, plotZ):
         self.plotZ = plotZ
         self.lineEditRedshift.setText(str(plotZ))
-        self.horizontalSliderRedshift.setValue(int(plotZ*1000))
+        self.horizontalSliderRedshift.setValue(int(plotZ*10000))
         self.plot_best_matches()
 
     def smooth_slider_changed(self):
@@ -130,11 +137,14 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
         try:
             self.smooth = int(self.lineEditSmooth.text())
         except ValueError:
-            QtGui.QMessageBox.information(self, "Smooth must be positive integer")
+            QtGui.QMessageBox.critical(self, "Error", "Smooth must be positive integer")
 
         if (self.checkBoxKnownZ.isChecked() == True):
             self.redshiftFlag = True
-            self.knownZ = float(self.lineEditKnownZ.text())
+            try:
+                self.knownZ = float(self.lineEditKnownZ.text())
+            except ValueError:
+                QtGui.QMessageBox.critical(self, "Error", "Enter Known Redshift")
             self.minZ = self.knownZ
             self.maxZ = self.knownZ
             self.set_plot_redshift(self.knownZ)

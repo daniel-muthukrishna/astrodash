@@ -166,7 +166,7 @@
              <item>
               <layout class="QGridLayout" name="gridLayout_3">
                <item row="3" column="1">
-                <widget class="QLineEdit" name="lineEdit_5">
+                <widget class="QLineEdit" name="lineEditMaxAge">
                  <property name="text">
                   <string>50</string>
                  </property>
@@ -194,7 +194,7 @@
                 </widget>
                </item>
                <item row="2" column="1">
-                <widget class="QLineEdit" name="lineEdit_4">
+                <widget class="QLineEdit" name="lineEditMinAge">
                  <property name="text">
                   <string>-20</string>
                  </property>
@@ -249,6 +249,9 @@
                   <layout class="QVBoxLayout" name="verticalLayout_3">
                    <item>
                     <widget class="QCheckBox" name="checkBox_2">
+                     <property name="enabled">
+                      <bool>true</bool>
+                     </property>
                      <property name="text">
                       <string>Type Ia-norm</string>
                      </property>
@@ -540,14 +543,17 @@
               </size>
              </property>
              <property name="text">
-              <string>1</string>
+              <string>7</string>
              </property>
             </widget>
            </item>
            <item>
             <widget class="QSlider" name="horizontalSliderSmooth">
              <property name="maximum">
-              <number>10</number>
+              <number>16</number>
+             </property>
+             <property name="value">
+              <number>7</number>
              </property>
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
@@ -721,7 +727,7 @@
            <item>
             <widget class="QSlider" name="horizontalSliderRedshift">
              <property name="maximum">
-              <number>1000</number>
+              <number>10000</number>
              </property>
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
