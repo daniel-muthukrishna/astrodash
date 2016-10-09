@@ -1,7 +1,7 @@
 #Pre-processing class
 
 from preprocessing import *
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 from scipy.signal import medfilt
 
 
