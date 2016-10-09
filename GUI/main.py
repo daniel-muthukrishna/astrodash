@@ -150,11 +150,8 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
             self.set_plot_redshift(self.knownZ)
 
             self.fitThread = FitSpectrumThread(self.inputFilename, self.minZ, self.maxZ, self.redshiftFlag, self.modelFilename, self.smooth)
-            print "before"
             self.connect(self.fitThread, SIGNAL("load_spectrum_single_redshift(PyQt_PyObject)"), self.load_spectrum_single_redshift)
-            print "after"
             self.connect(self.fitThread, SIGNAL("finished()"), self.done_fit_thread_single_redshift)
-            print "here1"
         else:
             self.redshiftFlag = False
             self.minZ = float(self.lineEditMinZ.text())
@@ -183,7 +180,6 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
         print "here"
 
     def done_fit_thread_single_redshift(self):
-        print "done"
         if (self.cancelledFitting == False):
             self.list_best_matches_single_redshift()
             self.plot_best_matches()

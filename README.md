@@ -5,6 +5,7 @@ Run Program:
     Run GUI/main.py to get started.
 
 Dependencies include:
+    python2.7 (unconfirmed python3)
     numpy
     scipy
     PyQt4

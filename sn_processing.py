@@ -100,7 +100,7 @@ class PreProcessing(object):
         wave, fluxes, ncols, ages, ttype, splineInfo = self.spectrum
         wave, flux = self.readSpectrumFile.snid_template_spectra(wave, fluxes[ageidx], z, splineInfo)
         binnedwave, binnedflux, minindex, maxindex = self.preProcess.log_wavelength(wave, flux)
-        medianFiltered = medfilt(binnedflux, kernel_size=3)
+        medianFiltered = medfilt(binnedflux, kernel_size=11)
 
         return binnedwave, medianFiltered, ncols, ages, ttype, minindex, maxindex
 

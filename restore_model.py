@@ -88,10 +88,7 @@ class BestTypesListSingleRedshift(object):
     def create_list(self):
         idx = np.argsort(self.softmax) #list of the index of the highest probabiites
         bestTypes = self.typeNamesList[idx[::-1]] #reordered in terms of softmax probability columns
-        print idx
-        print bestTypes
-        print self.softmax[idx[::-1]]
-        print self.softmax
+
         return bestTypes, idx, self.softmax[idx[::-1]]
 
     def plot_best_types(self):
@@ -99,13 +96,11 @@ class BestTypesListSingleRedshift(object):
         templateFluxes = []
         for j in range(20):#len(self.bestTypes)): #index of best Types in order
             c = self.idx[::-1][j]
-            print c
             typeName = self.typeNamesList[c] #Name of best type
             for i in range(len(trainLabels)): #Checking through templates
                 if (trainLabels[i][c] == 1):    #to find template for the best Type
                     templateFlux = trainImages[i]  #plot template
                     inputFlux = self.inputImage #Plot inputImage at red
-                    print c
                     break
             if (i == len(trainLabels)-1):
                 print("No Template") #NEED TO GET TEMPLATE PLOTS IN A BETTER WAY
@@ -114,7 +109,6 @@ class BestTypesListSingleRedshift(object):
 
             templateFluxes.append(templateFlux)
             inputFluxes.append(inputFlux)
-        print self.idx[::-1]
             
         templateFluxes = np.array(templateFluxes)
         inputFluxes = np.array(inputFluxes)
@@ -132,7 +126,6 @@ class BestTypesList(object):
         
         self.restoreModel = RestoreModel(self.modelFilename, self.inputImages, nw, nBins)
         self.yInputRedshift = self.restoreModel.restore_variables() #softmax at each redshift
-        print(len(self.yInputRedshift))
 
         self.bestForEachType, self.redshiftIndex = self.create_list()
 
@@ -167,7 +160,6 @@ class BestTypesList(object):
                 if (trainLabels[i][c] == 1):    #to find template for the best Type
                     templateFlux = trainImages[i]  #plot template
                     inputFlux = self.inputImages[int(self.redshiftIndex[c])] #Pliot inputImage at red
-                    print c, self.redshiftIndex[c]
                     #plt.title(typeName+ ": " + str(bestForEachType[c][1]))
                     break
             if (i == len(trainLabels)-1):
