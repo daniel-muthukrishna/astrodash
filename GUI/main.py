@@ -234,8 +234,8 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
         self.graphicsView.clear()
         self.graphicsView.addLegend()
         #templateFluxes, inputFluxes = self.bestTypesList.plot_best_types()
-        self.graphicsView.plot(wave_redshifted, self.inputFluxes[self.indexToPlot], name='Input Spectrum', pen={'color': (0,255,0)})
-        self.graphicsView.plot(self.wave, self.templateFluxes[self.indexToPlot], name='Template', pen={'color': (255,0,0)})
+        self.graphicsView.plot(self.wave, self.inputFluxes[self.indexToPlot], name='Input Spectrum', pen={'color': (0,255,0)})
+        self.graphicsView.plot(wave_redshifted, self.templateFluxes[self.indexToPlot], name='Template', pen={'color': (255,0,0)})
 
     def plot_redshift_graphs(self):
         print("listing Redshift Graphs...")
