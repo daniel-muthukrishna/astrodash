@@ -14,3 +14,8 @@ Dependencies include:
 
 Notes:
     Current version requires an input redshift (inaccurate results if redshift is unknown)
+
+
+Agnostic Redshift
+Change the way templates are gotten
+Change the way redhsifting is done - check that it is correct and plots correctly

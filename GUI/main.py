@@ -228,14 +228,16 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
 
         
     def plot_best_matches(self):
+        print self.plotZ, self.knownZ
 
-        wave_redshifted = self.wave * ((self.plotZ-self.knownZ) + 1)
+        inputWaveOriginal = self.wave / (self.knownZ + 1)
+        templateWave = inputWaveOriginal / (self.plotZ-self.knownZ + 1)
 
         self.graphicsView.clear()
         self.graphicsView.addLegend()
         #templateFluxes, inputFluxes = self.bestTypesList.plot_best_types()
-        self.graphicsView.plot(self.wave, self.inputFluxes[self.indexToPlot], name='Input Spectrum', pen={'color': (0,255,0)})
-        self.graphicsView.plot(wave_redshifted, self.templateFluxes[self.indexToPlot], name='Template', pen={'color': (255,0,0)})
+        self.graphicsView.plot(inputWaveOriginal, self.inputFluxes[self.indexToPlot], name='Input Spectrum', pen={'color': (0,255,0)})
+        self.graphicsView.plot(templateWave, self.templateFluxes[self.indexToPlot], name='Template', pen={'color': (255,0,0)})
 
     def plot_redshift_graphs(self):
         print("listing Redshift Graphs...")
