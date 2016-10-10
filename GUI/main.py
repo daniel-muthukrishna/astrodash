@@ -22,6 +22,7 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
         self.plotZ = 0
         self.templateFluxes = np.zeros((2, int(self.nw)))
         self.inputFluxes = np.zeros((2, int(self.nw)))
+        self.inputImageUnRedshifted = np.zeros((2, int(self.nw)))
 
         self.mainDirectory = os.path.dirname(os.path.abspath(__file__))
 
@@ -175,7 +176,7 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
 
 
     def load_spectrum_single_redshift(self, spectrumInfo):
-        self.bestTypes, self.softmax, self.idx, self.templateFluxes, self.inputFluxes, self.typeNamesList = spectrumInfo
+        self.bestTypes, self.softmax, self.idx, self.templateFluxes, self.inputFluxes, self.typeNamesList, self.inputImageUnRedshifted = spectrumInfo
         self.progressBar.setValue(85)#self.progressBar.value()+)
         print "here"
 
@@ -230,14 +231,20 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
     def plot_best_matches(self):
         print self.plotZ, self.knownZ
 
-        inputWaveOriginal = self.wave / (self.knownZ + 1)
-        templateWave = inputWaveOriginal / (self.plotZ-self.knownZ + 1)
+        templateWave = self.wave * (1 + (self.plotZ))
 
         self.graphicsView.clear()
+        #NEED TO REMOVE LEGEND
         self.graphicsView.addLegend()
         #templateFluxes, inputFluxes = self.bestTypesList.plot_best_types()
-        self.graphicsView.plot(inputWaveOriginal, self.inputFluxes[self.indexToPlot], name='Input Spectrum', pen={'color': (0,255,0)})
+        print self.inputImageUnRedshifted
+        if self.redshiftFlag == True:
+            self.graphicsView.plot(self.wave, self.inputImageUnRedshifted[0], name='Input Spectrum', pen={'color': (0,255,0)})
+        else:
+            self.graphicsView.plot(self.wave, self.inputFluxes[self.indexToPlot], name='Input Spectrum', pen={'color': (0, 255, 0)})
+
         self.graphicsView.plot(templateWave, self.templateFluxes[self.indexToPlot], name='Template', pen={'color': (255,0,0)})
+        self.graphicsView.setRange(xRange=[2500,10000])
 
     def plot_redshift_graphs(self):
         print("listing Redshift Graphs...")
@@ -280,6 +287,9 @@ class FitSpectrumThread(QThread):
                 inputRedshifts, redshiftGraphs, typeNamesList)
 
     def _input_spectrum_single_redshift(self):
+        loadInputSpectraUnRedshifted = LoadInputSpectra(self.inputFilename, 0, 0, self.smooth)
+        inputImageUnRedshifted, inputRedshift, typeNamesList, nw, nBins = loadInputSpectraUnRedshifted.input_spectra()
+
         loadInputSpectra = LoadInputSpectra(self.inputFilename, self.minZ, self.maxZ, self.smooth)
         inputImage, inputRedshift, typeNamesList, nw, nBins = loadInputSpectra.input_spectra()
         bestTypesList = BestTypesListSingleRedshift(self.modelFilename, inputImage, typeNamesList, nw, nBins)
@@ -288,7 +298,7 @@ class FitSpectrumThread(QThread):
         idx = bestTypesList.idx
         templateFluxes, inputFluxes = bestTypesList.plot_best_types()
 
-        return bestTypes, softmax, idx, templateFluxes, inputFluxes, typeNamesList
+        return bestTypes, softmax, idx, templateFluxes, inputFluxes, typeNamesList, inputImageUnRedshifted
 
     def run_single_redshift(self):
         spectrumInfo = self._input_spectrum_single_redshift()
