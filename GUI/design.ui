@@ -550,7 +550,7 @@
            <item>
             <widget class="QSlider" name="horizontalSliderSmooth">
              <property name="maximum">
-              <number>16</number>
+              <number>20</number>
              </property>
              <property name="value">
               <number>7</number>
@@ -660,45 +660,110 @@
            <item>
             <widget class="QLabel" name="label_9">
              <property name="text">
-              <string>Template</string>
+              <string>Plot Template</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QComboBox" name="comboBox">
+            <widget class="QComboBox" name="comboBoxSNType">
+             <property name="editable">
+              <bool>false</bool>
+             </property>
              <item>
               <property name="text">
-               <string>New Item</string>
+               <string>Ia-norm</string>
               </property>
              </item>
              <item>
               <property name="text">
-               <string>wd</string>
+               <string>Ia-91T</string>
               </property>
              </item>
              <item>
               <property name="text">
-               <string>dw</string>
+               <string>Ia-91bg</string>
               </property>
              </item>
              <item>
               <property name="text">
-               <string>New Item</string>
+               <string>Ia-csm</string>
               </property>
              </item>
              <item>
               <property name="text">
-               <string>New Item</string>
+               <string>Ia-02cx</string>
               </property>
              </item>
              <item>
               <property name="text">
-               <string>qd</string>
+               <string>Ia-pec</string>
               </property>
              </item>
              <item>
               <property name="text">
-               <string>New Item</string>
+               <string>Ib-norm</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Ibn</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>IIb</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Ib-pec</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Ic-norm</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Ic-broad</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Ic-pec</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>IIP</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>IIL</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>IIn</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>II-pec</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="comboBoxAge"/>
+           </item>
+           <item>
+            <widget class="QComboBox" name="comboBoxHost">
+             <item>
+              <property name="text">
+               <string>Host Galaxy</string>
               </property>
              </item>
             </widget>

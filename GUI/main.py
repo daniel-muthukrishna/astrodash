@@ -9,6 +9,7 @@ mainDirectory = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(mainDirectory, ".."))
 
 from restore_model import *
+from create_arrays import AgeBinning
 
 class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
     def __init__(self, parent=None):
@@ -31,6 +32,7 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
         self.btnRefit.clicked.connect(self.fit_spectra)
         self.inputFilename = "DefaultFilename"
         self.progressBar.setValue(100)
+        self.addComboBoxAges()
 
         self.checkBoxZeroZTrained.stateChanged.connect(self.zero_redshift_model)
         self.checkBoxKnownZ.stateChanged.connect(self.zero_redshift_model)
@@ -42,7 +44,7 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
         self.checkBoxGalTrained.setEnabled(False)
         self.scrollArea.setEnabled(False)
         self.scrollArea_2.setEnabled(False)
-        self.comboBox.setEnabled(False)
+        self.comboBoxHost.setEnabled(False)
         self.lineEditMinAge.setEnabled(False)
         self.lineEditMaxAge.setEnabled(False)
 
@@ -51,6 +53,23 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
 
         self.horizontalSliderRedshift.valueChanged.connect(self.redshift_slider_changed)
         self.lineEditRedshift.textChanged.connect(self.redshift_text_changed)
+
+        self.comboBoxSNType.activated.connect(self.comboBoxChanged)
+        self.comboBoxAge.activated.connect(self.comboBoxChanged)
+
+    def comboBoxChanged(self):
+        print "changed"
+
+    def addComboBoxAges(self):
+        minAge = -20
+        maxAge = 50
+        ageBinSize = 4
+        ageLabels = AgeBinning(minAge, maxAge, ageBinSize).age_labels()
+        for i in range(len(ageLabels)):
+            self.comboBoxAge.addItem(ageLabels[i])
+
+
+
 
     def redshift_slider_changed(self):
         self.plotZ = self.horizontalSliderRedshift.value()/10000.
@@ -195,6 +214,11 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
             name, age = self.bestTypes[i].split(': ')
             self.listWidget.addItem("".join(word.ljust(25) for word in [str(i+1), name, age, str(self.softmax[i])]))
 
+            if i == 0:
+                SNTypeComboBoxIndex = self.comboBoxSNType.findText(name)
+                self.comboBoxSNType.setCurrentIndex(SNTypeComboBoxIndex)
+                AgeComboBoxIndex = self.comboBoxAge.findText(age)
+                self.comboBoxAge.setCurrentIndex(AgeComboBoxIndex)
 
     def load_spectrum(self, spectrumInfo):
         self.bestForEachType, self.templateFluxes, self.inputFluxes, self.inputRedshifts, self.redshiftGraphs, self.typeNamesList = spectrumInfo
@@ -218,11 +242,21 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
             name, age = self.typeNamesList[bestIndex].split(': ')
             self.listWidget.addItem("".join(word.ljust(25) for word in [str(i+1), name, age , str(self.bestForEachType[i][1]), str(self.bestForEachType[i][2])]))
 
+
     def list_item_clicked(self, item):
+        index, self.SNTypePlot, age1, age2, age3, softmax = str(item.text()).split()
+        self.AgePlot = age1 + ' to ' + age3
+
         try:
-            self.indexToPlot = int(item.text()[0:2]) - 1 #Two digit numbers
+            self.indexToPlot = int(index) - 1 #Two digit numbers
         except ValueError:
             self.indexToPlot = 0
+
+        SNTypeComboBoxIndex = self.comboBoxSNType.findText(self.SNTypePlot)
+        self.comboBoxSNType.setCurrentIndex(SNTypeComboBoxIndex)
+        AgeComboBoxIndex = self.comboBoxAge.findText(self.AgePlot)
+        self.comboBoxAge.setCurrentIndex(AgeComboBoxIndex)
+
         self.plot_best_matches()
         if self.redshiftFlag == False:
             self.plot_redshift_graphs()
@@ -237,7 +271,6 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
         #NEED TO REMOVE LEGEND
         self.graphicsView.addLegend()
         #templateFluxes, inputFluxes = self.bestTypesList.plot_best_types()
-        print self.inputImageUnRedshifted
         if self.redshiftFlag == True:
             self.graphicsView.plot(self.wave, self.inputImageUnRedshifted[0], name='Input Spectrum', pen={'color': (0,255,0)})
         else:
