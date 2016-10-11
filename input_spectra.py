@@ -35,8 +35,8 @@ class InputSpectra(object):
         redshifts = []
         readSpectra = ReadSpectra(self.w0, self.w1, self.nw, self.filename)
 
-        #Actually negative redshifting input wave (to undo it's previous redshift)
-        for z in np.linspace(-self.maxZ, -self.minZ, self.numOfRedshifts + 1):
+        #Undo it's previous redshift)
+        for z in np.linspace(self.minZ, self.maxZ, self.numOfRedshifts + 1):
             tempwave, tempflux, tminindex, tmaxindex = readSpectra.input_spectrum(z, self.smooth)
             nonzeroflux = tempflux[tminindex:tmaxindex + 1]
             newflux = (nonzeroflux - min(nonzeroflux)) / (max(nonzeroflux) - min(nonzeroflux))

@@ -12,6 +12,11 @@ class ProcessingTools(object):
 
         return wave_new, flux
 
+    def deredshift_spectrum(self, wave, flux, z):
+        wave_new = wave / (z + 1)
+
+        return wave_new, flux
+
     def min_max_index(self, flux):
         minindex, maxindex = (0, self.nw - 1)
         zeros = np.where(flux == 0)[0]
@@ -81,7 +86,7 @@ class ReadSpectrumFile(object):
 
 
     def two_col_input_spectrum(self, wave, flux, z):
-        wave, flux = self.processingTools.redshift_spectrum(wave, flux, z)
+        wave, flux = self.processingTools.deredshift_spectrum(wave, flux, z)
 
         if max(wave) >= self.w1:
             for i in range(0,len(wave)):
