@@ -2,6 +2,7 @@ from PyQt4 import QtGui
 from PyQt4.QtCore import QThread, SIGNAL
 import sys
 import os
+import pickle
 
 import design
 import sys
@@ -16,23 +17,29 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
         super(MainApp, self).__init__(parent)
         self.setupUi(self)
 
-        self.w0, self.w1, self.nw = (2500., 10000., 1024.)
-        dwlog = np.log(self.w1/self.w0)/self.nw
-        self.wave = self.w0 * np.exp(np.arange(0,self.nw) * dwlog)
+        self.templates()
+        self.plotted = False
         self.indexToPlot = 0
         self.plotZ = 0
+        self.knownZ = 0
         self.templateFluxes = np.zeros((2, int(self.nw)))
         self.inputFluxes = np.zeros((2, int(self.nw)))
         self.inputImageUnRedshifted = np.zeros((2, int(self.nw)))
+        self.templatePlotFlux = np.zeros(int(self.nw))
+        self.templateSubIndex = 0
+        self.graphicsView.addLegend()
+        self.templatePlotName = "Template Spectrum"
 
         self.mainDirectory = os.path.dirname(os.path.abspath(__file__))
 
+        self.pushButtonLeftTemplate.clicked.connect(self.select_sub_template_left)
+        self.pushButtonRightTemplate.clicked.connect(self.select_sub_template_right)
         self.btnBrowse.clicked.connect(self.select_input_file)
         self.listWidget.itemClicked.connect(self.list_item_clicked)
         self.btnRefit.clicked.connect(self.fit_spectra)
         self.inputFilename = "DefaultFilename"
         self.progressBar.setValue(100)
-        self.addComboBoxAges()
+        self.add_combo_box_entries()
 
         self.checkBoxZeroZTrained.stateChanged.connect(self.zero_redshift_model)
         self.checkBoxKnownZ.stateChanged.connect(self.zero_redshift_model)
@@ -54,13 +61,52 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
         self.horizontalSliderRedshift.valueChanged.connect(self.redshift_slider_changed)
         self.lineEditRedshift.textChanged.connect(self.redshift_text_changed)
 
-        self.comboBoxSNType.activated.connect(self.comboBoxChanged)
-        self.comboBoxAge.activated.connect(self.comboBoxChanged)
+        self.comboBoxSNType.currentIndexChanged.connect(self.combo_box_changed)
+        self.comboBoxAge.currentIndexChanged.connect(self.combo_box_changed)
 
-    def comboBoxChanged(self):
-        print "changed"
+    def templates(self):
+        with open(os.path.join(mainDirectory, "../training_params.pickle")) as f:
+            self.nTypes, self.w0, self.w1, self.nw, minAge, maxAge, ageBinSize, self.typeList = pickle.load(f)
 
-    def addComboBoxAges(self):
+        dwlog = np.log(self.w1/self.w0)/self.nw
+        self.wave = self.w0 * np.exp(np.arange(0,self.nw) * dwlog)
+
+        loaded = np.load(os.path.join(mainDirectory, '../templates.npz'))
+        self.templateFluxesAll = loaded['templateFluxesAll']
+        self.templateFileNamesAll = loaded['templateFilenamesAll']
+
+    def select_sub_template_right(self):
+        self.templateSubIndex += 1
+        self.plot_sub_templates()
+
+    def select_sub_template_left(self):
+        self.templateSubIndex -= 1
+        self.plot_sub_templates()
+
+
+    def plot_sub_templates(self):
+        numOfSubTemplates = len(self.templateFileNamesAll[self.templateIndex])
+        if self.templateSubIndex >= numOfSubTemplates:
+            self.templateSubIndex = 0
+        if self.templateSubIndex < 0:
+            self.templateSubIndex = numOfSubTemplates - 1
+
+        self.templatePlotFlux = self.templateFluxesAll[self.templateIndex][self.templateSubIndex]
+        self.templatePlotName = self.templateFileNamesAll[self.templateIndex][self.templateSubIndex]
+        print(self.templatePlotName)
+        self.plot_best_matches()
+
+    def combo_box_changed(self):
+        self.templateIndex = self.comboBoxSNType.currentIndex() * (self.nTypes + 1) +  self.comboBoxAge.currentIndex()
+
+        self.templatePlotFlux = self.templateFluxesAll[self.templateIndex][0]
+        self.templatePlotName = self.templateFileNamesAll[self.templateIndex][0]
+        print(self.templatePlotName)
+        self.plot_best_matches()
+
+
+
+    def add_combo_box_entries(self):
         minAge = -20
         maxAge = 50
         ageBinSize = 4
@@ -68,7 +114,8 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
         for i in range(len(ageLabels)):
             self.comboBoxAge.addItem(ageLabels[i])
 
-
+        for typeName in self.typeList:
+            self.comboBoxSNType.addItem(typeName)
 
 
     def redshift_slider_changed(self):
@@ -82,7 +129,8 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
             self.horizontalSliderRedshift.setValue(int(self.plotZ*10000))
             self.plot_best_matches()
         except ValueError:
-            pass
+            print("Redshift Value Error")
+
     def set_plot_redshift(self, plotZ):
         self.plotZ = plotZ
         self.lineEditRedshift.setText(str(plotZ))
@@ -201,10 +249,11 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
 
     def done_fit_thread_single_redshift(self):
         if (self.cancelledFitting == False):
+            self.plotted = True
             self.list_best_matches_single_redshift()
             self.plot_best_matches()
             self.progressBar.setValue(100)
-            QtGui.QMessageBox.information(self, "Done!", "Finished Fitting Input Spectrum")        
+            QtGui.QMessageBox.information(self, "Done!", "Finished Fitting Input Spectrum")
 
     def list_best_matches_single_redshift(self):
         print("listing best matches...")
@@ -257,27 +306,36 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
         AgeComboBoxIndex = self.comboBoxAge.findText(self.AgePlot)
         self.comboBoxAge.setCurrentIndex(AgeComboBoxIndex)
 
-        self.plot_best_matches()
         if self.redshiftFlag == False:
             self.plot_redshift_graphs()
 
         
     def plot_best_matches(self):
-        print self.plotZ, self.knownZ
+        if self.plotted == True:
+            templateWave = self.wave * (1 + (self.plotZ))
 
-        templateWave = self.wave * (1 + (self.plotZ))
+            self.graphicsView.clear()
+            l = self.graphicsView.plotItem.legend
+            l.items = []
+            while l.layout.count() > 0:
+                l.removeAt(0)
 
-        self.graphicsView.clear()
-        #NEED TO REMOVE LEGEND
-        self.graphicsView.addLegend()
-        #templateFluxes, inputFluxes = self.bestTypesList.plot_best_types()
-        if self.redshiftFlag == True:
-            self.graphicsView.plot(self.wave, self.inputImageUnRedshifted[0], name='Input Spectrum', pen={'color': (0,255,0)})
-        else:
-            self.graphicsView.plot(self.wave, self.inputFluxes[self.indexToPlot], name='Input Spectrum', pen={'color': (0, 255, 0)})
+            self.graphicsView.addLegend()
 
-        self.graphicsView.plot(templateWave, self.templateFluxes[self.indexToPlot], name='Template', pen={'color': (255,0,0)})
-        self.graphicsView.setRange(xRange=[2500,10000])
+
+            #templateFluxes, inputFluxes = self.bestTypesList.plot_best_types()
+
+            if self.redshiftFlag == True:
+                inputPlotFlux = self.inputImageUnRedshifted[0]
+            elif self.redshiftFlag == False:
+                inputPlotFlux = self.inputFluxes[self.indexToPlot]
+
+            self.graphicsView.plot(self.wave, inputPlotFlux, name='Input Spectrum', pen={'color': (0, 255, 0)})
+            self.graphicsView.plot(templateWave, self.templatePlotFlux, name=self.templatePlotName, pen={'color': (255,0,0)})
+            self.graphicsView.setRange(xRange=[2500,10000])
+
+
+
 
     def plot_redshift_graphs(self):
         print("listing Redshift Graphs...")
