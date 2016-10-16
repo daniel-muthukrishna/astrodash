@@ -21,14 +21,11 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
         self.plotted = False
         self.indexToPlot = 0
         self.plotZ = 0
-        self.knownZ = 0
         self.templateFluxes = np.zeros((2, int(self.nw)))
         self.inputFluxes = np.zeros((2, int(self.nw)))
         self.inputImageUnRedshifted = np.zeros((2, int(self.nw)))
         self.templatePlotFlux = np.zeros(int(self.nw))
         self.templateSubIndex = 0
-        self.graphicsView.addLegend()
-        self.templatePlotName = "Template Spectrum"
 
         self.mainDirectory = os.path.dirname(os.path.abspath(__file__))
 
@@ -49,11 +46,7 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
         self.checkBoxKnownZ.setChecked(True)
         self.checkBoxAgnosticZTrained.setEnabled(False)
         self.checkBoxGalTrained.setEnabled(False)
-        self.scrollArea.setEnabled(False)
-        self.scrollArea_2.setEnabled(False)
         self.comboBoxHost.setEnabled(False)
-        self.lineEditMinAge.setEnabled(False)
-        self.lineEditMaxAge.setEnabled(False)
 
         self.horizontalSliderSmooth.valueChanged.connect(self.smooth_slider_changed)
         self.lineEditSmooth.textChanged.connect(self.smooth_text_changed)
@@ -313,17 +306,9 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
     def plot_best_matches(self):
         if self.plotted == True:
             templateWave = self.wave * (1 + (self.plotZ))
+            self.labelTemplateName.setText(self.templatePlotName)
 
             self.graphicsView.clear()
-            l = self.graphicsView.plotItem.legend
-            l.items = []
-            while l.layout.count() > 0:
-                l.removeAt(0)
-
-            self.graphicsView.addLegend()
-
-
-            #templateFluxes, inputFluxes = self.bestTypesList.plot_best_types()
 
             if self.redshiftFlag == True:
                 inputPlotFlux = self.inputImageUnRedshifted[0]
