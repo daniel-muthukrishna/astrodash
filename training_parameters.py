@@ -1,9 +1,10 @@
 import pickle
 
 
-typeList = ['Ia-norm', 'IIb', 'Ia-pec', 'Ic-broad', 'Ia-csm', 'Ic-norm', 'IIP', 'Ib-pec',
-                'IIL', 'Ib-norm', 'Ia-91bg', 'II-pec', 'Ia-91T', 'IIn',
-                'Ic-pec', 'Ibn', 'Ia-02cx']
+typeList = ['Ia-norm', 'Ia-91T', 'Ia-91bg', 'Ia-csm', 'Ia-02cx', 'Ia-pec',
+            'Ib-norm', 'Ibn', 'IIb', 'Ib-pec', 'Ic-norm', 'Ic-broad',
+            'Ic-pec', 'IIP', 'IIL', 'IIn', 'II-pec']
+
 nTypes = len(typeList)
 w0 = 2500. #wavelength range in Angstroms
 w1 = 10000.
