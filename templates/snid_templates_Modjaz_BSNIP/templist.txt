@@ -42,7 +42,6 @@ sn1998aq.lnw
 sn2006X.lnw
 sn2004bk.lnw
 sn2005cc.lnw
-sn2010ma.lnw
 sn2003cq.lnw
 sn2004ef.lnw
 sn2006bz.lnw
@@ -102,7 +101,6 @@ sn2009nz.lnw
 sn2000cp.lnw
 sn2000cw.lnw
 sn1999gp.lnw
-sn2012bz.lnw
 sn02fk_bsnip.lnw
 sn91bg_bsnip.lnw
 sn02ic.lnw
@@ -152,7 +150,6 @@ sn2002cr.lnw
 sn03iv_bsnip.lnw
 sn1997bp.lnw
 sn1998dh.lnw
-sn2013dx.lnw
 sn2001ah.lnw
 sn1990O.lnw
 sn2005ki.lnw
@@ -267,7 +264,6 @@ sn06kf_bsnip.lnw
 sn2007ap.lnw
 sn2000dn.lnw
 sn06ac_bsnip.lnw
-sn2003dh.lnw
 sn1990N.lnw
 sn2006ak.lnw
 sn00fa_bsnip.lnw
@@ -355,7 +351,6 @@ sn2005gj.lnw
 sn2007nq.lnw
 sn1999gi.lnw
 sn2006et.lnw
-sn2010bh.lnw
 sn2006gt.lnw
 sn98bu.lnw
 sn1996bl.lnw
@@ -427,7 +422,6 @@ PTF10bzf.lnw
 sn2005mz.lnw
 sn2006S.lnw
 sn1995E.lnw
-PTF10qts.lnw
 sn2000cx.lnw
 sn2002de.lnw
 sn02fb_bsnip.lnw
@@ -465,7 +459,6 @@ sn06cz_bsnip.lnw
 sn04fu_bsnip.lnw
 sn2004gv.lnw
 sn04eo_bsnip.lnw
-sn2013cq.lnw
 sn1996L.lnw
 sn1996ab.lnw
 sn1999cl.lnw

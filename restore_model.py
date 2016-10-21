@@ -17,14 +17,6 @@ trainLabels = loaded['trainLabels']
 ##testTypeNames = loaded['testTypeNames']
 ##typeNamesList = loaded['typeNamesList']
 
-##inputLoaded = np.load('/home/dan/Desktop/SNClassifying_Pre-alpha/input_data.npz')
-##inputImages = inputLoaded['inputImages']
-##inputLabels = inputLoaded['inputLabels']
-##inputFilenames = inputLoaded['inputFilenames']
-##inputTypeNames = inputLoaded['inputTypeNames']
-##inputRedshifts = inputLoaded['inputRedshifts']
-##typeNamesList = inputLoaded['typeNamesList']
-
 
 class LoadInputSpectra(object):
     def __init__(self, inputFilename, minZ, maxZ, smooth):
