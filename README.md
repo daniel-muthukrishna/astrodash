@@ -1,4 +1,4 @@
-# SNClassifying_Pre-alpha
+# DASH
 Supernovae classifying and redshifting software: development stage
 
 
