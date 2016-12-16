@@ -4,14 +4,14 @@ Supernovae classifying and redshifting software: development stage
 
 ## 1. How to install:
 
-    1.1 pip install DASH
+    1.1 pip install astrodash
 
         or download from github (https://github.com/daniel-muthukrishna/DASH)
 
 ## 2. Get started with the Python Library interface:
     2.1 Use the following example code:
-        import DASH
-        classification = DASH.Classify([filenames], [knownRedshifts])
+        import dash
+        classification = dash.Classify([filenames], [knownRedshifts])
         print classification.list_best_matches(n=1)
 
 ## 3. Get started with GUI
@@ -27,7 +27,7 @@ Supernovae classifying and redshifting software: development stage
 
 
 ## 4. Dependencies:
-    Using pip will automatically install numpy, scipy, specutils, and tensorflow.
+    Using pip will automatically install numpy, scipy, specutils, pyqtgraph, and tensorflow.
 
     PyQt4
 

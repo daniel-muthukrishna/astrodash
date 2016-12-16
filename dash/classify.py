@@ -1,7 +1,11 @@
 import sys
 import os
 import numpy as np
+mainDirectory = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.join(mainDirectory, ".."))
+
 from restore_model import LoadInputSpectra, BestTypesListSingleRedshift
+
 
 class Classify(object):
     def __init__(self, filenames=[], redshifts=[]):
@@ -42,7 +46,7 @@ class Classify(object):
         return np.array(bestMatchLists)
 
 
-# EXAMPLE USAGE:
+# # EXAMPLE USAGE:
 # classification = Classify(filenames=['/Users/dmuthukrishna/Users/dmuthukrishna/DES16E1dic_E1_combined_161125_v10_b00.dat',
 #                                      '/Users/dmuthukrishna/Users/dmuthukrishna/DES16E1dic_E1_combined_161125_v10_b00.dat'],
 #                           redshifts=[0.34, 0.13])

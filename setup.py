@@ -8,8 +8,8 @@ here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
-setup(name='DASH',
-    version='0.1.0',
+setup(name='astrodash',
+    version='0.1.2',
     description='Deep Learning for Automated Spectral Classification of Supernovae',
     long_description=long_description,
     url='https://github.com/daniel-muthukrishna/DASH',
@@ -36,7 +36,7 @@ setup(name='DASH',
         'Programming Language :: Python :: 3',
     ],
 
-    keywords='supernova spectral classification deep learning',
+    keywords='supernova spectral classification deep machine learning',
 
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
