@@ -26,17 +26,18 @@ Supernovae classifying and redshifting software: development stage
     2.5 If the input spectrum is too noisy, increase the smoothing level, and click 'Re-fit with priors'
 
 
-3. Dependencies:
+## 4. Dependencies:
     Using pip will automatically install numpy, scipy, specutils, and tensorflow.
 
     PyQt4
+
         This can be installed with anaconda: "conda install pyqt=4" (or else independently - only needed for the GUI)
 
-4. How to raise issues:
+## 5. How to raise issues:
 
-5. Examples
+## 6. Examples
 
-6. API Usage
+## 7. API Usage
 Notes:
     Current version requires an input redshift (inaccurate results if redshift is unknown)
 
