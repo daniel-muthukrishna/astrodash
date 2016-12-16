@@ -8,11 +8,11 @@ here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
-setup(name='deepstars',
+setup(name='DASH',
     version='0.1.0',
-    description='Deep Learning for Spectral Typing and Redshifting of Supernovae',
+    description='Deep Learning for Automated Spectral Classification of Supernovae',
     long_description=long_description,
-    url='https://github.com/daniel-muthukrishna/SNClassifying_Pre-alpha',
+    url='https://github.com/daniel-muthukrishna/DASH',
     author='Daniel Muthukrishna',
     author_email='daniel.muthukrishna@gmail.com',
     license='MIT',
@@ -21,7 +21,7 @@ setup(name='deepstars',
         #   3 - Alpha
         #   4 - Beta
         #   5 - Production/Stable
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
 
         # Indicate who your project is intended for
         'Intended Audience :: Science/Research',
@@ -50,7 +50,7 @@ setup(name='deepstars',
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['numpy', 'scipy', 'specutils'],
+    install_requires=['numpy', 'scipy', 'specutils', 'tensorflow', 'pyqtgraph'],
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,
@@ -79,7 +79,7 @@ setup(name='deepstars',
     # pip to create the appropriate form of executable for the target platform.
     entry_points={
         'console_scripts': [
-            'sample=deepstars:main',
+            'sample=DASH:main',
         ],
     },
 )

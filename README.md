@@ -2,15 +2,19 @@
 Supernovae classifying and redshifting software: development stage
 
 
-1. How to install:
+## 1. How to install:
 
-    1.1 Install tensorflow (https://www.tensorflow.org/versions/r0.11/get_started/os_setup.html#download-and-setup).
+    1.1 pip install DASH
 
-    1.2 pip install deepstars
+        or download from github (https://github.com/daniel-muthukrishna/DASH)
 
-        or download from github (https://github.com/daniel-muthukrishna/SNClassifying_Pre-alpha)
+## 2. Get started with the Python Library interface:
+    2.1 Use the following example code:
+        import DASH
+        classification = DASH.Classify([filenames], [knownRedshifts])
+        print classification.list_best_matches(n=1)
 
-2. Get started:
+## 3. Get started with GUI
     2.1 Run GUI/main.py
 
     2.2 Once open, type in a known redshift
@@ -23,21 +27,16 @@ Supernovae classifying and redshifting software: development stage
 
 
 3. Dependencies:
-    python2.7 (unconfirmed python3)
-
-    numpy
-
-    scipy
+    Using pip will automatically install numpy, scipy, specutils, and tensorflow.
 
     PyQt4
+        This can be installed with anaconda: "conda install pyqt=4" (or else independently - only needed for the GUI)
 
-    tensorflow
+4. How to raise issues:
 
-3. How to raise issues:
+5. Examples
 
-4. Examples
-
-5. API Usage
+6. API Usage
 Notes:
     Current version requires an input redshift (inaccurate results if redshift is unknown)
 
