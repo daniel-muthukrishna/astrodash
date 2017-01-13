@@ -17,7 +17,6 @@ setup(name='astrodash',
     author='Daniel Muthukrishna',
     author_email='daniel.muthukrishna@gmail.com',
     license='MIT',
-    keywords = ['tag1', 'tag2'],
     classifiers=[
         # How mature is this project? Common values are
         #   3 - Alpha
