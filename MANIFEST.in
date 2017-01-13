@@ -9,8 +9,7 @@ include type_age_atRedshiftZero.npz
 
 # Include Python files
 include *.py
-recursive-include GUI *.py *.ui
-recursive-include dash *.py
+recursive-include dash *.py *.ui *.pickle *.npz *.ckpt
 
 prune type_age_atRedshiftZero.npz
 prune model_trainedAtZeroZ.ckpt

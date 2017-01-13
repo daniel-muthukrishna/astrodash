@@ -9,11 +9,11 @@ from classify import Classify
 
 
 def main():
-    classification = Classify(filenames=['../test_spectrum_file.dat',
-                                         '../test_spectrum_file.dat'],
+    classification = Classify(filenames=['test_spectrum_file.dat',
+                                         'test_spectrum_file.dat'],
                               redshifts=[0.34, 0.13])
     print classification.list_best_matches()
-    classification.plot_with_gui(indexToPlot=1)
+    # classification.plot_with_gui(indexToPlot=1)
 
 
 def run_gui():
@@ -25,6 +25,6 @@ def run_gui():
 
 if __name__ == '__main__':
     main()
-    run_gui()
+    # run_gui()
 
 
