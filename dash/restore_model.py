@@ -23,6 +23,21 @@ if not os.path.isfile(dataFilename):
     dataFileDownload.retrieve(
         "https://raw.githubusercontent.com/daniel-muthukrishna/DASH/master/dash/type_age_atRedshiftZero.npz", dataFilename)
     print dataFilename
+dataFilename = os.path.join(scriptDirectory, 'training_params.pickle')
+if not os.path.isfile(dataFilename):
+    print "Downloading Data File..."
+    dataFileDownload = urllib.URLopener()
+    dataFileDownload.retrieve(
+        "https://raw.githubusercontent.com/daniel-muthukrishna/DASH/master/dash/training_params.pickle", dataFilename)
+    print dataFilename
+dataFilename = os.path.join(scriptDirectory, 'templates.npz')
+if not os.path.isfile(dataFilename):
+    print "Downloading Data File..."
+    dataFileDownload = urllib.URLopener()
+    dataFileDownload.retrieve(
+        "https://raw.githubusercontent.com/daniel-muthukrishna/DASH/master/dash/templates.npz", dataFilename)
+    print dataFilename
+
 
 loaded = np.load(os.path.join(scriptDirectory, "type_age_atRedshiftZero.npz"))
 trainImages = loaded['trainImages']

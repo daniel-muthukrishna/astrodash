@@ -1,13 +1,19 @@
 import os
 import sys
-
 import numpy as np
+import urllib
 
-mainDirectory = os.path.dirname(os.path.abspath(__file__))
+scriptDirectory = os.path.dirname(os.path.abspath(__file__))
 
-from dash.restore_model import LoadInputSpectra, BestTypesListSingleRedshift
-from PyQt4 import QtGui
-from main import MainApp
+from restore_model import LoadInputSpectra, BestTypesListSingleRedshift
+
+try:
+    from PyQt4 import QtGui
+    from main import MainApp
+except ImportError:
+    print "Warning: You will need to install 'PyQt4' if you want to use the graphical interface. " \
+          "Using the automatic library will continue to work."
+
 
 
 class Classify(object):
@@ -20,6 +26,39 @@ class Classify(object):
         self.smooth = smooth
         self.numSpectra = len(filenames)
         self.mainDirectory = os.path.dirname(os.path.abspath(__file__))
+
+        modelFilename = os.path.join(scriptDirectory, 'model_trainedAtZeroZ.ckpt')
+        if not os.path.isfile(modelFilename):
+            print "Downloading Training Model..."
+            modelFileDownload = urllib.URLopener()
+            modelFileDownload.retrieve(
+                "https://raw.githubusercontent.com/daniel-muthukrishna/DASH/master/dash/model_trainedAtZeroZ.ckpt",
+                modelFilename)
+            print modelFilename
+        dataFilename = os.path.join(scriptDirectory, 'type_age_atRedshiftZero.npz')
+        if not os.path.isfile(dataFilename):
+            print "Downloading Data File..."
+            dataFileDownload = urllib.URLopener()
+            dataFileDownload.retrieve(
+                "https://raw.githubusercontent.com/daniel-muthukrishna/DASH/master/dash/type_age_atRedshiftZero.npz",
+                dataFilename)
+            print dataFilename
+        dataFilename = os.path.join(scriptDirectory, 'training_params.pickle')
+        if not os.path.isfile(dataFilename):
+            print "Downloading Data File..."
+            dataFileDownload = urllib.URLopener()
+            dataFileDownload.retrieve(
+                "https://raw.githubusercontent.com/daniel-muthukrishna/DASH/master/dash/training_params.pickle",
+                dataFilename)
+            print dataFilename
+        dataFilename = os.path.join(scriptDirectory, 'templates.npz')
+        if not os.path.isfile(dataFilename):
+            print "Downloading Data File..."
+            dataFileDownload = urllib.URLopener()
+            dataFileDownload.retrieve(
+                "https://raw.githubusercontent.com/daniel-muthukrishna/DASH/master/dash/templates.npz", dataFilename)
+            print dataFilename
+
         self.modelFilename = os.path.join(self.mainDirectory, "model_trainedAtZeroZ.ckpt")
 
 

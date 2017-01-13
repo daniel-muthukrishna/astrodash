@@ -2,10 +2,10 @@
 include LICENCE
 
 # Include the data files
-include templates.npz
-include training_params.pickle
-include model_trainedAtZeroZ.ckpt
-include type_age_atRedshiftZero.npz
+include dash/templates.npz
+include dash/training_params.pickle
+include dash/model_trainedAtZeroZ.ckpt
+include dash/type_age_atRedshiftZero.npz
 
 # Include Python files
 include *.py
