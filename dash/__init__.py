@@ -16,17 +16,9 @@ def main():
                                          '../test_spectrum_file.dat'],
                               redshifts=[0.34, 0.13])
     print classification.list_best_matches()
-
-
-def run_gui():
-    app = QtGui.QApplication(sys.argv)
-    form = MainApp()
-    form.show()
-    app.exec_()
-
+    classification.plot_with_gui(indexToPlot=0)
 
 if __name__ == '__main__':
     main()
-    run_gui()
 
 

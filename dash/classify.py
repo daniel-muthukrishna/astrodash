@@ -5,22 +5,25 @@ mainDirectory = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(mainDirectory, ".."))
 
 from restore_model import LoadInputSpectra, BestTypesListSingleRedshift
+from PyQt4 import QtGui
+from main import MainApp
 
 
 class Classify(object):
-    def __init__(self, filenames=[], redshifts=[]):
+    def __init__(self, filenames=[], redshifts=[], smooth=15):
         """ Takes a list of filenames and corresponding redshifts for supernovae.
         Files should contain a single spectrum, and redshifts should be a list of corresponding redshift floats
         """
         self.filenames = filenames
         self.redshifts = redshifts
+        self.smooth = smooth
         self.numSpectra = len(filenames)
         self.mainDirectory = os.path.dirname(os.path.abspath(__file__))
         sys.path.insert(0, os.path.join(self.mainDirectory, ".."))
         self.modelFilename = os.path.join(self.mainDirectory, "../model_trainedAtZeroZ.ckpt")
 
-    def _input_spectrum_info(self, filename, redshift, n, smooth=10):
-        loadInputSpectra = LoadInputSpectra(filename, redshift, redshift, smooth)
+    def _input_spectrum_info(self, filename, redshift, n):
+        loadInputSpectra = LoadInputSpectra(filename, redshift, redshift, self.smooth)
         inputImage, inputRedshift, typeNamesList, nw, nBins = loadInputSpectra.input_spectra()
         bestTypesList = BestTypesListSingleRedshift(self.modelFilename, inputImage, typeNamesList, nw, nBins)
         bestTypes = bestTypesList.bestTypes
@@ -44,6 +47,17 @@ class Classify(object):
             bestMatchLists.append(bestMatchList)
 
         return np.array(bestMatchLists)
+
+    def plot_with_gui(self, indexToPlot=0):
+        app = QtGui.QApplication(sys.argv)
+        form = MainApp(inputFilename=self.filenames[indexToPlot])
+        form.lblInputFilename.setText(self.filenames[indexToPlot])
+        form.lineEditKnownZ.setText(str(self.redshifts[indexToPlot]))
+        form.lineEditSmooth.setText(str(self.smooth))
+        form.fit_spectra()
+        form.show()
+        app.exec_()
+
 
 
 

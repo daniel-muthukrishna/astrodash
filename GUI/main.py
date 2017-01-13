@@ -13,7 +13,7 @@ from restore_model import *
 from create_arrays import AgeBinning
 
 class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, inputFilename="DefaultFilename"):
         super(MainApp, self).__init__(parent)
         self.setupUi(self)
 
@@ -34,7 +34,7 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
         self.btnBrowse.clicked.connect(self.select_input_file)
         self.listWidget.itemClicked.connect(self.list_item_clicked)
         self.btnRefit.clicked.connect(self.fit_spectra)
-        self.inputFilename = "DefaultFilename"
+        self.inputFilename = inputFilename
         self.progressBar.setValue(100)
         self.add_combo_box_entries()
 
