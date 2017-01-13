@@ -1,0 +1,11 @@
+# Include the licence file
+include LICENCE
+
+# Include the data files
+
+# Include Python files
+include *.py
+recursive-include GUI *.py *.ui
+recursive-include dash *.py
+
+
