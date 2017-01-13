@@ -2,9 +2,7 @@ import sys
 import os
 import pickle
 mainDirectory = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.join(mainDirectory, ".."))
-sys.path.insert(0, os.path.join(mainDirectory, "../GUI"))
-from main import *
+#from main import *
 from PyQt4 import QtGui
 
 from classify import Classify

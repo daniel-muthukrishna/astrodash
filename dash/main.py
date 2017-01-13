@@ -1,16 +1,15 @@
+import os
+import sys
+
 from PyQt4 import QtGui
 from PyQt4.QtCore import QThread, SIGNAL
-import sys
-import os
-import pickle
 
 import design
-import sys
-mainDirectory = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.join(mainDirectory, ".."))
 
-from restore_model import *
-from create_arrays import AgeBinning
+mainDirectory = os.path.dirname(os.path.abspath(__file__))
+
+from dash.restore_model import *
+from dash.create_arrays import AgeBinning
 
 class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
     def __init__(self, parent=None, inputFilename="DefaultFilename"):
@@ -58,13 +57,13 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
         self.comboBoxAge.currentIndexChanged.connect(self.combo_box_changed)
 
     def templates(self):
-        with open(os.path.join(mainDirectory, "../training_params.pickle")) as f:
+        with open(os.path.join(mainDirectory, "training_params.pickle")) as f:
             self.nTypes, self.w0, self.w1, self.nw, minAge, maxAge, ageBinSize, self.typeList = pickle.load(f)
 
         dwlog = np.log(self.w1/self.w0)/self.nw
         self.wave = self.w0 * np.exp(np.arange(0,self.nw) * dwlog)
 
-        loaded = np.load(os.path.join(mainDirectory, '../templates.npz'))
+        loaded = np.load(os.path.join(mainDirectory, 'templates.npz'))
         self.templateFluxesAll = loaded['templateFluxesAll']
         self.templateFileNamesAll = loaded['templateFilenamesAll']
 
@@ -141,7 +140,7 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
 
     def zero_redshift_model(self):
         if (self.checkBoxZeroZTrained.isChecked() == True):
-            self.modelFilename = os.path.join(self.mainDirectory, "../model_trainedAtZeroZ.ckpt")
+            self.modelFilename = os.path.join(self.mainDirectory, "model_trainedAtZeroZ.ckpt")
             self.checkBoxKnownZ.setEnabled(True)
             self.lineEditKnownZ.setEnabled(True)
             self.checkBoxAgnosticZTrained.setEnabled(False)
@@ -167,7 +166,7 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
         if (self.checkBoxAgnosticZTrained.isChecked() == True):
             self.checkBoxZeroZTrained.setEnabled(False)
             self.checkBoxZeroZTrained.setChecked(False)
-            self.modelFilename = os.path.join(self.mainDirectory, "../model_agnostic_redshift.ckpt")
+            self.modelFilename = os.path.join(self.mainDirectory, "model_agnostic_redshift.ckpt")
         elif (self.checkBoxAgnosticZTrained.isChecked() == False):
             self.checkBoxZeroZTrained.setEnabled(True)
             self.checkBoxZeroZTrained.setChecked(True)

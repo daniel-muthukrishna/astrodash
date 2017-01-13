@@ -1,10 +1,11 @@
-import sys
 import os
-import numpy as np
-mainDirectory = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.join(mainDirectory, ".."))
+import sys
 
-from restore_model import LoadInputSpectra, BestTypesListSingleRedshift
+import numpy as np
+
+mainDirectory = os.path.dirname(os.path.abspath(__file__))
+
+from dash.restore_model import LoadInputSpectra, BestTypesListSingleRedshift
 from PyQt4 import QtGui
 from main import MainApp
 
@@ -19,8 +20,8 @@ class Classify(object):
         self.smooth = smooth
         self.numSpectra = len(filenames)
         self.mainDirectory = os.path.dirname(os.path.abspath(__file__))
-        sys.path.insert(0, os.path.join(self.mainDirectory, ".."))
-        self.modelFilename = os.path.join(self.mainDirectory, "../model_trainedAtZeroZ.ckpt")
+        self.modelFilename = os.path.join(self.mainDirectory, "model_trainedAtZeroZ.ckpt")
+
 
     def _input_spectrum_info(self, filename, redshift, n):
         loadInputSpectra = LoadInputSpectra(filename, redshift, redshift, self.smooth)

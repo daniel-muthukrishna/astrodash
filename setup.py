@@ -9,11 +9,10 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(name='astrodash',
-    version='0.2.4',
+    version='0.2.11',
     description='Deep Learning for Automated Spectral Classification of Supernovae',
     long_description=long_description,
     url='https://github.com/daniel-muthukrishna/DASH',
-    download_url='https://github.com/daniel-muthukrishna/DASH/archive/0.2.4.tar.gz',
     author='Daniel Muthukrishna',
     author_email='daniel.muthukrishna@gmail.com',
     license='MIT',
@@ -65,13 +64,7 @@ setup(name='astrodash',
     # If there are data files included in your packages that need to be
     # installed, specify them here.  If using Python 2.6 or less, then these
     # have to be included in MANIFEST.in as well.
-    package_data={
-        'sample': ['type_age_atRedshiftZero.npz',
-                   'templates.npz',
-                   'training_params.pickle',
-                   'test_spectrum.dat',
-                   'model_trainedAtZeroZ.ckpt'],
-    },
+
 
     # Although 'package_data' is the preferred approach, in some case you may
     # need to place data files outside of your packages. See:

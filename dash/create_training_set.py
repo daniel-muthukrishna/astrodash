@@ -144,7 +144,7 @@ if __name__ == '__main__':
 
     scriptDirectory = os.path.dirname(os.path.abspath(__file__))
 
-    snidTemplateLocation = os.path.join(scriptDirectory, "templates/snid_templates_Modjaz_BSNIP/")
+    snidTemplateLocation = os.path.join(scriptDirectory, "../templates/snid_templates_Modjaz_BSNIP/")
     sfTemplateLocation = 'NOTUSED'
     snidtempfilelist1 = snidTemplateLocation + 'templist.txt'
     sftempfilelist1 = sfTemplateLocation + 'templist.txt'

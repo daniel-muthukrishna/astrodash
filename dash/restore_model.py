@@ -4,8 +4,26 @@ import pickle
 from input_spectra import *
 from multilayer_convnet import convnet_variables
 import os
+import urllib
 
 scriptDirectory = os.path.dirname(os.path.abspath(__file__))
+
+print scriptDirectory
+modelFilename = os.path.join(scriptDirectory, 'model_trainedAtZeroZ.ckpt')
+if not os.path.isfile(modelFilename):
+    print "Downloading Training Model..."
+    modelFileDownload = urllib.URLopener()
+    modelFileDownload.retrieve(
+        "https://raw.githubusercontent.com/daniel-muthukrishna/DASH/master/model_trainedAtZeroZ.ckpt", modelFilename)
+    print modelFilename
+dataFilename = os.path.join(scriptDirectory, 'type_age_atRedshiftZero.npz')
+if not os.path.isfile(dataFilename):
+    print "Downloading Data File..."
+    dataFileDownload = urllib.URLopener()
+    dataFileDownload.retrieve(
+        "https://raw.githubusercontent.com/daniel-muthukrishna/DASH/master/type_age_atRedshiftZero.npz", dataFilename)
+    print dataFilename
+
 loaded = np.load(os.path.join(scriptDirectory, "type_age_atRedshiftZero.npz"))
 trainImages = loaded['trainImages']
 trainLabels = loaded['trainLabels']
