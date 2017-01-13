@@ -12,11 +12,12 @@ Supernovae classifying and redshifting software: development stage
     2.1 Use the following example code:
         import dash
         classification = dash.Classify([filenames], [knownRedshifts])
-        print classification.list_best_matches(n=1)
+        print classification.list_best_matches(n=1)  # Shows top 'n' matches for each spectrum
 
     2.2 To open the gui from a script use:
         import dash
         dash.run_gui()
+
 
 ## 3. Get started with GUI
     2.1 Run GUI/main.py

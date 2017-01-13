@@ -55,7 +55,7 @@ class RestoreModel(object):
             self.saver.restore(sess, self.modelFilename)
 
             softmax = self.y_conv.eval(feed_dict={self.x: self.inputImages, self.keep_prob: 1.0})
-            print(softmax)
+            # print(softmax)
             
         return softmax
 
@@ -73,7 +73,7 @@ class BestTypesListSingleRedshift(object):
         self.typeNamesList = np.array(typeNamesList)
         self.inputImage = self.inputImage[0]
         self.softmax = self.restoreModel.restore_variables()[0]
-        print(len(self.softmax))
+        # print(len(self.softmax))
 
         self.bestTypes, self.idx, self.softmaxOrdered = self.create_list()
 
