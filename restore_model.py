@@ -34,6 +34,7 @@ class LoadInputSpectra(object):
     def input_spectra(self):
         return self.inputImages, self.inputRedshifts, self.typeNamesList, int(self.nw), self.nBins
 
+
 class RestoreModel(object):
     def __init__(self, modelFilename, inputImages, nw, nBins):
         self.reset()

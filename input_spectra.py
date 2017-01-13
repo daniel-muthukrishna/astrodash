@@ -25,7 +25,6 @@ class InputSpectra(object):
         self.fileType = 'fits or twocolumn etc.' #Will use later on
         self.typeNamesList = self.createLabels.type_names_list()
         self.smooth = smooth
-        
 
     def redshifting(self):
         images = np.empty((0, int(self.nw)), np.float32)  # Number of pixels

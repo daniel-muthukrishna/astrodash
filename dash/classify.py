@@ -46,6 +46,9 @@ class Classify(object):
         return np.array(bestMatchLists)
 
 
+
+
+
 # # EXAMPLE USAGE:
 # classification = Classify(filenames=['/Users/dmuthukrishna/Users/dmuthukrishna/DES16E1dic_E1_combined_161125_v10_b00.dat',
 #                                      '/Users/dmuthukrishna/Users/dmuthukrishna/DES16E1dic_E1_combined_161125_v10_b00.dat'],
