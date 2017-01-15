@@ -1,14 +1,17 @@
 import sys
 import os
+from .download_data_files import download_all_files
+
+download_all_files()
 
 # try:
 #     from PyQt4 import QtGui
 # except ImportError:
-#     from main import *
+#     from .main import *
 #     print("Warning: You will need to install 'PyQt4' if you want to use the graphical interface. " \
 #           "Using the automatic library will continue to work.")
 
-from classify import Classify
+from .classify import Classify
 
 
 def main():

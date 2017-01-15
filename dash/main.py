@@ -4,12 +4,12 @@ import sys
 from PyQt4 import QtGui
 from PyQt4.QtCore import QThread, SIGNAL
 
-import design
+import .design
 
 mainDirectory = os.path.dirname(os.path.abspath(__file__))
 
-from dash.restore_model import *
-from dash.create_arrays import AgeBinning
+from .restore_model import *
+from .create_arrays import AgeBinning
 
 class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
     def __init__(self, parent=None, inputFilename="DefaultFilename"):

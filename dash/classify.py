@@ -1,15 +1,15 @@
 import os
 import sys
 import numpy as np
-from download_data_files import download_all_files
+from .download_data_files import download_all_files
 
 scriptDirectory = os.path.dirname(os.path.abspath(__file__))
 
-from restore_model import LoadInputSpectra, BestTypesListSingleRedshift
+from .restore_model import LoadInputSpectra, BestTypesListSingleRedshift
 
 try:
     from PyQt4 import QtGui
-    from main import MainApp
+    from .main import MainApp
 except ImportError:
     print("Warning: You will need to install 'PyQt4' if you want to use the graphical interface. " \
           "Using the automatic library will continue to work.")

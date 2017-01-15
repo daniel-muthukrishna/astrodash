@@ -1,8 +1,9 @@
+import os
 import numpy as np
 import itertools
 import tensorflow as tf
-from multilayer_convnet import convnet_variables
-import os
+from .multilayer_convnet import convnet_variables
+
 
 scriptDirectory = os.path.dirname(os.path.abspath(__file__))
 loaded = np.load(os.path.join(scriptDirectory, "type_age_atRedshiftZero.npz"))

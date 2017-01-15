@@ -1,8 +1,8 @@
 import tensorflow as tf
-from input_spectra import *
-from multilayer_convnet import convnet_variables
+from .input_spectra import *
+from .multilayer_convnet import convnet_variables
 import os
-from download_data_files import download_all_files
+from .download_data_files import download_all_files
 
 download_all_files()
 

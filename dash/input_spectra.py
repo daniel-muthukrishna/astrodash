@@ -1,6 +1,5 @@
 import numpy as np
-import pickle
-from create_arrays import *
+from .create_arrays import *
 
 
 class InputSpectra(object):

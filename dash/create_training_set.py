@@ -1,5 +1,6 @@
-from create_arrays import *
+from .create_arrays import *
 import pickle
+
 
 class CreateTrainingSet(object):
 

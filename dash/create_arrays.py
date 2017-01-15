@@ -1,6 +1,6 @@
 import numpy as np
 from random import shuffle
-from sn_processing import PreProcessing
+from .sn_processing import PreProcessing
 
 
 class AgeBinning(object):
