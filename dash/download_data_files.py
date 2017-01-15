@@ -2,16 +2,15 @@ import os
 import sys
 import urllib
 
-
-def download_file(filename, urlPath, printStatus, scriptDirectory):
+def download_file(filename, urlpath, printStatus, scriptDirectory):
     dataFilename = os.path.join(scriptDirectory, filename)
     if not os.path.isfile(dataFilename):
         print(printStatus)
         if sys.version_info[0] < 3:
             dataFileDownload = urllib.URLopener()
-            dataFileDownload.retrieve(urlPath, dataFilename)
+            dataFileDownload.retrieve(urlpath, dataFilename)
         else:
-            urllib.request.retrieve(urlPath, dataFilename)
+            urllib.request.retrieve(urlpath, dataFilename)
 
         print(dataFilename)
 
