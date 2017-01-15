@@ -65,7 +65,7 @@ class ReadSpectrumFile(object):
                         wave.append(float(datapoint[0].replace('D', 'E')))
                         flux.append(float(datapoint[1].replace('D', 'E')))
         except ValueError:
-            print ("Invalid Superfit file: " + self.filename) #D-13 instead of E-13
+            print("Invalid Superfit file: " + self.filename) #D-13 instead of E-13
 
         wave = np.array(wave)
         flux = np.array(flux)
@@ -83,7 +83,6 @@ class ReadSpectrumFile(object):
         else:
             print("Invalid Input File")
             return 0
-
 
     def two_col_input_spectrum(self, wave, flux, z):
         wave, flux = self.processingTools.deredshift_spectrum(wave, flux, z)
@@ -154,8 +153,6 @@ class ReadSpectrumFile(object):
 
         return wave, fluxes, numAges, ages, ttype, splineInfo
 
-
-
     def snid_template_spectra(self, wave, flux, z, splineInfo):
         #Undo Binning function -> then add galaxy -> then redshift
 
@@ -163,7 +160,6 @@ class ReadSpectrumFile(object):
 
         return waveRedshifted, fluxRedshifted
 
-    
 
 class PreProcessSpectrum(object):
     def __init__(self, w0, w1, nw):
@@ -209,18 +205,17 @@ class PreProcessSpectrum(object):
 
 
 
-    ##            print (j, range(int(s0log), int(s1log)), int(s0log), s0log, int(s1log), s1log)
-    ##            print fluxout[j]
-    ##            print (j+1, s1log, j, s0log)
-    ##            print (min(s1log, j+1), max(s0log, j), alen, s1log-s0log)
-    ##            print ('--------------------------')
+    ##            print(j, range(int(s0log), int(s1log)), int(s0log), s0log, int(s1log), s1log)
+    ##            print(fluxout[j])
+    ##            print(j+1, s1log, j, s0log)
+    ##            print(min(s1log, j+1), max(s0log, j), alen, s1log-s0log)
+    ##            print('--------------------------')
 
 
         minindex, maxindex = self.processingTools.min_max_index(fluxout)
 
 
         return wlog, fluxout, minindex, maxindex
-
 
     def spline_fit(self, wave, flux, numSplinePoints, minindex, maxindex):
         continuum = np.zeros(int(self.nw))
@@ -235,7 +230,6 @@ class PreProcessSpectrum(object):
 
         return continuum
 
-
     def continuum_removal(self, wave, flux, numSplinePoints, minindex, maxindex):
         newflux = np.zeros(int(self.nw))
 
@@ -243,7 +237,6 @@ class PreProcessSpectrum(object):
         newflux[minindex:maxindex] = flux[minindex:maxindex] - splineFit[minindex:maxindex]
 
         return newflux, splineFit
-
 
     def mean_zero(self, wave, flux, minindex, maxindex):
         """mean zero flux"""

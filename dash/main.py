@@ -217,7 +217,7 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
             self.minZ = float(self.lineEditMinZ.text())
             self.maxZ = float(self.lineEditMaxZ.text())
             self.knownZ = self.minZ
-            print (self.minZ, self.maxZ)
+            print(self.minZ, self.maxZ)
             self.fitThread = FitSpectrumThread(self.inputFilename, self.minZ, self.maxZ, self.redshiftFlag, self.modelFilename, self.smooth)
             self.connect(self.fitThread, SIGNAL("load_spectrum(PyQt_PyObject)"), self.load_spectrum)
             self.connect(self.fitThread, SIGNAL("finished()"), self.done_fit_thread)
@@ -237,7 +237,7 @@ class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
     def load_spectrum_single_redshift(self, spectrumInfo):
         self.bestTypes, self.softmax, self.idx, self.templateFluxes, self.inputFluxes, self.typeNamesList, self.inputImageUnRedshifted = spectrumInfo
         self.progressBar.setValue(85)#self.progressBar.value()+)
-        print "here"
+        print("here")
 
     def done_fit_thread_single_redshift(self):
         if (self.cancelledFitting == False):

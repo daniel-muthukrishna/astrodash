@@ -28,5 +28,5 @@ knownRedshifts.append(0.043)
 knownRedshifts.append(0.373)
 
 classification = dash.Classify(filenames, knownRedshifts)
-print classification.list_best_matches(n=3)
+print(classification.list_best_matches(n=3))
 classification.plot_with_gui(indexToPlot=1)

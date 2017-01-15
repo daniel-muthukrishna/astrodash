@@ -1,43 +1,12 @@
 import tensorflow as tf
-import numpy as np
-import pickle
 from input_spectra import *
 from multilayer_convnet import convnet_variables
 import os
-import urllib
+from download_data_files import download_all_files
+
+download_all_files()
 
 scriptDirectory = os.path.dirname(os.path.abspath(__file__))
-
-print scriptDirectory
-modelFilename = os.path.join(scriptDirectory, 'model_trainedAtZeroZ.ckpt')
-if not os.path.isfile(modelFilename):
-    print "Downloading Training Model..."
-    modelFileDownload = urllib.URLopener()
-    modelFileDownload.retrieve(
-        "https://raw.githubusercontent.com/daniel-muthukrishna/DASH/master/dash/model_trainedAtZeroZ.ckpt", modelFilename)
-    print modelFilename
-dataFilename = os.path.join(scriptDirectory, 'type_age_atRedshiftZero.npz')
-if not os.path.isfile(dataFilename):
-    print "Downloading Data File..."
-    dataFileDownload = urllib.URLopener()
-    dataFileDownload.retrieve(
-        "https://raw.githubusercontent.com/daniel-muthukrishna/DASH/master/dash/type_age_atRedshiftZero.npz", dataFilename)
-    print dataFilename
-dataFilename = os.path.join(scriptDirectory, 'training_params.pickle')
-if not os.path.isfile(dataFilename):
-    print "Downloading Data File..."
-    dataFileDownload = urllib.URLopener()
-    dataFileDownload.retrieve(
-        "https://raw.githubusercontent.com/daniel-muthukrishna/DASH/master/dash/training_params.pickle", dataFilename)
-    print dataFilename
-dataFilename = os.path.join(scriptDirectory, 'templates.npz')
-if not os.path.isfile(dataFilename):
-    print "Downloading Data File..."
-    dataFileDownload = urllib.URLopener()
-    dataFileDownload.retrieve(
-        "https://raw.githubusercontent.com/daniel-muthukrishna/DASH/master/dash/templates.npz", dataFilename)
-    print dataFilename
-
 
 loaded = np.load(os.path.join(scriptDirectory, "type_age_atRedshiftZero.npz"))
 trainImages = loaded['trainImages']
@@ -240,12 +209,12 @@ class BestTypesList(object):
 ##idx = np.argsort(bestForEachType[:,2])
 ##bestForEachType = bestForEachType[idx[::-1]]
 ##
-##print ("Type          Redshift      Rel. Prob.")
+##print("Type          Redshift      Rel. Prob.")
 ##print(bestForEachType)
 ##for i in range(10):#ntypes):
 ##    bestIndex = bestForEachType[i][0]
 ##    name, age = typeNamesList[bestIndex].split(': ')
-##    print "".join(word.ljust(15) for word in [name, age , str(bestForEachType[i][1]), str(bestForEachType[i][2])])
+##    print("".join(word.ljust(15) for word in [name, age , str(bestForEachType[i][1]), str(bestForEachType[i][2])]))
 ##    #print(typeNamesList[bestIndex] + '\t' + str(bestForEachType[i][1]) + '\t' + str(bestForEachType[i][2]))
 ##
 ##

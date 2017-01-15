@@ -12,7 +12,7 @@ class ConvNetLayer(object):
         b_conv = self._bias_variable([numFeatures])
         h_conv = tf.nn.relu(self._conv2d(prevHPool, W_conv) + b_conv)
         h_pool = self._max_pool_2x2(h_conv)
-        # print h_pool
+        # print(h_pool)
 
         return h_pool
 

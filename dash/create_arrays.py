@@ -118,7 +118,7 @@ class ReadSpectra(object):
         elif (extension[0] == 'm'):
             age = -float(extension[1:])
         else:
-            print "Invalid Superfit Filename: " + self.filename
+            print("Invalid Superfit Filename: " + self.filename)
 
         return snName, ttype, age
 
@@ -128,7 +128,7 @@ class ReadSpectra(object):
         wave, flux, minIndex, maxIndex = self.data.two_column_data(z)
         snName, ttype, age = self.sf_age()
 
-        print snName, ttype, age
+        print(snName, ttype, age)
 
         return wave, flux, minIndex, maxIndex, age, snName, ttype
 
@@ -161,7 +161,7 @@ class ArrayTools(object):
             filenamesShuf[idx] = filenames[i]
             typeNamesShuf[idx] = typeNames[i]
             idx += 1
-        print ("LenLabels")
+        print("LenLabels")
         print(len(labels), idx)
             
         print(imagesShuf)
@@ -190,8 +190,8 @@ class ArrayTools(object):
     def over_sample_arrays(self, images, labels, filenames, typeNames):
         counts = self.count_labels(labels)
         idx = 0
-        print "Before OverSample"  #
-        print counts  #
+        print("Before OverSample")  #
+        print(counts)  #
 
 
         overSampleAmount = self.div0(1 * max(counts), counts)  # ignore zeros in counts
@@ -228,8 +228,8 @@ class ArrayTools(object):
             
 
                 
-        print "After OverSample"  #
-        print counts1  #
+        print("After OverSample")  #
+        print(counts1)  #
 
         print("Before Shuffling")
         imagesOverSampledShuf, labelsOverSampledShuf, filenamesOverSampledShuf, typeNamesOverSampledShuf = self.shuffle_arrays(imagesOverSampled, labelsOverSampled, filenamesOverSampled, typeNamesOverSampled)
@@ -290,7 +290,7 @@ class CreateArrays(object):
                             filenames.append(templist[i] + '_' + ttype + '_' + str(ages[ageidx]) + '_z' + str(z))
                             typeNames.append(typeName)
 
-            print templist[i]
+            print(templist[i])
             # Create List of all SN types
             if ttype not in typeList:
                 typeList.append(ttype)

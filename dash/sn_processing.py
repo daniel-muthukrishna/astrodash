@@ -63,24 +63,24 @@ class PreProcessing(object):
         #
         # spline = interp1d(binnedwave[minindex:maxindex], binnedflux[minindex:maxindex], kind='cubic')
         # waveSpline = np.linspace(binnedwave[minindex],binnedwave[maxindex-1],num=self.numSplinePoints)
-        # print spline
-        # print '###'
-        # print spline(binnedwave[minindex:maxindex])
+        # print(spline)
+        # print('###')
+        # print(spline(binnedwave[minindex:maxindex]))
         # plt.figure('1')
         # plt.plot(waveSpline, spline(waveSpline), '--', label='spline')
         #
-        # print wave
-        # print binnedwave
-        # print binnedflux
-        # print len(binnedwave)
+        # print(wave)
+        # print(binnedwave)
+        # print(binnedflux)
+        # print(len(binnedwave))
         # plt.plot(wave,flux)
         # plt.figure('2')
         # plt.plot(binnedwave, binnedflux, label='binned')
         # plt.plot(binnedwave, newflux, label='continuumSubtract1')
         # plt.plot(binnedwave, continuum, label='polyfit1')
-        # print len(binnedwave)
-        # print (min(binnedwave), max(binnedwave))
-        # print len(newflux)
+        # print(len(binnedwave))
+        # print((min(binnedwave), max(binnedwave)))
+        # print(len(newflux))
         #
         # #newflux2, poly2 = self.preProcess.continuum_removal(binnedwave, binnedflux, 6, minindex, maxindex)
         # #plt.plot(binnedwave, newflux2, label='continuumSubtract2')
