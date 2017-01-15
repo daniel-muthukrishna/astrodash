@@ -1,8 +1,5 @@
 import sys
 import os
-from download_data_files import download_all_files
-
-download_all_files()
 
 # try:
 #     from PyQt4 import QtGui
