@@ -13,7 +13,8 @@ def download_file(filename, urlpath, printStatus, scriptDirectory):
 
 def download_all_files():
     scriptDirectory = os.path.dirname(os.path.abspath(__file__))
-    saveFilenames = ['type_age_atRedshiftZero.npz', 'model_trainedAtZeroZ.ckpt', 'training_params.pickle', 'templates.npz']
+    saveFilenames = ['model_trainedAtZeroZ.ckpt', 'type_age_atRedshiftZero.npz',
+                     'training_params.pickle', 'templates.npz']
 
     urlpaths = ["https://raw.githubusercontent.com/daniel-muthukrishna/DASH/master/dash/model_trainedAtZeroZ.ckpt",
                 "https://raw.githubusercontent.com/daniel-muthukrishna/DASH/master/dash/type_age_atRedshiftZero.npz",
