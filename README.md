@@ -20,7 +20,7 @@ Supernovae classifying and redshifting software: development stage
 
 
 ## 3. Get started with GUI
-    2.1 Run GUI/main.py
+    2.1 Run gui_main.py
 
     2.2 Once open, type in a known redshift
 

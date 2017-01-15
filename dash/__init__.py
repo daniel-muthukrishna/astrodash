@@ -7,7 +7,7 @@ download_all_files()
 # try:
 #     from PyQt4 import QtGui
 # except ImportError:
-#     from .main import *
+#     from .gui_main import *
 #     print("Warning: You will need to install 'PyQt4' if you want to use the graphical interface. " \
 #           "Using the automatic library will continue to work.")
 
