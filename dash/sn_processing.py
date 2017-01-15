@@ -1,7 +1,7 @@
 #Pre-processing class
 
 from scipy.signal import medfilt
-from .preprocessing import *
+from dash.preprocessing import *
 
 
 

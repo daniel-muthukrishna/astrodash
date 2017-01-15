@@ -1,4 +1,4 @@
-from .create_arrays import *
+from dash.create_arrays import *
 import pickle
 
 

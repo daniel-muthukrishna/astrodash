@@ -1,17 +1,18 @@
 import os
 import sys
+import pickle
 
 from PyQt4 import QtGui
 from PyQt4.QtCore import QThread, SIGNAL
 
-import .design
+from dash.design import Ui_MainWindow
 
 mainDirectory = os.path.dirname(os.path.abspath(__file__))
 
-from .restore_model import *
-from .create_arrays import AgeBinning
+from dash.restore_model import *
+from dash.create_arrays import AgeBinning
 
-class MainApp(QtGui.QMainWindow, design.Ui_MainWindow):
+class MainApp(QtGui.QMainWindow, Ui_MainWindow):
     def __init__(self, parent=None, inputFilename="DefaultFilename"):
         super(MainApp, self).__init__(parent)
         self.setupUi(self)

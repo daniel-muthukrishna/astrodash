@@ -1,17 +1,17 @@
 import sys
 import os
-from .download_data_files import download_all_files
+from dash.download_data_files import download_all_files
 
 download_all_files()
 
 # try:
 #     from PyQt4 import QtGui
 # except ImportError:
-#     from .gui_main import *
+#     from dash.gui_main import *
 #     print("Warning: You will need to install 'PyQt4' if you want to use the graphical interface. " \
 #           "Using the automatic library will continue to work.")
 
-from .classify import Classify
+from dash.classify import Classify
 
 
 def main():

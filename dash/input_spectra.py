@@ -1,5 +1,5 @@
 import numpy as np
-from .create_arrays import *
+from dash.create_arrays import *
 
 
 class InputSpectra(object):

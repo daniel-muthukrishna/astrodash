@@ -2,7 +2,7 @@ import os
 import numpy as np
 import itertools
 import tensorflow as tf
-from .multilayer_convnet import convnet_variables
+from dash.multilayer_convnet import convnet_variables
 
 
 scriptDirectory = os.path.dirname(os.path.abspath(__file__))
