@@ -137,7 +137,7 @@ class SaveTrainingSet(object):
         
 
 if __name__ == '__main__':
-    with open('training_params.pickle') as f:
+    with open('training_params.pickle', 'r') as f:
         nTypes, w0, w1, nw, minAge, maxAge, ageBinSize, typeList = pickle.load(f)
     minZ = 0
     maxZ = 0.0

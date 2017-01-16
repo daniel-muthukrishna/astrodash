@@ -58,7 +58,7 @@ class ReadSpectrumFile(object):
         wave = []
         flux = []
         try:
-            with open(self.filename) as FileObj:
+            with open(self.filename, 'r') as FileObj:
                 for line in FileObj:
                     datapoint = line.rstrip('\n').strip().split()
                     if (len(datapoint) >= 2):
@@ -106,7 +106,7 @@ class ReadSpectrumFile(object):
 
     def snid_template_spectra_all(self):
         """lnw file"""
-        with open(self.filename) as FileObj:
+        with open(self.filename, 'r') as FileObj:
             for i, line in enumerate(FileObj):
                 # Read Header Info
                 if i == 0:

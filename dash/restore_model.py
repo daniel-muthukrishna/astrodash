@@ -26,7 +26,7 @@ trainLabels = loaded['trainLabels']
 
 class LoadInputSpectra(object):
     def __init__(self, inputFilename, minZ, maxZ, smooth):
-        with open(os.path.join(scriptDirectory, "training_params.pickle")) as f:
+        with open(os.path.join(scriptDirectory, "training_params.pickle"), 'r') as f:
             nTypes, w0, w1, nw, minAge, maxAge, ageBinSize, typeList = pickle.load(f)
 
         self.nw = nw
