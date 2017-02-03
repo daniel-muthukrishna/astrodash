@@ -24,11 +24,17 @@ trainLabels = loaded['trainLabels']
 ##typeNamesList = loaded['typeNamesList']
 
 
-class LoadInputSpectra(object):
-    def __init__(self, inputFilename, minZ, maxZ, smooth):
-        with open(os.path.join(scriptDirectory, "training_params.pickle"), 'r') as f:
-            nTypes, w0, w1, nw, minAge, maxAge, ageBinSize, typeList = pickle.load(f)
+def get_training_parameters():
+    with open(os.path.join(scriptDirectory, "training_params.pickle"), 'r') as f:
+        nTypes, w0, w1, nw, minAge, maxAge, ageBinSize, typeList = pickle.load(f)
+    trainParams = nTypes, w0, w1, nw, minAge, maxAge, ageBinSize, typeList
 
+    return trainParams
+
+
+class LoadInputSpectra(object):
+    def __init__(self, inputFilename, minZ, maxZ, smooth, trainParams):
+        nTypes, w0, w1, nw, minAge, maxAge, ageBinSize, typeList = trainParams
         self.nw = nw
         self.nTypes = nTypes
         
@@ -68,27 +74,36 @@ class RestoreModel(object):
     def reset(self):
         tf.reset_default_graph()
 
+
 class BestTypesListSingleRedshift(object):
-    def __init__(self, modelFilename, inputImage, typeNamesList, nw, nBins):
+    def __init__(self, modelFilename, inputImages, typeNamesList, nw, nBins):
         self.modelFilename = modelFilename
-        self.inputImage = inputImage
+        self.inputImages = inputImages
         self.typeNamesList = typeNamesList
         self.nBins = nBins
 
-        self.restoreModel = RestoreModel(self.modelFilename, self.inputImage, nw, nBins)
+        self.restoreModel = RestoreModel(self.modelFilename, self.inputImages, nw, nBins)
         self.typeNamesList = np.array(typeNamesList)
-        self.inputImage = self.inputImage[0]
-        self.softmax = self.restoreModel.restore_variables()[0]
-        # print(len(self.softmax))
 
-        self.bestTypes, self.idx, self.softmaxOrdered = self.create_list()
+        # if more than one image, then variables will be a list of length len(inputImages)
+        if len(self.inputImages) == 1:
+            self.inputImages = self.inputImages[0]
+            softmax = self.restoreModel.restore_variables()[0]
+            self.bestTypes, self.idx, self.softmaxOrdered = self.create_list(softmax)
+        else:
+            softmaxes = self.restoreModel.restore_variables()
+            self.bestTypes, self.softmaxOrdered = [], []
+            for softmax in softmaxes:
+                bestTypes, idx, softmaxOrdered = self.create_list(softmax)
+                self.bestTypes.append(bestTypes)
+                self.softmaxOrdered.append(softmaxOrdered)
 
 
-    def create_list(self):
-        idx = np.argsort(self.softmax) #list of the index of the highest probabiites
+    def create_list(self, softmax):
+        idx = np.argsort(softmax) #list of the index of the highest probabiites
         bestTypes = self.typeNamesList[idx[::-1]] #reordered in terms of softmax probability columns
 
-        return bestTypes, idx, self.softmax[idx[::-1]]
+        return bestTypes, idx, softmax[idx[::-1]]
 
     def plot_best_types(self):
         inputFluxes = []
@@ -99,12 +114,12 @@ class BestTypesListSingleRedshift(object):
             for i in range(len(trainLabels)): #Checking through templates
                 if (trainLabels[i][c] == 1):    #to find template for the best Type
                     templateFlux = trainImages[i]  #plot template
-                    inputFlux = self.inputImage #Plot inputImage at red
+                    inputFlux = self.inputImages #Plot inputImage at red
                     break
             if (i == len(trainLabels)-1):
                 print("No Template") #NEED TO GET TEMPLATE PLOTS IN A BETTER WAY
                 templateFlux = np.zeros(len(trainImages[0]))
-                inputFlux = self.inputImage
+                inputFlux = self.inputImages
 
             templateFluxes.append(templateFlux)
             inputFluxes.append(inputFlux)

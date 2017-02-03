@@ -352,7 +352,8 @@ class FitSpectrumThread(QThread):
         self.wait()
 
     def _input_spectrum(self):
-        loadInputSpectra = LoadInputSpectra(self.inputFilename, self.minZ, self.maxZ, self.smooth)
+        trainParams = get_training_parameters()
+        loadInputSpectra = LoadInputSpectra(self.inputFilename, self.minZ, self.maxZ, self.smooth, trainParams)
         inputImages, inputRedshifts, typeNamesList, nw, nTypes = loadInputSpectra.input_spectra()
         bestTypesList = BestTypesList(self.modelFilename, inputImages, inputRedshifts, typeNamesList, nw, nTypes)
         bestForEachType, redshiftIndex = bestTypesList.print_list()
@@ -363,10 +364,12 @@ class FitSpectrumThread(QThread):
                 inputRedshifts, redshiftGraphs, typeNamesList)
 
     def _input_spectrum_single_redshift(self):
-        loadInputSpectraUnRedshifted = LoadInputSpectra(self.inputFilename, 0, 0, self.smooth)
+        trainParams = get_training_parameters()
+        loadInputSpectraUnRedshifted = LoadInputSpectra(self.inputFilename, 0, 0, self.smooth, trainParams)
         inputImageUnRedshifted, inputRedshift, typeNamesList, nw, nBins = loadInputSpectraUnRedshifted.input_spectra()
 
-        loadInputSpectra = LoadInputSpectra(self.inputFilename, self.minZ, self.maxZ, self.smooth)
+        trainParams = get_training_parameters()
+        loadInputSpectra = LoadInputSpectra(self.inputFilename, self.minZ, self.maxZ, self.smooth, trainParams)
         inputImage, inputRedshift, typeNamesList, nw, nBins = loadInputSpectra.input_spectra()
         bestTypesList = BestTypesListSingleRedshift(self.modelFilename, inputImage, typeNamesList, nw, nBins)
         bestTypes = bestTypesList.bestTypes
