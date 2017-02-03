@@ -55,7 +55,7 @@ Supernovae classifying and redshifting software: development stage
 
 ## 6. Example Usage
     6.1 Example from OzDES Run026/ATEL9742:
-        This example automatically classifies 11 spectra. The last line plots the first spectrum on the GUI.
+        This example automatically classifies 17 spectra. The last line plots the second spectrum on the GUI.
         ```
         import dash
 
