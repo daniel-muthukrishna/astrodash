@@ -11,7 +11,7 @@ try:
     from PyQt4 import QtGui
     from dash.gui_main import MainApp
 except ImportError:
-    print("Warning: You will need to install 'PyQt4' if you want to use the graphical interface. " \
+    print("Warning: You will need to install 'PyQt4' if you want to use the graphical interface. "
           "Using the automatic library will continue to work.")
 
 

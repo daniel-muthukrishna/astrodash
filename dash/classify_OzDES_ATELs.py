@@ -83,11 +83,15 @@ knownRedshifts = [i[1] for i in atels]
 
 classification = dash.Classify(filenames, knownRedshifts)
 bestFits = classification.list_best_matches(n=1)
+
+# SAVE BEST MATCHES
 print bestFits
 f = open('classification_results.csv', 'w')
 for i in range(len(atels)):
     f.write("%s \t %s\n" % (bestFits[i][0], atels[i][0]))
 f.close()
 print("Finished classifying %d spectra!" % len(atels))
-classification.plot_with_gui(indexToPlot=17)
+
+# PLOT SPECTRUM ON GUI
+classification.plot_with_gui(indexToPlot=18)
 
