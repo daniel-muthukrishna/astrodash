@@ -1,7 +1,8 @@
 import os
+import numpy as np
 import dash
 
-directoryPath = '/home/daniel/Documents/OzDES_data/ATEL_9742_Run26'
+directoryPath = '/Users/dmuthukrishna/Documents/OzDES_data/ATEL_9742_Run26'
 
 atel9742 = [
     ('DES16E1ciy_E1_combined_161101_v10_b00.dat', 0.174),
@@ -26,5 +27,8 @@ filenames = [os.path.join(directoryPath, i[0]) for i in atel9742]
 knownRedshifts = [i[1] for i in atel9742]
 
 classification = dash.Classify(filenames, knownRedshifts)
-print(classification.list_best_matches(n=3))
-classification.plot_with_gui(indexToPlot=1)
+bestFits = classification.list_best_matches(n=1)
+print(bestFits)
+np.savetxt('Run26_fits.txt', bestFits, fmt='%s')
+# classification.plot_with_gui(indexToPlot=1)
+
