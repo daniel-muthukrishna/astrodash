@@ -54,36 +54,29 @@ Supernovae classifying and redshifting software: development stage
 
 
 ## 6. Example Usage
-    6.1 Example from OzDES Run026/ATEL9742:
-        This example automatically classifies 17 spectra. The last line plots the second spectrum on the GUI.
+    6.1 Example from OzDES Run025/ATEL9570:
+        This example automatically classifies 10 spectra. The last line plots the fifth spectrum on the GUI.
         ```
         import dash
 
-        atel9742 = [
-            ('DES16E1ciy_E1_combined_161101_v10_b00.dat', 0.174),
-            ('DES16S1cps_S1_combined_161101_v10_b00.dat', 0.274),
-            ('DES16E2crb_E2_combined_161102_v10_b00.dat', 0.229),
-            ('DES16E2clk_E2_combined_161102_v10_b00.dat', 0.367),
-            ('DES16E2cqq_E2_combined_161102_v10_b00.dat', 0.426),
-            ('DES16X2ceg_X2_combined_161103_v10_b00.dat', 0.335),
-            ('DES16X2bkr_X2_combined_161103_v10_b00.dat', 0.159),
-            ('DES16X2crr_X2_combined_161103_v10_b00.dat', 0.312),
-            ('DES16X2cpn_X2_combined_161103_v10_b00.dat', 0.28),
-            ('DES16X2bvf_X2_combined_161103_v10_b00.dat', 0.135),
-            ('DES16C1cbg_C1_combined_161103_v10_b00.dat', 0.111),
-            ('DES16C2cbv_C2_combined_161103_v10_b00.dat', 0.109),
-            ('DES16C1bnt_C1_combined_161103_v10_b00.dat', 0.351),
-            ('DES16C3at_C3_combined_161031_v10_b00.dat', 0.217),
-            ('DES16X3cpl_X3_combined_161031_v10_b00.dat', 0.205),
-            ('DES16E2cjg_E2_combined_161102_v10_b00.dat', 0.48),
-            ('DES16X2crt_X2_combined_161103_v10_b00.dat', 0.57)]
-
-        filenames = [i[0]) for i in atel9742]
-        knownRedshifts = [i[1] for i in atel9742]
+        atel9570 = [
+            ('DES16C3bq_C3_combined_160925_v10_b00.dat', 0.237),
+            ('DES16E2aoh_E2_combined_160925_v10_b00.dat', 0.403),
+            ('DES16X3aqd_X3_combined_160925_v10_b00.dat', 0.033),
+            ('DES16X3biz_X3_combined_160925_v10_b00.dat', 0.24),
+            ('DES16C2aiy_C2_combined_160926_v10_b00.dat', 0.182),
+            ('DES16C2ma_C2_combined_160926_v10_b00.dat', 0.24),
+            ('DES16X1ge_X1_combined_160926_v10_b00.dat', 0.25),
+            ('DES16X2auj_X2_combined_160927_v10_b00.dat', 0.144),
+            ('DES16E2bkg_E2_combined_161005_v10_b00.dat', 0.478),
+            ('DES16E2bht_E2_combined_161005_v10_b00.dat', 0.392)]
+    
+        filenames = [i[0]) for i in atel9570]
+        knownRedshifts = [i[1] for i in atel9570]
 
         classification = dash.Classify(filenames, knownRedshifts)
         print(classification.list_best_matches(n=3))
-        classification.plot_with_gui(indexToPlot=1)
+        classification.plot_with_gui(indexToPlot=5)
         ```
 
 ## 7. API Usage
