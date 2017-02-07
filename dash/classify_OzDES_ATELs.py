@@ -1,7 +1,7 @@
 import os
 import dash
 
-directoryPath = '/Users/dmuthukrishna/Documents/OzDES_data'
+directoryPath = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../templates/OzDES_data')
 
 atels = [
     ('ATEL_9504_Run24/DES16E1de_E1_combined_160825_v10_b00.dat', 0.292),
@@ -82,13 +82,13 @@ filenames = [os.path.join(directoryPath, i[0]) for i in atels]
 knownRedshifts = [i[1] for i in atels]
 
 classification = dash.Classify(filenames, knownRedshifts)
-bestFits = classification.list_best_matches(n=1)
+bestFits = classification.list_best_matches(n=3)
 
 # SAVE BEST MATCHES
 print bestFits
 f = open('classification_results.csv', 'w')
 for i in range(len(atels)):
-    f.write("%s \t %s\n" % (bestFits[i][0], atels[i][0]))
+    f.write("%s\n %s\n" % (atels[i][0], bestFits[i]))
 f.close()
 print("Finished classifying %d spectra!" % len(atels))
 
