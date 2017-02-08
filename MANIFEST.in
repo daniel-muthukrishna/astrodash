@@ -9,6 +9,7 @@ include dash/type_age_atRedshiftZero.npz
 
 # Include Python files
 include *.py
+include README.md
 recursive-include dash *.py *.ui *.pickle *.npz *.ckpt
 
 prune type_age_atRedshiftZero.npz

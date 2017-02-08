@@ -88,7 +88,7 @@ bestFits = classification.list_best_matches(n=3)
 print bestFits
 f = open('classification_results.csv', 'w')
 for i in range(len(atels)):
-    f.write("%s\n %s\n" % (atels[i][0], bestFits[i]))
+    f.write("%s\n %s\n\n" % (atels[i][0], bestFits[i]))
 f.close()
 print("Finished classifying %d spectra!" % len(atels))
 
