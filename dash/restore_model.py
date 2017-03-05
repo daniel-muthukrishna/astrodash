@@ -92,12 +92,12 @@ class BestTypesListSingleRedshift(object):
             self.bestTypes, self.idx, self.softmaxOrdered = self.create_list(softmax)
         else:
             softmaxes = self.restoreModel.restore_variables()
-            self.bestTypes, self.softmaxOrdered = [], []
+            self.bestTypes, self.softmaxOrdered, self.idx = [], [], []
             for softmax in softmaxes:
                 bestTypes, idx, softmaxOrdered = self.create_list(softmax)
                 self.bestTypes.append(bestTypes)
                 self.softmaxOrdered.append(softmaxOrdered)
-
+                self.idx.append(idx)
 
     def create_list(self, softmax):
         idx = np.argsort(softmax) #list of the index of the highest probabiites

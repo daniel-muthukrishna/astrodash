@@ -1,15 +1,18 @@
 from scipy.fftpack import fft
+from scipy.signal import argrelmax
+import numpy as np
 
 class FalsePositiveRejection(object):
     def __init__(self, inputFlux, templateFlux):
         self.inputFlux = inputFlux
         self.templateFlux = templateFlux
+        self.nw = len(self.inputFlux)
 
     def _cross_correlation(self):
-        inputfourier = fft(inputflux)
-        tempfourier = fft(tempflux)
-        kinput = 2 * np.pi / inputwave
-        ktemp = 2 * np.pi / tempwave
+        inputfourier = fft(self.inputflux)
+        tempfourier = fft(self.tempflux)
+        kinput = 2 * np.pi / self.inputwave
+        ktemp = 2 * np.pi / self.tempwave
 
         product = inputfourier * np.conj(tempfourier)
         xcorr = fft(product)
@@ -17,7 +20,7 @@ class FalsePositiveRejection(object):
         rmsinput = np.std(inputfourier)
         rmstemp = np.std(tempfourier)
 
-        xcorrnorm = (1. / (N * rmsinput * rmstemp)) * xcorr
+        xcorrnorm = (1. / (self.nw * rmsinput * rmstemp)) * xcorr
 
         rmsxcorr = np.std(product)
 

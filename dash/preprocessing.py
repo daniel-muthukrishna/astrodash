@@ -60,8 +60,8 @@ class ReadSpectrumFile(object):
         try:
             with open(self.filename, 'r') as FileObj:
                 for line in FileObj:
-                    datapoint = line.rstrip('\n').strip().split()
-                    if (len(datapoint) >= 2):
+                    if line.strip()[0] != '#':
+                        datapoint = line.rstrip('\n').strip().split()
                         wave.append(float(datapoint[0].replace('D', 'E')))
                         flux.append(float(datapoint[1].replace('D', 'E')))
         except ValueError:
@@ -74,15 +74,18 @@ class ReadSpectrumFile(object):
 
     def file_extension(self):
         extension = self.filename.split('.')[-1]
-        if extension == 'dat' or extension == self.filename:
+        if extension == 'dat' or extension == self.filename or extension in ['flm', 'txt', 'dat']:
             return self.read_dat_file()
         elif extension == 'fits':
             return self.read_fits_file()
         elif extension == 'lnw':
             return self.snid_template_spectra_all()
         else:
-            print("Invalid Input File")
-            return 0
+            try:
+                return self.read_dat_file()
+            except:
+                print("Invalid Input File")
+                return 0
 
     def two_col_input_spectrum(self, wave, flux, z):
         wave, flux = self.processingTools.deredshift_spectrum(wave, flux, z)
@@ -213,12 +216,14 @@ class PreProcessSpectrum(object):
 
 
         minindex, maxindex = self.processingTools.min_max_index(fluxout)
+        minindex, maxindex = int(minindex), int(maxindex)
 
 
         return wlog, fluxout, minindex, maxindex
 
     def spline_fit(self, wave, flux, numSplinePoints, minindex, maxindex):
         continuum = np.zeros(int(self.nw))
+        minindex, maxindex = int(minindex), int(maxindex)
         spline = UnivariateSpline(wave[minindex:maxindex+1], flux[minindex:maxindex+1], k=3)
         splineWave = np.linspace(wave[minindex], wave[maxindex], num=numSplinePoints, endpoint=True)
         splinePoints = spline(splineWave)

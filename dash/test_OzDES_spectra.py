@@ -27,7 +27,7 @@ filenames = [os.path.join(directoryPath, i[0]) for i in atel9742]
 knownRedshifts = [i[1] for i in atel9742]
 
 classification = dash.Classify(filenames, knownRedshifts)
-bestFits = classification.list_best_matches(n=1)
+bestFits, bestTypes = classification.list_best_matches(n=1)
 print(bestFits)
 np.savetxt('Run26_fits.txt', bestFits, fmt='%s')
 # classification.plot_with_gui(indexToPlot=1)
