@@ -75,7 +75,6 @@ class Classify(object):
             bestBroadType = self.best_broad_type(bestMatchList)
             bestBroadTypes.append(bestBroadType)
             rejectionLabels.append(self.false_positive_rejection(bestLabels[specNum][::-1], inputImages[specNum]))
-        print bestLabels[0][::-1]
 
         bestMatchLists = np.array(bestMatchLists)
         # self.bestMatchLists = bestMatchLists
@@ -99,7 +98,8 @@ class Classify(object):
         for i in range(len(Classify.templateLabels)):  # Checking through templates
             if (Classify.templateLabels[i][0][c] == 1):  # to find template for the best Type
                 templateImage = Classify.templateImages[i][0]  # plot template. Select index 0 for the first of the templates up to the number of templates available
-        # falsePositiveRejection = FalsePositiveRejection(inputImage, templateImage)
+        falsePositiveRejection = FalsePositiveRejection(inputImage, templateImage)
+        rejectionLabel = falsePositiveRejection.rejection_label()
 
         # import matplotlib
         # matplotlib.use('TkAgg')
@@ -108,7 +108,7 @@ class Classify(object):
         # plt.plot(templateImage)
         # plt.show()
 
-        return True
+        return rejectionLabel
 
     # def save_best_matches(self, n=1, filename='DASH_matches.txt'):
     #     if ('self.bestMatchLists' not in locals()) or self.n != n:

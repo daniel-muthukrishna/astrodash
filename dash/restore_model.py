@@ -86,18 +86,13 @@ class BestTypesListSingleRedshift(object):
         self.typeNamesList = np.array(typeNamesList)
 
         # if more than one image, then variables will be a list of length len(inputImages)
-        if len(self.inputImages) == 1:
-            self.inputImages = self.inputImages[0]
-            softmax = self.restoreModel.restore_variables()[0]
-            self.bestTypes, self.idx, self.softmaxOrdered = self.create_list(softmax)
-        else:
-            softmaxes = self.restoreModel.restore_variables()
-            self.bestTypes, self.softmaxOrdered, self.idx = [], [], []
-            for softmax in softmaxes:
-                bestTypes, idx, softmaxOrdered = self.create_list(softmax)
-                self.bestTypes.append(bestTypes)
-                self.softmaxOrdered.append(softmaxOrdered)
-                self.idx.append(idx)
+        softmaxes = self.restoreModel.restore_variables()
+        self.bestTypes, self.softmaxOrdered, self.idx = [], [], []
+        for softmax in softmaxes:
+            bestTypes, idx, softmaxOrdered = self.create_list(softmax)
+            self.bestTypes.append(bestTypes)
+            self.softmaxOrdered.append(softmaxOrdered)
+            self.idx.append(idx)
 
     def create_list(self, softmax):
         idx = np.argsort(softmax) #list of the index of the highest probabiites
@@ -105,21 +100,21 @@ class BestTypesListSingleRedshift(object):
 
         return bestTypes, idx, softmax[idx[::-1]]
 
-    def plot_best_types(self):
+    def plot_best_types(self, specNum=0):
         inputFluxes = []
         templateFluxes = []
         for j in range(20):#len(self.bestTypes)): #index of best Types in order
-            c = self.idx[::-1][j]
+            c = self.idx[specNum][::-1][j]
             typeName = self.typeNamesList[c] #Name of best type
             for i in range(len(trainLabels)): #Checking through templates
                 if (trainLabels[i][c] == 1):    #to find template for the best Type
                     templateFlux = trainImages[i]  #plot template
-                    inputFlux = self.inputImages #Plot inputImage at red
+                    inputFlux = self.inputImages[specNum] #Plot inputImage at red
                     break
             if (i == len(trainLabels)-1):
                 print("No Template") #NEED TO GET TEMPLATE PLOTS IN A BETTER WAY
                 templateFlux = np.zeros(len(trainImages[0]))
-                inputFlux = self.inputImages
+                inputFlux = self.inputImages[specNum]
 
             templateFluxes.append(templateFlux)
             inputFluxes.append(inputFlux)

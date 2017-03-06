@@ -372,9 +372,9 @@ class FitSpectrumThread(QThread):
         loadInputSpectra = LoadInputSpectra(self.inputFilename, self.minZ, self.maxZ, self.smooth, trainParams)
         inputImage, inputRedshift, typeNamesList, nw, nBins = loadInputSpectra.input_spectra()
         bestTypesList = BestTypesListSingleRedshift(self.modelFilename, inputImage, typeNamesList, nw, nBins)
-        bestTypes = bestTypesList.bestTypes
-        softmax = bestTypesList.softmaxOrdered
-        idx = bestTypesList.idx
+        bestTypes = bestTypesList.bestTypes[0]
+        softmax = bestTypesList.softmaxOrdered[0]
+        idx = bestTypesList.idx[0]
         templateFluxes, inputFluxes = bestTypesList.plot_best_types()
 
         return bestTypes, softmax, idx, templateFluxes, inputFluxes, typeNamesList, inputImageUnRedshifted
