@@ -1,9 +1,9 @@
 from scipy.fftpack import fft
 from scipy.signal import argrelmax
 import numpy as np
-import matplotlib
-matplotlib.use('TkAgg')
-import matplotlib.pyplot as plt
+# import matplotlib
+# matplotlib.use('TkAgg')
+# import matplotlib.pyplot as plt
 
 class FalsePositiveRejection(object):
     def __init__(self, inputFlux, templateFlux):
