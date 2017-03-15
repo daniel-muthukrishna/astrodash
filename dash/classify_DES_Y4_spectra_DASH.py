@@ -135,7 +135,7 @@ bestFits, bestTypes, rejectionLabels = classification.list_best_matches(n=5)
 
 # SAVE BEST MATCHES
 print bestFits
-f = open('classification_results.csv', 'w')
+f = open('classification_results.txt', 'w')
 for i in range(len(atels)):
     f.write("%s   %s     %s      %s\n %s\n\n" % (atels[i][0], atels[i][1], bestTypes[i], rejectionLabels[i], bestFits[i]))
 f.close()

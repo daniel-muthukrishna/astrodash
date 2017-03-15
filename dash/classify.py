@@ -84,14 +84,20 @@ class Classify(object):
 
     def best_broad_type(self, bestMatchList):
         prevName = bestMatchList[0][0]
+        prevMinAge, prevMaxAge = bestMatchList[0][1].split(' to ')
         probTotal = 0.
+        agesList = [int(prevMinAge), int(prevMaxAge)]
         for name, age, prob in bestMatchList[0:10]:
-            if name == prevName:
+            if name == prevName and ((prevMinAge in age) or (prevMaxAge in age)):
                 probTotal += float(prob)
                 prevName = name
+                prevMinAge, prevMaxAge = age.split(' to ')
+                agesList = agesList + [int(prevMinAge), int(prevMaxAge)]
             else:
                 break
-        return prevName, round(probTotal, 4)
+        bestAge = '%d to %d' % (min(agesList), max(agesList))
+
+        return prevName, bestAge, round(probTotal, 4)
 
     def false_positive_rejection(self, bestLabel, inputImage):
         c = bestLabel[0] # best Index
