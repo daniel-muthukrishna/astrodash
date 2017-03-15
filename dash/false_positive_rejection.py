@@ -98,7 +98,7 @@ class FalsePositiveRejection(object):
 
 
         fom = fom * lap
-        print r, lap, rlap, fom
+        # print r, lap, rlap, fom
         return r, lap, rlap, fom
 
     def min_max_index(self, flux):

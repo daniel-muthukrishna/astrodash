@@ -29,7 +29,7 @@ class AgeBinning(object):
 
             ageBinPrev = ageBin
 
-        ageLabels.append(str(ageLabelMin) + " to " + str(self.maxAge))
+        ageLabels.append(str(ageLabelMin) + " to " + str(int(self.maxAge)))
 
         return ageLabels
 
