@@ -88,11 +88,11 @@ class Classify(object):
         probTotal = 0.
         agesList = [int(prevMinAge), int(prevMaxAge)]
         for name, age, prob in bestMatchList[0:10]:
-            if name == prevName and ((prevMinAge in age) or (prevMaxAge in age)):
+            minAge, maxAge = list(map(int, age.split(' to ')))
+            if name == prevName and ((minAge in agesList) or (maxAge in agesList)):
                 probTotal += float(prob)
                 prevName = name
-                prevMinAge, prevMaxAge = age.split(' to ')
-                agesList = agesList + [int(prevMinAge), int(prevMaxAge)]
+                agesList = agesList + [minAge, maxAge]
             else:
                 break
         bestAge = '%d to %d' % (min(agesList), max(agesList))
