@@ -101,11 +101,14 @@ class Classify(object):
 
     def false_positive_rejection(self, bestLabel, inputImage):
         c = bestLabel[0] # best Index
+        templateImages = []
         for i in range(len(Classify.templateLabels)):  # Checking through templates
             if (Classify.templateLabels[i][0][c] == 1):  # to find template for the best Type
                 templateImage = Classify.templateImages[i][0]  # plot template. Select index 0 for the first of the templates up to the number of templates available
-        falsePositiveRejection = FalsePositiveRejection(inputImage, templateImage)
-        rejectionLabel = falsePositiveRejection.rejection_label()
+                templateImages.append(templateImage)
+        falsePositiveRejection = FalsePositiveRejection(inputImage, templateImages)
+
+        rejectionLabel = "(chi2=%s, rlap=%s)" % (falsePositiveRejection.rejection_label(), falsePositiveRejection.rejection_label2())
 
         # import matplotlib
         # matplotlib.use('TkAgg')

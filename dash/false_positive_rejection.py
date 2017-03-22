@@ -1,19 +1,21 @@
 from scipy.fftpack import fft
 from scipy.signal import argrelmax
 import numpy as np
+from scipy.stats import chisquare, pearsonr
 # import matplotlib
 # matplotlib.use('TkAgg')
 # import matplotlib.pyplot as plt
 
+
 class FalsePositiveRejection(object):
-    def __init__(self, inputFlux, templateFlux):
+    def __init__(self, inputFlux, templateFluxes):
         self.inputFlux = inputFlux
-        self.templateFlux = templateFlux.astype('float')
+        self.templateFluxes = templateFluxes #.astype('float')
         self.nw = len(self.inputFlux)
 
-    def _cross_correlation(self):
+    def _cross_correlation(self, templateFlux):
         inputfourier = fft(self.inputFlux, self.nw)
-        tempfourier = fft(self.templateFlux, self.nw)
+        tempfourier = fft(templateFlux, self.nw)
 
         product = inputfourier * np.conj(tempfourier)
         xcorr = fft(product)
@@ -82,13 +84,13 @@ class FalsePositiveRejection(object):
 
         return r, deltapeak1, fom
 
-    def calculate_rlap(self, crosscorr):
+    def calculate_rlap(self, crosscorr, templateFlux):
         r, deltapeak, fom = self._calculate_r(crosscorr)
         shift = deltapeak - self.nw / 2  # shift from redshift
 
         # lap value
         iminindex, imaxindex = self.min_max_index(self.inputFlux)
-        tminindex, tmaxindex = self.min_max_index(self.templateFlux)
+        tminindex, tmaxindex = self.min_max_index(templateFlux)
 
         overlapminindex = max(iminindex + shift, tminindex)
         overlapmaxindex = min(imaxindex - 1 + shift, tmaxindex - 1)
@@ -102,27 +104,66 @@ class FalsePositiveRejection(object):
         return r, lap, rlap, fom
 
     def min_max_index(self, flux):
-        minindex, maxindex = (0, self.nw)
+        minindex, maxindex = (0, self.nw - 1)
         zeros = np.where(flux == 0)[0]
         j = 0
         for i in zeros:
             if (i != j):
-                minindex = j
-                maxindex = i
                 break
             j += 1
+            minindex = j
         j = int(self.nw) - 1
         for i in zeros[::-1]:
             if (i != j):
-                maxindex = j
                 break
-            j += 1
+            j -= 1
+            maxindex = j
 
         return minindex, maxindex
 
-    def rejection_label(self):
-        xcorr, rmsinput, rmstemp, xcorrnorm, rmsxcorr, xcorrnormRearranged = self._cross_correlation()
-        crosscorr = xcorrnormRearranged
-        r, lap, rlap, fom = self.calculate_rlap(crosscorr)
+    def calculate_chi_squared(self, templateFlux):
+        """ Only calculate on overlap region (MAYBE AVERAGE ALL TEMPLATES LATER)"""
+        iminindex, imaxindex = self.min_max_index(self.inputFlux)
+        tminindex, tmaxindex = self.min_max_index(templateFlux)
 
-        return str(rlap)
+        overlapminindex = max(iminindex, tminindex)
+        overlapmaxindex = min(imaxindex - 1, tmaxindex - 1)
+
+        inputSpecOverlapped = 100 * (1+self.inputFlux[overlapminindex:overlapmaxindex])
+        templateSpecOverlapped = 100 * (1+templateFlux[overlapminindex:overlapmaxindex])
+
+
+        chi2 = chisquare(inputSpecOverlapped, templateSpecOverlapped)[0]
+        pearsonCorr = pearsonr(inputSpecOverlapped, templateSpecOverlapped)
+
+        return chi2, pearsonCorr
+
+    def rejection_label(self):
+        chi2List = []
+        pearsonList = []
+        for templateFlux in self.templateFluxes:
+            chi2 = self.calculate_chi_squared(templateFlux)[0]
+            chi2List.append(chi2)
+            pearson = self.calculate_chi_squared(templateFlux)[1]
+            pearsonList.append(pearson)
+
+        chi2Mean = round(np.mean(chi2List),2)
+        pearsonMean = np.mean(pearsonList)
+        print chi2Mean, np.median(chi2List), min(chi2List), max(chi2List), len(chi2List)
+        print pearsonMean, np.median(pearsonList), min(pearsonList), max(pearsonList), len(pearsonList)
+
+        return "%s, Pearson=%s" % (str(chi2Mean), str(pearsonMean))
+
+    def rejection_label2(self):
+        rlapList = []
+        for templateFlux in self.templateFluxes:
+            xcorr, rmsinput, rmstemp, xcorrnorm, rmsxcorr, xcorrnormRearranged = self._cross_correlation(templateFlux)
+            crosscorr = xcorrnormRearranged
+            r, lap, rlap, fom = self.calculate_rlap(crosscorr, templateFlux)
+            rlapList.append(rlap)
+
+        rlapMean = round(np.mean(rlapList),2)
+        print rlapMean, np.median(rlapList), min(rlapList), max(rlapList)
+
+        return str(rlapMean)
+
