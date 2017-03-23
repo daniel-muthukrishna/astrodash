@@ -5,10 +5,10 @@ from dash.download_data_files import download_all_files
 download_all_files()
 
 try:
-    from PyQt4 import QtGui
+    from PyQt5 import QtGui
     from dash.gui_main import MainApp
 except ImportError:
-    print("Warning: You will need to install 'PyQt4' if you want to use the graphical interface. " \
+    print("Warning: You will need to install 'PyQt5' if you want to use the graphical interface. " \
           "Using the automatic library will continue to work.")
 
 from dash.classify import Classify

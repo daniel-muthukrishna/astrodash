@@ -2,8 +2,8 @@ import os
 import sys
 import pickle
 
-from PyQt4 import QtGui
-from PyQt4.QtCore import QThread, SIGNAL
+from PyQt5 import QtGui
+from PyQt5.QtCore import QThread, pyqtSignal
 
 from dash.design import Ui_MainWindow
 
@@ -182,7 +182,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
 
         
     def select_input_file(self):
-        inputFilename = QtGui.QFileDialog.getOpenFileName(self,"Select a spectrum file")
+        inputFilename = QtGui.QFileDialog.getOpenFileName(self,"Select a spectrum file")[0]
         print(inputFilename)
         print(self.inputFilename)
         if (inputFilename == self.inputFilename) or (inputFilename == ""):
@@ -215,8 +215,9 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             self.set_plot_redshift(self.knownZ)
 
             self.fitThread = FitSpectrumThread(self.inputFilename, self.minZ, self.maxZ, self.redshiftFlag, self.modelFilename, self.smooth)
-            self.connect(self.fitThread, SIGNAL("load_spectrum_single_redshift(PyQt_PyObject)"), self.load_spectrum_single_redshift)
-            self.connect(self.fitThread, SIGNAL("finished()"), self.done_fit_thread_single_redshift)
+            self.fitThread.trigger.connect(self.load_spectrum_single_redshift)
+
+
         else:
             self.redshiftFlag = False
             self.minZ = float(self.lineEditMinZ.text())
@@ -231,6 +232,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
 
         self.btnCancel.clicked.connect(self.cancel)
 
+
     def cancel(self):
         if (self.cancelledFitting == False):
             self.cancelledFitting = True
@@ -242,7 +244,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
     def load_spectrum_single_redshift(self, spectrumInfo):
         self.bestTypes, self.softmax, self.idx, self.templateFluxes, self.inputFluxes, self.typeNamesList, self.inputImageUnRedshifted = spectrumInfo
         self.progressBar.setValue(85)#self.progressBar.value()+)
-        print("here")
+        self.done_fit_thread_single_redshift()
 
     def done_fit_thread_single_redshift(self):
         if (self.cancelledFitting == False):
@@ -268,7 +270,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
 
     def load_spectrum(self, spectrumInfo):
         self.bestForEachType, self.templateFluxes, self.inputFluxes, self.inputRedshifts, self.redshiftGraphs, self.typeNamesList = spectrumInfo
-        self.progressBar.setValue(85)#self.progressBar.value()+)    
+        self.progressBar.setValue(85)#self.progressBar.value()+)
 
     def done_fit_thread(self):
         if (self.cancelledFitting == False):
@@ -343,6 +345,9 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
 
     
 class FitSpectrumThread(QThread):
+
+    trigger = pyqtSignal('PyQt_PyObject')
+
     def __init__(self, inputFilename, minZ, maxZ, redshiftFlag, modelFilename, smooth):
         QThread.__init__(self)
         self.inputFilename = str(inputFilename)
@@ -383,15 +388,10 @@ class FitSpectrumThread(QThread):
 
         return bestTypes, softmax, idx, templateFluxes, inputFluxes, typeNamesList, inputImageUnRedshifted
 
-    def run_single_redshift(self):
-        spectrumInfo = self._input_spectrum_single_redshift()
-        self.emit(SIGNAL('load_spectrum_single_redshift(PyQt_PyObject)'), spectrumInfo)
-
-
     def run(self):
         if self.redshiftFlag == True:
             spectrumInfo = self._input_spectrum_single_redshift()
-            self.emit(SIGNAL('load_spectrum_single_redshift(PyQt_PyObject)'), spectrumInfo)
+            self.trigger.emit(spectrumInfo)
         else:
             spectrumInfo = self._input_spectrum()
             self.emit(SIGNAL('load_spectrum(PyQt_PyObject)'), spectrumInfo)
