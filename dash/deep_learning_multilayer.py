@@ -6,7 +6,7 @@ from dash.multilayer_convnet import convnet_variables
 
 
 scriptDirectory = os.path.dirname(os.path.abspath(__file__))
-loaded = np.load(os.path.join(scriptDirectory, "type_age_atRedshiftZero.npz"))
+loaded = np.load(os.path.join(scriptDirectory, "type_age_atRedshiftZero_v02.npz"))
 trainImages = loaded['trainImages']
 trainLabels = loaded['trainLabels']
 # trainFilenames = loaded['trainFilenames']

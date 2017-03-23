@@ -60,7 +60,7 @@ class InputSpectra(object):
 ##
 ##filename = sfFilename
 ##
-##with open('training_params.pickle') as f:
+##with open('training_params_v02.pickle') as f:
 ##    nTypes, w0, w1, nw, minAge, maxAge, ageBinSize = pickle.load(f)
 ##    
 ##minZ = 0

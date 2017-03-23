@@ -19,6 +19,11 @@ def download_file(filename, urlpath, printStatus, scriptDirectory):
 
 def download_all_files():
     scriptDirectory = os.path.dirname(os.path.abspath(__file__))
+
+    oldFilenames = ['model_trainedAtZeroZ.ckpt', 'type_age_atRedshiftZero.npz',
+                     'training_params.pickle', 'templates.npz']
+    # delete_previous_versions(oldFilenames, scriptDirectory)
+
     saveFilenames = ['model_trainedAtZeroZ.ckpt', 'type_age_atRedshiftZero.npz',
                      'training_params.pickle', 'templates.npz']
 
@@ -32,3 +37,12 @@ def download_all_files():
 
     for i in range(len(urlpaths)):
         download_file(saveFilenames[i], urlpaths[i], printStatuses[i], scriptDirectory)
+
+
+def delete_previous_versions(oldFilenames, scriptDirectory):
+    for oldFilename in oldFilenames:
+        dataFilename = os.path.join(scriptDirectory, oldFilename)
+        if os.path.isfile(dataFilename):
+            print("Deleting previous version of data file: %s ..." % oldFilename)
+            os.remove(dataFilename)
+

@@ -17,7 +17,7 @@ except ImportError:
 
 
 class Classify(object):
-    loaded = np.load(os.path.join(scriptDirectory, "templates.npz"))
+    loaded = np.load(os.path.join(scriptDirectory, "templates_v02.npz"))
     templateImages = loaded['templateFluxesAll']
     templateLabels = loaded['templateLabelsAll']
 

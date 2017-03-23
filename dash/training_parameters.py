@@ -17,11 +17,11 @@ parameters = {
 
 
 # Saving the objects:
-with open('training_params.pickle', 'wb') as f:
+with open('training_params_v02.pickle', 'wb') as f:
     pickle.dump(parameters, f, protocol=2)
 
 # Getting back the objects:
-with open('training_params.pickle', 'rb') as f:
+with open('training_params_v02.pickle', 'rb') as f:
     pars = pickle.load(f)
 nTypes, w0, w1, nw, minAge, maxAge, ageBinSize, typeList = pars['nTypes'], pars['w0'], pars['w1'], pars['nw'], \
                                                            pars['minAge'], pars['maxAge'], pars['ageBinSize'], \
