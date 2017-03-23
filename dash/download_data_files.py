@@ -20,16 +20,15 @@ def download_file(filename, urlpath, printStatus, scriptDirectory):
 def download_all_files():
     scriptDirectory = os.path.dirname(os.path.abspath(__file__))
 
-    oldFilenames = ['model_trainedAtZeroZ.ckpt', 'type_age_atRedshiftZero.npz',
-                     'training_params.pickle', 'templates.npz']
-    # delete_previous_versions(oldFilenames, scriptDirectory)
+    oldFilenames = ['type_age_atRedshiftZero.npz', 'training_params.pickle', 'templates.npz']
+    delete_previous_versions(oldFilenames, scriptDirectory)
 
-    saveFilenames = ['model_trainedAtZeroZ.ckpt', 'type_age_atRedshiftZero_v02.npz',
-                     'training_params.pickle_v02', 'templates_v02.npz']
+    saveFilenames = ['model_trainedAtZeroZ.ckpt', 'type_age_atRedshiftZero_v02.npz', 'training_params.pickle_v02',
+                     'templates_v02.npz']
 
     urlpaths = ["https://raw.githubusercontent.com/daniel-muthukrishna/DASH/master/dash/model_trainedAtZeroZ.ckpt",
                 "https://raw.githubusercontent.com/daniel-muthukrishna/DASH/master/dash/type_age_atRedshiftZero_v02.npz",
-                "https://raw.githubusercontent.com/daniel-muthukrishna/DASH/master/dash/training_params.pickle_v02",
+                "https://raw.githubusercontent.com/daniel-muthukrishna/DASH/master/dash/training_params_v02.pickle",
                 "https://raw.githubusercontent.com/daniel-muthukrishna/DASH/master/dash/templates_v02.npz"]
 
     printStatuses = ["Downloading Trained Model...", "Downloading Training Data files...",
@@ -43,6 +42,6 @@ def delete_previous_versions(oldFilenames, scriptDirectory):
     for oldFilename in oldFilenames:
         dataFilename = os.path.join(scriptDirectory, oldFilename)
         if os.path.isfile(dataFilename):
-            print("Deleting previous version of data file: %s ..." % oldFilename)
+            print("Deleting previous version of data file: %s" % oldFilename)
             os.remove(dataFilename)
 
