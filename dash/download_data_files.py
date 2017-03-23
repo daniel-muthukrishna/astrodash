@@ -23,7 +23,7 @@ def download_all_files():
     oldFilenames = ['type_age_atRedshiftZero.npz', 'training_params.pickle', 'templates.npz']
     delete_previous_versions(oldFilenames, scriptDirectory)
 
-    saveFilenames = ['model_trainedAtZeroZ.ckpt', 'type_age_atRedshiftZero_v02.npz', 'training_params.pickle_v02',
+    saveFilenames = ['model_trainedAtZeroZ.ckpt', 'type_age_atRedshiftZero_v02.npz', 'training_params_v02.pickle',
                      'templates_v02.npz']
 
     urlpaths = ["https://raw.githubusercontent.com/daniel-muthukrishna/DASH/master/dash/model_trainedAtZeroZ.ckpt",
