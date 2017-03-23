@@ -10,7 +10,7 @@ from scipy.stats import chisquare, pearsonr
 class FalsePositiveRejection(object):
     def __init__(self, inputFlux, templateFluxes):
         self.inputFlux = inputFlux
-        self.templateFluxes = templateFluxes #.astype('float')
+        self.templateFluxes = templateFluxes
         self.nw = len(self.inputFlux)
 
     def _cross_correlation(self, templateFlux):
@@ -27,7 +27,7 @@ class FalsePositiveRejection(object):
 
         rmsxcorr = np.std(product)
 
-        xcorrnormRearranged = np.concatenate((xcorrnorm[len(xcorrnorm) / 2:], xcorrnorm[0:len(xcorrnorm) / 2]))
+        xcorrnormRearranged = np.concatenate((xcorrnorm[int(len(xcorrnorm) / 2):], xcorrnorm[0:int(len(xcorrnorm) / 2)]))
 
         #
         # w0 = 2500.  # wavelength range in Angstroms
@@ -50,7 +50,7 @@ class FalsePositiveRejection(object):
         for i in peakindexes:
             ypeaks.append(abs(crosscorr[i]))
 
-        arr = zip(*[peakindexes, ypeaks])
+        arr = list(zip(*[peakindexes, ypeaks]))
         arr.sort(key=lambda x: x[1])
         sortedPeaks = list(reversed(arr))
 
@@ -149,21 +149,21 @@ class FalsePositiveRejection(object):
 
         chi2Mean = round(np.mean(chi2List),2)
         pearsonMean = np.mean(pearsonList)
-        print chi2Mean, np.median(chi2List), min(chi2List), max(chi2List), len(chi2List)
-        print pearsonMean, np.median(pearsonList), min(pearsonList), max(pearsonList), len(pearsonList)
+        print(chi2Mean, np.median(chi2List), min(chi2List), max(chi2List), len(chi2List))
+        print(pearsonMean, np.median(pearsonList), min(pearsonList), max(pearsonList), len(pearsonList))
 
         return "%s, Pearson=%s" % (str(chi2Mean), str(pearsonMean))
 
     def rejection_label2(self):
         rlapList = []
         for templateFlux in self.templateFluxes:
-            xcorr, rmsinput, rmstemp, xcorrnorm, rmsxcorr, xcorrnormRearranged = self._cross_correlation(templateFlux)
+            xcorr, rmsinput, rmstemp, xcorrnorm, rmsxcorr, xcorrnormRearranged = self._cross_correlation(templateFlux.astype('float'))
             crosscorr = xcorrnormRearranged
             r, lap, rlap, fom = self.calculate_rlap(crosscorr, templateFlux)
             rlapList.append(rlap)
 
         rlapMean = round(np.mean(rlapList),2)
-        print rlapMean, np.median(rlapList), min(rlapList), max(rlapList)
+        print(rlapMean, np.median(rlapList), min(rlapList), max(rlapList))
 
         return str(rlapMean)
 

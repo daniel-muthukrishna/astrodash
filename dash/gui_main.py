@@ -58,11 +58,15 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.comboBoxAge.currentIndexChanged.connect(self.combo_box_changed)
 
     def templates(self):
-        with open(os.path.join(mainDirectory, "training_params.pickle"), 'r') as f:
-            self.nTypes, self.w0, self.w1, self.nw, minAge, maxAge, ageBinSize, self.typeList = pickle.load(f)
+        with open(os.path.join(mainDirectory, "training_params.pickle"), 'rb') as f:
+            pars = pickle.load(f)
+        self.nTypes = pars['nTypes']
+        self.nw = pars['nw']
+        w0, w1, minAge, maxAge, ageBinSize, self.typeList = pars['w0'], pars['w1'], pars['minAge'], pars['maxAge'], \
+                                                       pars['ageBinSize'], pars['typeList']
 
-        dwlog = np.log(self.w1/self.w0)/self.nw
-        self.wave = self.w0 * np.exp(np.arange(0,self.nw) * dwlog)
+        dwlog = np.log(w1/w0)/self.nw
+        self.wave = w0 * np.exp(np.arange(0,self.nw) * dwlog)
 
         loaded = np.load(os.path.join(mainDirectory, 'templates.npz'))
         self.templateFluxesAll = loaded['templateFluxesAll']

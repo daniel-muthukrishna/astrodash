@@ -1,5 +1,6 @@
-from dash.create_arrays import *
 import pickle
+import numpy as np
+from dash.create_arrays import AgeBinning, CreateLabels, ArrayTools, CreateArrays
 
 
 class CreateTrainingSet(object):
@@ -30,8 +31,8 @@ class CreateTrainingSet(object):
 
 
     def all_templates_to_arrays(self):
-        images = np.empty((0, int(self.nw)), np.float32)  # Number of pixels
-        labels = np.empty((0, self.nTypes), float)  # Number of labels (SN types)
+        images = np.empty((0, int(self.nw)), float)  # Number of pixels
+        labels = np.empty((0, self.nTypes), np.float16)  # Number of labels (SN types)
         typeList = []
 
         typelistSnid, imagesSnid, labelsSnid, filenamesSnid, typeNamesSnid = self.createArrays.snid_templates_to_arrays(self.snidTemplateLocation, self.snidtempfilelist)
@@ -134,11 +135,16 @@ class SaveTrainingSet(object):
                         testFilenames=self.testFilenames, testTypeNames=self.testTypeNames,
                         typeNamesList = self.typeNamesList)
         print("Saved Training Set to: " + saveFilename)
-        
+
 
 if __name__ == '__main__':
-    with open('training_params.pickle', 'r') as f:
-        nTypes, w0, w1, nw, minAge, maxAge, ageBinSize, typeList = pickle.load(f)
+    with open('training_params.pickle', 'rb') as f:
+        pars = pickle.load(f)
+    nTypes, w0, w1, nw, minAge, maxAge, ageBinSize, typeList = pars['nTypes'], pars['w0'], pars['w1'], pars['nw'], \
+                                                               pars['minAge'], pars['maxAge'], pars['ageBinSize'], \
+                                                               pars['typeList']
+
+
     minZ = 0
     maxZ = 0.0
     import os

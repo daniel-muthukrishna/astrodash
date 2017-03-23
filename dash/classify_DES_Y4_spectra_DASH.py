@@ -1,7 +1,7 @@
 import os
 import dash
 
-directory = r'/home/daniel/Documents/DES_Y4_Spectra/'
+directory = r'/Users/danmuth/Documents/DES_Y4_Spectra/'
 
 # # LIST ALL SPECTRAL FILENAMES FROM DROPBOX
 # filenames = []
@@ -134,7 +134,7 @@ classification = dash.Classify(filenames, knownRedshifts)
 bestFits, bestTypes, rejectionLabels = classification.list_best_matches(n=5)
 
 # SAVE BEST MATCHES
-print bestFits
+print(bestFits)
 f = open('classification_results.txt', 'w')
 for i in range(len(atels)):
     f.write("%s   z=%s     %s      %s\n %s\n\n" % (atels[i][0], atels[i][1], bestTypes[i], rejectionLabels[i], bestFits[i]))
@@ -142,5 +142,5 @@ f.close()
 print("Finished classifying %d spectra!" % len(atels))
 
 # PLOT SPECTRUM ON GUI
-# classification.plot_with_gui(indexToPlot=0)
+classification.plot_with_gui(indexToPlot=0)
 

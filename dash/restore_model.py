@@ -25,20 +25,19 @@ trainLabels = loaded['trainLabels']
 
 
 def get_training_parameters():
-    with open(os.path.join(scriptDirectory, "training_params.pickle"), 'r') as f:
-        nTypes, w0, w1, nw, minAge, maxAge, ageBinSize, typeList = pickle.load(f)
-    trainParams = nTypes, w0, w1, nw, minAge, maxAge, ageBinSize, typeList
+    with open(os.path.join(scriptDirectory, "training_params.pickle"), 'rb') as f:
+        pars = pickle.load(f)
 
-    return trainParams
+    return pars
 
 
 class LoadInputSpectra(object):
-    def __init__(self, inputFilename, minZ, maxZ, smooth, trainParams):
-        nTypes, w0, w1, nw, minAge, maxAge, ageBinSize, typeList = trainParams
-        self.nw = nw
-        self.nTypes = nTypes
-        
-        self.inputSpectra = InputSpectra(inputFilename, minZ, maxZ, nTypes, minAge, maxAge, ageBinSize, w0, w1, nw, typeList, smooth)
+    def __init__(self, inputFilename, minZ, maxZ, smooth, pars):
+        self.nw = pars['nw']
+        nTypes, w0, w1, minAge, maxAge, ageBinSize, typeList = pars['nTypes'], pars['w0'], pars['w1'], pars['minAge'], \
+                                                               pars['maxAge'], pars['ageBinSize'], pars['typeList']
+
+        self.inputSpectra = InputSpectra(inputFilename, minZ, maxZ, nTypes, minAge, maxAge, ageBinSize, w0, w1, self.nw, typeList, smooth)
 
         self.inputImages, self.inputFilenames, self.inputRedshifts, self.typeNamesList = self.inputSpectra.redshifting()
         self.nBins = len(self.typeNamesList)

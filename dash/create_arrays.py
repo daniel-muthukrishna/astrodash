@@ -153,7 +153,7 @@ class ArrayTools(object):
         idx = 0
         print("Shuffle2")
         # Randomise order
-        indexShuf = range(arraySize)
+        indexShuf = list(range(arraySize))
         shuffle(indexShuf)
         for i in indexShuf:
             imagesShuf[idx] = images[i]

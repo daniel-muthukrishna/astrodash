@@ -17,9 +17,9 @@ class ConvNetLayer(object):
         return h_pool
 
     def connect_layers(self, h_pool, numFeatures, layerNum):
-        W_fc = self._weight_variable([self.imWidthReduc/layerNum * self.imWidthReduc/layerNum * numFeatures, 1024])
+        W_fc = self._weight_variable([int(self.imWidthReduc/layerNum * self.imWidthReduc/layerNum * numFeatures), 1024])
         b_fc = self._bias_variable([1024])
-        h_pool_flat = tf.reshape(h_pool, [-1, self.imWidthReduc/layerNum * self.imWidthReduc/layerNum * numFeatures])
+        h_pool_flat = tf.reshape(h_pool, [-1, int(self.imWidthReduc/layerNum * self.imWidthReduc/layerNum * numFeatures)])
         h_fc = tf.nn.relu(tf.matmul(h_pool_flat, W_fc) + b_fc)
 
         return h_fc
