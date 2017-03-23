@@ -18,7 +18,7 @@ parameters = {
 
 # Saving the objects:
 with open('training_params.pickle', 'wb') as f:
-    pickle.dump(parameters, f, pickle.HIGHEST_PROTOCOL)
+    pickle.dump(parameters, f, protocol=2)
 
 # Getting back the objects:
 with open('training_params.pickle', 'rb') as f:
