@@ -24,13 +24,13 @@ def download_all_files():
                      'training_params.pickle', 'templates.npz']
     # delete_previous_versions(oldFilenames, scriptDirectory)
 
-    saveFilenames = ['model_trainedAtZeroZ.ckpt', 'type_age_atRedshiftZero.npz',
-                     'training_params.pickle', 'templates.npz']
+    saveFilenames = ['model_trainedAtZeroZ.ckpt', 'type_age_atRedshiftZero_v02.npz',
+                     'training_params.pickle_v02', 'templates_v02.npz']
 
     urlpaths = ["https://raw.githubusercontent.com/daniel-muthukrishna/DASH/master/dash/model_trainedAtZeroZ.ckpt",
-                "https://raw.githubusercontent.com/daniel-muthukrishna/DASH/master/dash/type_age_atRedshiftZero.npz",
-                "https://raw.githubusercontent.com/daniel-muthukrishna/DASH/master/dash/training_params.pickle",
-                "https://raw.githubusercontent.com/daniel-muthukrishna/DASH/master/dash/templates.npz"]
+                "https://raw.githubusercontent.com/daniel-muthukrishna/DASH/master/dash/type_age_atRedshiftZero_v02.npz",
+                "https://raw.githubusercontent.com/daniel-muthukrishna/DASH/master/dash/training_params.pickle_v02",
+                "https://raw.githubusercontent.com/daniel-muthukrishna/DASH/master/dash/templates_v02.npz"]
 
     printStatuses = ["Downloading Trained Model...", "Downloading Training Data files...",
                      "Downloading Model Parameters File...", "Downloading Template Data files..."]
