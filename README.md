@@ -34,11 +34,11 @@ Supernovae classifying and redshifting software: development stage
 ## 4. Dependencies:
     Using pip will automatically install numpy, scipy, specutils, pyqtgraph, and tensorflow.
 
-    PyQt4
+    PyQt5
 
-        PyQt4 is only needed if you would like to use a graphical interface. It is not available on pip.
+        PyQt5 is only needed if you would like to use a graphical interface. It is not available on pip.
         It can be installed with anaconda:
-            "conda install pyqt=4"
+            "conda install pyqt"
 
 ## 5. Platforms
     5.1 Mac/Unix
