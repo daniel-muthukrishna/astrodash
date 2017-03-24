@@ -16,7 +16,7 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="9,32">
     <item>
-     <layout class="QVBoxLayout" name="verticalLayout" stretch="1,6,1,2">
+     <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0">
       <property name="sizeConstraint">
        <enum>QLayout::SetMaximumSize</enum>
       </property>
@@ -30,7 +30,10 @@
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_7" stretch="0">
          <item>
-          <layout class="QGridLayout" name="gridLayout_2" rowstretch="10,7">
+          <layout class="QGridLayout" name="gridLayout_2" rowstretch="0,0" rowminimumheight="0,0">
+           <property name="sizeConstraint">
+            <enum>QLayout::SetDefaultConstraint</enum>
+           </property>
            <item row="1" column="0" alignment="Qt::AlignHCenter">
             <widget class="QPushButton" name="btnBrowse">
              <property name="minimumSize">
@@ -55,6 +58,9 @@
            </item>
            <item row="0" column="0">
             <layout class="QHBoxLayout" name="horizontalLayout_8">
+             <property name="sizeConstraint">
+              <enum>QLayout::SetFixedSize</enum>
+             </property>
              <item alignment="Qt::AlignHCenter|Qt::AlignVCenter">
               <widget class="QLabel" name="lblInputFilename">
                <property name="maximumSize">
@@ -92,7 +98,7 @@
               <x>0</x>
               <y>0</y>
               <width>215</width>
-              <height>217</height>
+              <height>202</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_4" stretch="0,0">
