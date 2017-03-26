@@ -142,5 +142,5 @@ f.close()
 print("Finished classifying %d spectra!" % len(atels))
 
 # PLOT SPECTRUM ON GUI
-classification.plot_with_gui(indexToPlot=0)
+classification.plot_with_gui(indexToPlot=1)
 

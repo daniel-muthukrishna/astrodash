@@ -58,7 +58,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.comboBoxAge.currentIndexChanged.connect(self.combo_box_changed)
 
     def templates(self):
-        with open(os.path.join(scriptDirectory, "training_params_v02.pickle"), 'rb') as f:
+        with open(os.path.join(scriptDirectory, "training_params_v03.pickle"), 'rb') as f:
             pars = pickle.load(f)
         self.nTypes = pars['nTypes']
         self.nw = pars['nw']
@@ -68,7 +68,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         dwlog = np.log(w1/w0)/self.nw
         self.wave = w0 * np.exp(np.arange(0,self.nw) * dwlog)
 
-        loaded = np.load(os.path.join(mainDirectory, 'templates_v02.npz'))
+        loaded = np.load(os.path.join(mainDirectory, 'templates_v03.npz'))
         self.templateFluxesAll = loaded['templateFluxesAll']
         self.templateFileNamesAll = loaded['templateFilenamesAll']
 
@@ -145,7 +145,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
 
     def zero_redshift_model(self):
         if (self.checkBoxZeroZTrained.isChecked() == True):
-            self.modelFilename = os.path.join(self.mainDirectory, "model_trainedAtZeroZ.ckpt")
+            self.modelFilename = os.path.join(self.mainDirectory, "model_trainedAtZeroZ_v03.ckpt")
             self.checkBoxKnownZ.setEnabled(True)
             self.lineEditKnownZ.setEnabled(True)
             self.checkBoxAgnosticZTrained.setEnabled(False)

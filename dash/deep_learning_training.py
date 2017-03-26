@@ -2,7 +2,7 @@ import numpy as np
 import itertools
 import tensorflow as tf
 
-loaded = np.load('type_age_atRedshiftZero_v02.npz')
+loaded = np.load('type_age_atRedshiftZero_v03.npz')
 trainImages = loaded['trainImages']
 trainLabels = loaded['trainLabels']
 #trainFilenames = loaded['trainFilenames']

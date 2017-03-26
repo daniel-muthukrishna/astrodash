@@ -5,14 +5,12 @@ from dash.input_spectra import *
 from dash.multilayer_convnet import convnet_variables
 from dash.download_data_files import download_all_files
 
-download_all_files()
-
 scriptDirectory = os.path.dirname(os.path.abspath(__file__))
 
-loaded = np.load(os.path.join(scriptDirectory, "type_age_atRedshiftZero_v02.npz"))
+loaded = np.load(os.path.join(scriptDirectory, "type_age_atRedshiftZero_v03.npz"))
 trainImages = loaded['trainImages']
 trainLabels = loaded['trainLabels']
-# loaded = np.load(os.path.join(scriptDirectory, "templates_v02.npz"))
+# loaded = np.load(os.path.join(scriptDirectory, "templates_v03.npz"))
 # trainImages = loaded['templateFluxesAll']
 # trainLabels = loaded['templateLabelsAll']
 ##trainFilenames = loaded['trainFilenames']
@@ -25,7 +23,7 @@ trainLabels = loaded['trainLabels']
 
 
 def get_training_parameters():
-    with open(os.path.join(scriptDirectory, "training_params_v02.pickle"), 'rb') as f:
+    with open(os.path.join(scriptDirectory, "training_params_v03.pickle"), 'rb') as f:
         pars = pickle.load(f)
 
     return pars

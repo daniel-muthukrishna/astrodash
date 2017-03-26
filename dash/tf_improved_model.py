@@ -26,7 +26,7 @@ import itertools
 import tensorflow as tf
 
 
-loaded = np.load('type_age_atRedshiftZero_v02.npz')
+loaded = np.load('type_age_atRedshiftZero_v03.npz')
 trainImages = loaded['trainImages']
 trainLabels = loaded['trainLabels']
 #trainFilenames = loaded['trainFilenames']
@@ -187,5 +187,5 @@ print("subTypeAndNearAgeAccuracy : " + str(subTypeAndNearAgeAccuracy))
 
 #SAVE THE MODEL
 saver = tf.train.Saver()
-save_path = saver.save(sess, "model_trainedAtZeroZ.ckpt")
+save_path = saver.save(sess, "model_trainedAtZeroZ_v03.ckpt")
 print("Model saved in file: %s" % save_path)

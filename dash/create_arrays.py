@@ -263,7 +263,7 @@ class CreateArrays(object):
 
         templist = TempList().temp_list(tempfilelist) #Arbrirary redshift to read filelist
         typeList = []
-        images = np.empty((0, int(self.nw)), np.float32)  # Number of pixels
+        images = np.empty((0, int(self.nw)), np.float16)  # Number of pixels
         labels = np.empty((0, self.nLabels), np.uint8)  # Number of labels (SN types)
         filenames = []#np.empty(0)
         typeNames = []#np.empty(0)
@@ -299,8 +299,8 @@ class CreateArrays(object):
 
     def superfit_templates_to_arrays(self, sfTemplateLocation, sftempfilelist):
         templist = TempList().temp_list(sftempfilelist)
-        images = np.empty((0, self.nw), np.float32)  # Number of pixels
-        labels = np.empty((0, self.nLabels), np.float32)  # Number of labels (SN types)
+        images = np.empty((0, self.nw), np.float16)  # Number of pixels
+        labels = np.empty((0, self.nLabels), np.uint8)  # Number of labels (SN types)
         filenames = []
         typeNames = []
 

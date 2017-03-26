@@ -26,8 +26,8 @@ class InputSpectra(object):
         self.smooth = smooth
 
     def redshifting(self):
-        images = np.empty((0, int(self.nw)), np.float32)  # Number of pixels
-        labels = np.empty((0, self.nLabels), float)  # Number of labels (SN types)
+        images = np.empty((0, int(self.nw)), np.float16)  # Number of pixels
+        labels = np.empty((0, self.nLabels), np.uint8)  # Number of labels (SN types)
         filenames = []
         typeNames = []
         redshifts = []
@@ -60,7 +60,7 @@ class InputSpectra(object):
 ##
 ##filename = sfFilename
 ##
-##with open('training_params_v02.pickle') as f:
+##with open('training_params_v03.pickle') as f:
 ##    nTypes, w0, w1, nw, minAge, maxAge, ageBinSize = pickle.load(f)
 ##    
 ##minZ = 0

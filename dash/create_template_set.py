@@ -45,7 +45,7 @@ def save_templates():
 
 if __name__ == '__main__':
     scriptDirectory = os.path.dirname(os.path.abspath(__file__))
-    trainingSet = "type_age_atRedshiftZero_v02.npz"
+    trainingSet = "type_age_atRedshiftZero_v03.npz"
     print("Reading " + trainingSet + " ...")
     loaded = np.load(os.path.join(scriptDirectory, trainingSet))
     trainImages = loaded['trainImages']
@@ -53,7 +53,7 @@ if __name__ == '__main__':
     trainFilenames = loaded['trainFilenames']
     trainTypeNames = loaded['trainTypeNames']
 
-    saveFilename = 'templates_v02.npz'
+    saveFilename = 'templates_v03.npz'
 
     print("Saving Templates...")
     save_templates()

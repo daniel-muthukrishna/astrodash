@@ -36,12 +36,12 @@ Supernovae classifying and redshifting software: development stage
 
     PyQt5 (This should be pre-installed with anaconda)
 
-        PyQt5 is only needed if you would like pythonto use a graphical interface. It is not available on pip.
+        PyQt5 is only needed if you would like python to use a graphical interface. It is not available on pip.
         It can be installed with anaconda:
             "conda install pyqt"
 
 ## 5. Platforms
-    5.1 Mac/Unix
+    5.1 Mac/Linux
         DASH is available on both Python2 and Python3 distributions. It can easily be installed with
             pip install astrodash
 
