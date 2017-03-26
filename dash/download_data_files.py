@@ -38,8 +38,12 @@ def download_all_files():
                 "https://raw.githubusercontent.com/daniel-muthukrishna/DASH/master/dash/training_params_v03.pickle",
                 "https://raw.githubusercontent.com/daniel-muthukrishna/DASH/master/dash/templates_v03.npz"]
 
-    printStatuses = ["Downloading Trained Model...", "Downloading Training Data files...",
-                     "Downloading Model Parameters File...", "Downloading Template Data files..."]
+    printStatuses = ["Downloading Tensorflow trained model 1 of 3...",
+                     "Downloading Tensorflow trained model 2 of 3...",
+                     "Downloading Tensorflow trained model 3 of 3...",
+                     "Downloading template data file...",
+                     "Downloading model parameters file...",
+                     "Downloading template data files..."]
 
     for i in range(len(urlpaths)):
         download_file(saveFilenames[i], urlpaths[i], printStatuses[i], scriptDirectory)
