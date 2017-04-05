@@ -1,7 +1,7 @@
 #Pre-processing class
 
 from scipy.signal import medfilt
-from dash.preprocessing import ReadSpectrumFile, PreProcessSpectrum
+from dash.preprocessing import ReadSpectrumFile, PreProcessSpectrum, ProcessingTools
 
 
 
@@ -14,6 +14,7 @@ class PreProcessing(object):
         self.w1 = w1
         self.nw = nw
         self.numSplinePoints = 13
+        self.processingTools = ProcessingTools()
         self.readSpectrumFile = ReadSpectrumFile(filename, w0, w1, nw)
         self.preProcess = PreProcessSpectrum(w0, w1, nw)
 
@@ -94,10 +95,10 @@ class PreProcessing(object):
 
         return binnedwave, medianFiltered, minindex, maxindex
 
-    def snid_template_data(self, ageidx, z):
+    def snid_template_data(self, ageIdx, z):
         """lnw templates """
         wave, fluxes, ncols, ages, ttype, splineInfo = self.spectrum
-        wave, flux = self.readSpectrumFile.snid_template_spectra(wave, fluxes[ageidx], z, splineInfo)
+        wave, flux = self.processingTools.redshift_spectrum(wave, fluxes[ageIdx], z)
         binnedwave, binnedflux, minindex, maxindex = self.preProcess.log_wavelength(wave, flux)
         medianFiltered = medfilt(binnedflux, kernel_size=5)
 

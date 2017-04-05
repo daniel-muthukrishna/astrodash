@@ -1,0 +1,16 @@
+Galaxy data in this directory from:
+Kinney, Calzetti, Bohlin, McQuade, Storchi-Bergmann, & Schmitt (1996)
+
+for E, SO, Sa, Sb, SB1-6
+
+I have removed the narrow lines and smoothed the data by 21 pixels
+
+The Sc galaxy is from pegase
+
+Other directories:
+kinney:  the original, unsmoothed version of above
+pegase:  Fioc, M., Rocca-Volmerange, B., 1997, A&A, 326, 950
+poggianti:  Poggianti, B. M. 1997 A&AS, 122, 339
+
+I derived some of these galaxy spectra from source material
+in ~howell/seds

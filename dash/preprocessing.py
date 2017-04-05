@@ -4,8 +4,6 @@ from scipy.interpolate import interp1d, UnivariateSpline
 
 
 class ProcessingTools(object):
-    def __init__(self, nw):
-        self.nw = nw
 
     def redshift_spectrum(self, wave, flux, z):
         wave_new = wave * (z + 1)
@@ -18,7 +16,8 @@ class ProcessingTools(object):
         return wave_new, flux
 
     def min_max_index(self, flux):
-        minindex, maxindex = (0, self.nw - 1)
+        nw = len(flux)
+        minindex, maxindex = (0, nw - 1)
         zeros = np.where(flux == 0)[0]
         j = 0
         for i in zeros:
@@ -26,7 +25,7 @@ class ProcessingTools(object):
                 break
             j += 1
             minindex = j
-        j = int(self.nw) - 1
+        j = int(nw) - 1
         for i in zeros[::-1]:
             if (i != j):
                 break
@@ -43,7 +42,7 @@ class ReadSpectrumFile(object):
         self.w0 = w0
         self.w1 = w1
         self.nw = nw
-        self.processingTools = ProcessingTools(nw)
+        self.processingTools = ProcessingTools()
 
     def read_fits_file(self):
         #filename = unicode(self.filename.toUtf8(), encoding="UTF-8")
@@ -156,12 +155,10 @@ class ReadSpectrumFile(object):
 
         return wave, fluxes, numAges, ages, ttype, splineInfo
 
-    def snid_template_spectra(self, wave, flux, z, splineInfo):
-        #Undo Binning function -> then add galaxy -> then redshift
+    def snid_template_undo_processing(self, wave, flux, splineInfo):
+        # Undo Binning function -> then add galaxy -> then redshift
 
-        waveRedshifted, fluxRedshifted = self.processingTools.redshift_spectrum(wave, flux, z)
-
-        return waveRedshifted, fluxRedshifted
+        return wave, flux
 
 
 class PreProcessSpectrum(object):
@@ -170,7 +167,7 @@ class PreProcessSpectrum(object):
         self.w1 = w1
         self.nw = nw
         self.dwlog = np.log(w1/w0) / nw
-        self.processingTools = ProcessingTools(nw)
+        self.processingTools = ProcessingTools()
 
     def log_wavelength(self, wave, flux):
         fluxout = np.zeros(int(self.nw))
