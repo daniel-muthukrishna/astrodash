@@ -12,13 +12,13 @@ class CombineSnAndHost(object):
         self.snReadSpectrumFile = ReadSpectrumFile(snFile, w0, w1, nw)
         self.galReadSpectrumFile = ReadSpectrumFile(galFile, w0, w1, nw)
         self.snSpectrum = self.snReadSpectrumFile.file_extension()
+        self.snWave, self.snFluxes, self.ncols, self.ages, self.ttype, self.splineInfo = self.snSpectrum
         self.galSpectrum = self.galReadSpectrumFile.file_extension()
         self.preProcess = PreProcessSpectrum(w0, w1, nw)
 
     def snid_sn_template_data(self, ageIdx):
-        wave, fluxes, ncols, ages, ttype, splineInfo = self.snSpectrum
         # Undo continuum in the following step in preprocessing.py
-        wave, flux = self.snReadSpectrumFile.snid_template_undo_processing(wave, fluxes[ageIdx], splineInfo)
+        wave, flux = self.snReadSpectrumFile.snid_template_undo_processing(self.snWave, self.snFluxes[ageIdx], self.splineInfo)
 
         binnedWave, binnedFlux, minIndex, maxIndex = self.preProcess.log_wavelength(wave, flux)
         binnedFluxNorm = self._normalise_spectrum(binnedFlux)
@@ -52,15 +52,22 @@ class CombineSnAndHost(object):
         galWave = galWave[minIndex:maxIndex]
         galFlux = galFlux[minIndex:maxIndex]
 
-        return (snWave, snFlux), (galWave, galFlux)
-
+        return snWave, snFlux, galWave, galFlux, minIndex, maxIndex
 
     def sn_plus_gal(self, snCoeff, galCoeff, snAgeIdx):
-        (snWave, snFlux), (galWave, galFlux) = self.overlapped_spectra(snAgeIdx)
+        snWave, snFlux, galWave, galFlux, minIndex, maxIndex = self.overlapped_spectra(snAgeIdx)
 
         combinedFlux = (snCoeff * snFlux) + (galCoeff * galFlux)
 
-        return snWave, combinedFlux
+        return snWave, combinedFlux, minIndex, maxIndex
+
+    def training_template_data(self, snAgeIdx, snCoeff, galCoeff, z):
+        wave, flux, minIndex, maxIndex = self.sn_plus_gal(snCoeff, galCoeff, snAgeIdx)
+        wave, flux = self.processingTools.redshift_spectrum(wave, flux, z)
+        # Could  median filter here, but trying without it now
+
+        return wave, flux, minIndex, maxIndex, self.ncols, self.ages, self.ttype
+
 
 
 if __name__ == '__main__':
@@ -75,33 +82,32 @@ if __name__ == '__main__':
     plt.plot(xGal, yGal, 'r.')
 
     f2 = plt.figure()
-    (xSN, ySN), (xGal, yGal) = combine.overlapped_spectra(0)
-    xCombined, yCombined =  combine.sn_plus_gal(0.3, 0.7, 0)
+    xSN, ySN, xGal, yGal, minI, maxI = combine.overlapped_spectra(0)
+    xCombined, yCombined, minI, maxI = combine.sn_plus_gal(0.3, 0.7, 0)
     plt.plot(xSN, ySN, 'b.')
     plt.plot(xGal, yGal, 'r.')
     plt.plot(xCombined, yCombined, 'g.')
 
 
-    galNames = ['E', 'S0', 'Sa', 'Sb', 'Sc', 'SB1', 'SB2', 'SB3', 'SB4', 'SB5', 'SB6',]
-    fGals = ['/Users/danmuth/PycharmProjects/DASH/templates/superfit_templates/gal/E',
-            '/Users/danmuth/PycharmProjects/DASH/templates/superfit_templates/gal/S0',
-            '/Users/danmuth/PycharmProjects/DASH/templates/superfit_templates/gal/Sa',
-            '/Users/danmuth/PycharmProjects/DASH/templates/superfit_templates/gal/Sb',
-            '/Users/danmuth/PycharmProjects/DASH/templates/superfit_templates/gal/Sc',
-            '/Users/danmuth/PycharmProjects/DASH/templates/superfit_templates/gal/SB1',
-            '/Users/danmuth/PycharmProjects/DASH/templates/superfit_templates/gal/SB2',
-            '/Users/danmuth/PycharmProjects/DASH/templates/superfit_templates/gal/SB3',
-            '/Users/danmuth/PycharmProjects/DASH/templates/superfit_templates/gal/SB4',
-            '/Users/danmuth/PycharmProjects/DASH/templates/superfit_templates/gal/SB5',
-            '/Users/danmuth/PycharmProjects/DASH/templates/superfit_templates/gal/SB6',]
-
-
-    for i in range(len(fGals)):
-        f3 = plt.figure()
-        combine = CombineSnAndHost(fSN, fGals[i], 2500, 10000, 1024)
-        xGal, yGal, minGal, maxGal = combine.gal_template_data()
-        plt.plot(xGal, yGal)
-        plt.savefig("%s.png" % galNames[i])
+    # galNames = ['E', 'S0', 'Sa', 'Sb', 'Sc', 'SB1', 'SB2', 'SB3', 'SB4', 'SB5', 'SB6',]
+    # fGals = ['/Users/danmuth/PycharmProjects/DASH/templates/superfit_templates/gal/E',
+    #         '/Users/danmuth/PycharmProjects/DASH/templates/superfit_templates/gal/S0',
+    #         '/Users/danmuth/PycharmProjects/DASH/templates/superfit_templates/gal/Sa',
+    #         '/Users/danmuth/PycharmProjects/DASH/templates/superfit_templates/gal/Sb',
+    #         '/Users/danmuth/PycharmProjects/DASH/templates/superfit_templates/gal/Sc',
+    #         '/Users/danmuth/PycharmProjects/DASH/templates/superfit_templates/gal/SB1',
+    #         '/Users/danmuth/PycharmProjects/DASH/templates/superfit_templates/gal/SB2',
+    #         '/Users/danmuth/PycharmProjects/DASH/templates/superfit_templates/gal/SB3',
+    #         '/Users/danmuth/PycharmProjects/DASH/templates/superfit_templates/gal/SB4',
+    #         '/Users/danmuth/PycharmProjects/DASH/templates/superfit_templates/gal/SB5',
+    #         '/Users/danmuth/PycharmProjects/DASH/templates/superfit_templates/gal/SB6',]
+    #
+    # for i in range(len(fGals)):
+    #     f3 = plt.figure()
+    #     combine = CombineSnAndHost(fSN, fGals[i], 2500, 10000, 1024)
+    #     xGal, yGal, minGal, maxGal = combine.gal_template_data()
+    #     plt.plot(xGal, yGal)
+    #     plt.savefig("%s.png" % galNames[i])
 
     plt.show()
 

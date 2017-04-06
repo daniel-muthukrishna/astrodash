@@ -1,6 +1,7 @@
 import numpy as np
 from random import shuffle
 from dash.sn_processing import PreProcessing
+from dash.combine_sn_and_host import CombineSnAndHost
 
 
 class AgeBinning(object):
@@ -45,8 +46,7 @@ class CreateLabels(object):
         self.ageBinning = AgeBinning(self.minAge, self.maxAge, self.ageBinSize)
         self.numOfAgeBins = self.ageBinning.age_bin(self.maxAge-0.1) + 1
         self.nLabels = self.nTypes * self.numOfAgeBins
-        self.ageLabels = self.ageBinning.age_labels()       
-        
+        self.ageLabels = self.ageBinning.age_labels()
 
     def label_array(self, ttype, age):
         ageBin = self.ageBinning.age_bin(age)
@@ -58,7 +58,6 @@ class CreateLabels(object):
         except ValueError as err:
             print("INVALID TYPE: {0}".format(err))
 
-            
         labelarray[typeIndex][ageBin] = 1
         labelarray = labelarray.flatten()
 
@@ -66,7 +65,6 @@ class CreateLabels(object):
         typeNames = np.array(typeNames)
 
         return labelarray, typeNames
-
 
     def type_names_list(self):
         typeNamesList = []
@@ -92,13 +90,21 @@ class TempList():
 
 class ReadSpectra(object):
 
-    def __init__(self, w0, w1, nw, filename):
+    def __init__(self, w0, w1, nw, snFilename, galFilename=None):
         self.w0 = w0
         self.w1 = w1
         self.nw = nw
-        self.filename = filename
-        self.data = PreProcessing(filename, self.w0, self.w1, self.nw)
+        self.snFilename = snFilename
+        if galFilename is None:
+            self.data = PreProcessing(snFilename, w0, w1, nw)
+        else:
+            self.galFilename = galFilename
+            self.dataCombined = CombineSnAndHost(snFilename, galFilename, w0, w1, nw)
 
+    def sn_plus_gal_template(self, snAgeIdx, snCoeff, galCoeff, z):
+        wave, flux, minIndex, maxIndex, nCols, ages, tType = self.dataCombined.training_template_data(snAgeIdx, snCoeff, galCoeff, z)
+
+        return wave, flux, nCols, ages, tType, minIndex, maxIndex
 
     def snid_template_data(self, ageIdx, z):
         """ lnw template files """
@@ -106,9 +112,8 @@ class ReadSpectra(object):
 
         return wave, flux, nCols, ages, tType, minIndex, maxIndex
 
-
     def sf_age(self):
-        snName, extension = self.filename.strip('.dat').split('.')
+        snName, extension = self.snFilename.strip('.dat').split('.')
         ttype, snName = snName.split('/')
 
         if (extension == 'max'):
@@ -118,10 +123,9 @@ class ReadSpectra(object):
         elif (extension[0] == 'm'):
             age = -float(extension[1:])
         else:
-            print("Invalid Superfit Filename: " + self.filename)
+            print("Invalid Superfit Filename: " + self.snFilename)
 
         return snName, ttype, age
-
 
     def superfit_template_data(self, z):
         """ Returns wavelength and flux after all preprocessing """
@@ -132,11 +136,11 @@ class ReadSpectra(object):
 
         return wave, flux, minIndex, maxIndex, age, snName, ttype
 
-
     def input_spectrum(self, z, smooth):
         wave, flux, minIndex, maxIndex = self.data.two_column_data(z, smooth)
 
         return wave, flux, int(minIndex), int(maxIndex)
+
 
 class ArrayTools(object):
 
@@ -297,27 +301,42 @@ class CreateArrays(object):
 
         return typeList, images, labels, np.array(filenames), np.array(typeNames)
 
-    def superfit_templates_to_arrays(self, sfTemplateLocation, sftempfilelist):
-        templist = TempList().temp_list(sftempfilelist)
-        images = np.empty((0, self.nw), np.float16)  # Number of pixels
+    def combined_sn_gal_templates_to_arrays(self, snTemplateLocation, snTempFileList, galTemplateLocation, galTempFileList):
+        snTempList = TempList().temp_list(snTempFileList)
+        galTempList = TempList().temp_list(galTempFileList)
+        typeList = []
+        images = np.empty((0, int(self.nw)), np.float16)  # Number of pixels
         labels = np.empty((0, self.nLabels), np.uint8)  # Number of labels (SN types)
-        filenames = []
-        typeNames = []
+        filenames = []  # np.empty(0)
+        typeNames = []  # np.empty(0)
+        agesList = []
+        for j in range(len(galTempList)):
+            for snCoeff in [0.01, 0.02, 0.05, 0.07, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.9]:
+                galCoeff = 1 - snCoeff
+                for i in range(0, len(snTempList)):
+                    ncols = 15
+                    readSpectra = ReadSpectra(self.w0, self.w1, self.nw, snTemplateLocation + snTempList[i], galTemplateLocation + galTempList[j])
 
-        for i in range(0, len(templist)):
-            readSpectra = ReadSpectra(self.w0, self.w1, self.nw, sfTemplateLocation + templist[i])
-            tempwave, tempflux, tminindex, tmaxindex, age, snName, ttype = self.readSpectra.superfit_template_data(z)
+                    for ageidx in range(0, 100):
+                        if (ageidx < ncols):
+                            for z in np.linspace(self.minZ, self.maxZ, self.numOfRedshifts + 1):
+                                tempwave, tempflux, ncols, ages, ttype, tminindex, tmaxindex = readSpectra.sn_plus_gal_template(ageidx, snCoeff, galCoeff, z)
+                                agesList.append(ages[ageidx])
 
-            if ((float(ages[ageidx]) > minAge and float(ages[ageidx]) > maxAge)):
-                label, typeName = label_array(ttype, ages[ageidx])
-                nonzeroflux = tempflux[tminindex:tmaxindex + 1]
-                newflux = (nonzeroflux - min(nonzeroflux)) / (max(nonzeroflux) - min(nonzeroflux))
-                newflux2 = np.concatenate((tempflux[0:tminindex], newflux, tempflux[tmaxindex + 1:]))
-                images = np.append(images, np.array([newflux2]), axis=0)  # images.append(newflux2)
-                labels = np.append(labels, np.array([label]), axis=0)  # labels.append(ttype)
-                filenames.append(templist[i])
-                typeNames.append(typeName)
+                                if ((float(ages[ageidx]) > self.minAge and float(ages[ageidx]) < self.maxAge)):
+                                    label, typeName = self.createLabels.label_array(ttype, ages[ageidx])
+                                    nonzeroflux = tempflux[tminindex:tmaxindex + 1]
+                                    newflux = (nonzeroflux - min(nonzeroflux)) / (max(nonzeroflux) - min(nonzeroflux))
+                                    newflux2 = np.concatenate((tempflux[0:tminindex], newflux, tempflux[tmaxindex + 1:]))
+                                    images = np.append(images, np.array([newflux2]), axis=0)
+                                    labels = np.append(labels, np.array([label]), axis=0)
+                                    filenames.append("{0}_{1}_{2}_{3}_snCoeff{4}_z{5}".format(snTempList[i], ttype, str(ages[ageidx]), galTempList[j], snCoeff, (z)))
+                                    typeNames.append(typeName)
 
-        return images, labels, np.array(filenames), typeNames
+                    print(snTempList[i], galTempList[j], snCoeff)
+                    # Create List of all SN types
+                    if ttype not in typeList:
+                        typeList.append(ttype)
 
+        return typeList, images, labels, np.array(filenames), np.array(typeNames)
 

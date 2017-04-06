@@ -156,7 +156,7 @@ class ReadSpectrumFile(object):
         return wave, fluxes, numAges, ages, ttype, splineInfo
 
     def snid_template_undo_processing(self, wave, flux, splineInfo):
-        # Undo Binning function -> then add galaxy -> then redshift
+        # Undo continuum removal -> then add galaxy -> then redshift
 
         return wave, flux
 
