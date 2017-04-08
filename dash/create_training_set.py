@@ -74,7 +74,7 @@ class CreateTrainingSet(object):
 
 
 class SaveTrainingSet(object):
-    def __init__(self, snidTemplateLocation, snidTempFileList, w0, w1, nw, nTypes, minAge, maxAge, ageBinSize, typeList, minZ, maxZ):
+    def __init__(self, snidTemplateLocation, snidTempFileList, w0, w1, nw, nTypes, minAge, maxAge, ageBinSize, typeList, minZ, maxZ, galTemplateLocation=None, galTempFileList=None):
         self.snidTemplateLocation = snidTemplateLocation
         self.snidTempFileList = snidTempFileList
         self.w0 = w0
@@ -85,9 +85,9 @@ class SaveTrainingSet(object):
         self.maxAge = maxAge
         self.ageBinSize = ageBinSize
         self.typeList = typeList
-        self.createLabels = CreateLabels(self.nTypes, self.minAge, self.maxAge, self.ageBinSize, self.typeList)
+        self.createLabels = CreateLabels(nTypes, minAge, maxAge, ageBinSize, typeList)
         
-        self.createTrainingSet = CreateTrainingSet(self.snidTemplateLocation, self.snidTempFileList, self.w0, self.w1, self.nw, self.nTypes, self.minAge, self.maxAge, self.ageBinSize, self.typeList, minZ, maxZ)
+        self.createTrainingSet = CreateTrainingSet(snidTemplateLocation, snidTempFileList, w0, w1, nw, nTypes, minAge, maxAge, ageBinSize, typeList, minZ, maxZ, galTemplateLocation, galTempFileList)
         self.sortData = self.createTrainingSet.sort_data()
         self.trainImages = self.sortData[0][0]
         self.trainLabels = self.sortData[0][1]
@@ -112,7 +112,7 @@ class SaveTrainingSet(object):
         return self.typeNamesList, self.typeAmounts
 
     def save_arrays(self):
-        saveFilename = 'type_age_atRedshiftZero_v03.npz'
+        saveFilename = 'type_age_atRedshiftZero_v03_combined_5050.npz'
         np.savez_compressed(saveFilename, trainImages=self.trainImages, trainLabels=self.trainLabels,
                         trainFilenames=self.trainFilenames, trainTypeNames=self.trainTypeNames,
                         testImages=self.testImages, testLabels=self.testLabels,
@@ -136,8 +136,10 @@ if __name__ == '__main__':
 
     snidTemplateLocation1 = os.path.join(scriptDirectory, "../templates/snid_templates_Modjaz_BSNIP/")
     snidTempFileList1 = snidTemplateLocation1 + 'templist.txt'
+    galTemplateLocation1 = os.path.join(scriptDirectory, "../templates/superfit_templates/gal/")
+    galTempFileList1 = galTemplateLocation1 + 'gal.list'
 
-    saveTrainingSet = SaveTrainingSet(snidTemplateLocation1, snidTempFileList1, w01, w11, nw1, nTypes1, minAge1, maxAge1, ageBinSize1, typeList1, minZ1, maxZ1)
+    saveTrainingSet = SaveTrainingSet(snidTemplateLocation1, snidTempFileList1, w01, w11, nw1, nTypes1, minAge1, maxAge1, ageBinSize1, typeList1, minZ1, maxZ1)#, galTemplateLocation1, galTempFileList1)
     typeNamesList1, typeAmounts1 = saveTrainingSet.type_amounts()
 
     saveTrainingSet.save_arrays()

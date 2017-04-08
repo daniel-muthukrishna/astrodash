@@ -109,9 +109,9 @@ class ReadSpectrumFile(object):
     def snid_template_spectra_all(self):
         """lnw file"""
         with open(self.filename, 'r') as FileObj:
-            for i, line in enumerate(FileObj):
+            for lineNum, line in enumerate(FileObj):
                 # Read Header Info
-                if i == 0:
+                if lineNum == 0:
                     header = (line.strip('\n')).split(' ')
                     header = [x for x in header if x != '']
                     numAges, nwx, w0x, w1x, mostknots, tname, dta, ttype, ittype, itstype = header
@@ -122,18 +122,18 @@ class ReadSpectrumFile(object):
                     yk = np.zeros((mostknots,numAges))
 
                 # Read Spline Info
-                if i == 1:
+                elif lineNum == 1:
                     splineInfo = (line.strip('\n')).split(' ')
                     splineInfo = [x for x in splineInfo if x != '']
                     for j in range(numAges):
                         nk[j], fmean[j] = (splineInfo[2*j+1], splineInfo[2*j+2])
-                if i in range(2, mostknots+2):
+                elif lineNum in range(2, mostknots+2):
                     splineInfo = (line.strip('\n')).split(' ')
                     splineInfo = [x for x in splineInfo if x != '']
                     for j in range(numAges):
-                        xk[i-2,j], yk[i-2,j] = (splineInfo[2*j+1], splineInfo[2*j+2])
+                        xk[lineNum-2,j], yk[lineNum-2,j] = (splineInfo[2*j+1], splineInfo[2*j+2])
 
-                if i == mostknots+2:
+                elif lineNum == mostknots+2:
                     break
 
         splineInfo = (nk, fmean, xk, yk)
@@ -148,15 +148,20 @@ class ReadSpectrumFile(object):
         fluxes = np.zeros(shape=(numAges,len(arr))) # initialise 2D array
 
         for i in range(0, len(arr[0])-1):
-            fluxes[i] = arr[:,i+1]
+            fluxes[i] = arr[:, i+1]
 
         if ttype == 'Ia-99aa':
             ttype = 'Ia-91T'
 
         return wave, fluxes, numAges, ages, ttype, splineInfo
 
-    def snid_template_undo_processing(self, wave, flux, splineInfo):
+    def snid_template_undo_processing(self, wave, flux, splineInfo, ageIdx):
         # Undo continuum removal -> then add galaxy -> then redshift
+        nkAll, fmeanAll, xkAll, ykAll = splineInfo
+        nk, fmean, xk, yk = int(nkAll[ageIdx]), fmeanAll[ageIdx], xkAll[:,ageIdx], ykAll[:,ageIdx]
+        xk, yk = xk[:nk], yk[:nk]
+
+        # NEED TO USE THIS TO ACTUALLY ADD THE SPLINE CONTINUUM BACK
 
         return wave, flux
 

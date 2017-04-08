@@ -1,5 +1,13 @@
 from dash.preprocessing import ReadSpectrumFile, ProcessingTools, PreProcessSpectrum
 import matplotlib.pyplot as plt
+import numpy as np
+
+
+def zero_non_overlap_part(array, minIndex, maxIndex):
+    array[0:minIndex] = np.zeros(minIndex)
+    array[maxIndex:] = np.zeros(len(array)-maxIndex)
+
+    return array
 
 
 class CombineSnAndHost(object):
@@ -18,7 +26,7 @@ class CombineSnAndHost(object):
 
     def snid_sn_template_data(self, ageIdx):
         # Undo continuum in the following step in preprocessing.py
-        wave, flux = self.snReadSpectrumFile.snid_template_undo_processing(self.snWave, self.snFluxes[ageIdx], self.splineInfo)
+        wave, flux = self.snReadSpectrumFile.snid_template_undo_processing(self.snWave, self.snFluxes[ageIdx], self.splineInfo, ageIdx)
 
         binnedWave, binnedFlux, minIndex, maxIndex = self.preProcess.log_wavelength(wave, flux)
         binnedFluxNorm = self._normalise_spectrum(binnedFlux)
@@ -47,10 +55,8 @@ class CombineSnAndHost(object):
         minIndex = max(snMinIndex, galMinIndex)
         maxIndex = min(snMaxIndex, galMaxIndex)
 
-        snWave = snWave[minIndex:maxIndex]
-        snFlux = snFlux[minIndex:maxIndex]
-        galWave = galWave[minIndex:maxIndex]
-        galFlux = galFlux[minIndex:maxIndex]
+        snFlux = zero_non_overlap_part(snFlux, minIndex, maxIndex)
+        galFlux = zero_non_overlap_part(galFlux, minIndex, maxIndex)
 
         return snWave, snFlux, galWave, galFlux, minIndex, maxIndex
 
@@ -64,9 +70,14 @@ class CombineSnAndHost(object):
     def training_template_data(self, snAgeIdx, snCoeff, galCoeff, z):
         wave, flux, minIndex, maxIndex = self.sn_plus_gal(snCoeff, galCoeff, snAgeIdx)
         wave, flux = self.processingTools.redshift_spectrum(wave, flux, z)
+        binnedWave, binnedFlux, minIndex, maxIndex = self.preProcess.log_wavelength(wave, flux)
+        newFlux, continuum = self.preProcess.continuum_removal(binnedWave, binnedFlux, self.numSplinePoints, minIndex, maxIndex)
+        meanZero = self.preProcess.mean_zero(binnedWave, newFlux, minIndex, maxIndex)
+        apodized = self.preProcess.apodize(binnedWave, meanZero, minIndex, maxIndex)
+        # fluxNorm = self._normalise_spectrum(apodized) # This happens in create_arrays anyway
         # Could  median filter here, but trying without it now
 
-        return wave, flux, minIndex, maxIndex, self.ncols, self.ages, self.ttype
+        return binnedWave, apodized, minIndex, maxIndex, self.ncols, self.ages, self.ttype
 
 
 
@@ -78,15 +89,17 @@ if __name__ == '__main__':
     f = plt.figure()
     xSN, ySN, minSN, maxSN = combine.snid_sn_template_data(ageIdx=0)
     xGal, yGal, minGal, maxGal = combine.gal_template_data()
-    plt.plot(xSN, ySN, 'b.')
-    plt.plot(xGal, yGal, 'r.')
+    plt.plot(xSN, ySN, 'b')
+    plt.plot(xGal, yGal, 'r')
 
     f2 = plt.figure()
     xSN, ySN, xGal, yGal, minI, maxI = combine.overlapped_spectra(0)
-    xCombined, yCombined, minI, maxI = combine.sn_plus_gal(0.3, 0.7, 0)
-    plt.plot(xSN, ySN, 'b.')
-    plt.plot(xGal, yGal, 'r.')
-    plt.plot(xCombined, yCombined, 'g.')
+    xCombined, yCombined, minI, maxI = combine.sn_plus_gal(0.5, 0.5, 0)
+    xTemp, ytemp, minI, maxI, NCOL, AGE, TTYPE = combine.training_template_data(0, 0.5, 0.5, 0)
+    plt.plot(xSN, ySN, 'b')
+    plt.plot(xGal, yGal, 'r')
+    plt.plot(xCombined, yCombined, 'g')
+    plt.plot(xTemp, ytemp, 'c')
 
 
     # galNames = ['E', 'S0', 'Sa', 'Sb', 'Sc', 'SB1', 'SB2', 'SB3', 'SB4', 'SB5', 'SB6',]
