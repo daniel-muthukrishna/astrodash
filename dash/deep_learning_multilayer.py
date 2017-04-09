@@ -22,6 +22,7 @@ typeNamesList = loaded['typeNamesList']
 
 print("Completed creatingArrays")
 
+
 N = 1024
 ntypes = len(testLabels[0])
 imWidth = 32  # Image size and width

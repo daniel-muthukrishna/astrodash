@@ -23,7 +23,7 @@ class AgeBinning(object):
         for age in np.arange(self.minAge, self.maxAge, 0.5):
             ageBin = self.age_bin(age)
 
-            if (ageBin != ageBinPrev):
+            if ageBin != ageBinPrev:
                 ageLabelMax = int(round(age))
                 ageLabels.append(str(ageLabelMin) + " to " + str(ageLabelMax))
                 ageLabelMin = ageLabelMax
@@ -50,21 +50,22 @@ class CreateLabels(object):
 
     def label_array(self, ttype, age):
         ageBin = self.ageBinning.age_bin(age)
-        labelarray = np.zeros((self.nTypes, self.numOfAgeBins))
+        labelArray = np.zeros((self.nTypes, self.numOfAgeBins))
         typeNames = []
 
         try:
             typeIndex = self.typeList.index(ttype)
         except ValueError as err:
             print("INVALID TYPE: {0}".format(err))
+            raise ValueError
 
-        labelarray[typeIndex][ageBin] = 1
-        labelarray = labelarray.flatten()
+        labelArray[typeIndex][ageBin] = 1
+        labelArray = labelArray.flatten()
 
         typeNames.append(ttype + ": " + self.ageLabels[ageBin])
         typeNames = np.array(typeNames)
 
-        return labelarray, typeNames
+        return labelArray, typeNames
 
     def type_names_list(self):
         typeNamesList = []
@@ -75,7 +76,7 @@ class CreateLabels(object):
         return typeNamesList
         
 
-class TempList():
+class TempList(object):
     def temp_list(self, tempFileList):
         f = open(tempFileList, 'rU')
 
@@ -116,11 +117,11 @@ class ReadSpectra(object):
         snName, extension = self.snFilename.strip('.dat').split('.')
         ttype, snName = snName.split('/')
 
-        if (extension == 'max'):
+        if extension == 'max':
             age = 0
-        elif (extension[0] == 'p'):
+        elif extension[0] == 'p':
             age = float(extension[1:])
-        elif (extension[0] == 'm'):
+        elif extension[0] == 'm':
             age = -float(extension[1:])
         else:
             print("Invalid Superfit Filename: " + self.snFilename)
@@ -173,7 +174,6 @@ class ArrayTools(object):
         print("Shuffle3")    
         return imagesShuf, labelsShuf, filenamesShuf, typeNamesShuf
 
-
     def count_labels(self, labels):
         counts = np.zeros(self.nLabels)
 
@@ -182,7 +182,6 @@ class ArrayTools(object):
 
         return counts
 
-
     def div0(self, a, b):
         """ ignore / 0, div0( [-1, 0, 1], 0 ) -> [0, 0, 0] """
         with np.errstate(divide='ignore', invalid='ignore'):
@@ -190,13 +189,11 @@ class ArrayTools(object):
             c[~ np.isfinite(c)] = 0  # -inf inf NaN
         return c
 
-
     def over_sample_arrays(self, images, labels, filenames, typeNames):
         counts = self.count_labels(labels)
         idx = 0
         print("Before OverSample")  #
         print(counts)  #
-
 
         overSampleAmount = self.div0(1 * max(counts), counts)  # ignore zeros in counts
         overSampleArraySize = int(sum(np.array(overSampleAmount, int) * counts))
@@ -207,7 +204,6 @@ class ArrayTools(object):
         labelsOverSampled = np.zeros((overSampleArraySize, self.nLabels), np.uint8)
         filenamesOverSampled = np.empty(overSampleArraySize, dtype=object)
         typeNamesOverSampled = np.empty(overSampleArraySize, dtype=object)
-        
 
         counts1 = np.zeros(self.nLabels)
 
@@ -229,9 +225,7 @@ class ArrayTools(object):
                 typeNamesOverSampled[idx] = typeName #typeNamesOverSampled = np.append(typeNamesOverSampled, typeName)
                 counts1 = label + counts1
                 idx += 1
-            
 
-                
         print("After OverSample")  #
         print(counts1)  #
 
@@ -254,10 +248,10 @@ class CreateArrays(object):
         self.minZ = minZ
         self.maxZ = maxZ
         self.redshiftPrecision = 50
-        self.numOfRedshifts = (self.maxZ - self.minZ) * self.redshiftPrecision
-        self.ageBinning = AgeBinning(self.minAge, self.maxAge, self.ageBinSize)
-        self.numOfAgeBins = self.ageBinning.age_bin(self.maxAge-0.1) + 1
-        self.nLabels = self.nTypes * self.numOfAgeBins
+        self.numOfRedshifts = (maxZ - minZ) * self.redshiftPrecision
+        self.ageBinning = AgeBinning(minAge, maxAge, ageBinSize)
+        self.numOfAgeBins = self.ageBinning.age_bin(maxAge-0.1) + 1
+        self.nLabels = nTypes * self.numOfAgeBins
         self.createLabels = CreateLabels(self.nTypes, self.minAge, self.maxAge, self.ageBinSize, self.typeList)
 
     def snid_templates_to_arrays(self, snidTemplateLocation, tempfilelist):
@@ -265,7 +259,7 @@ class CreateArrays(object):
             have been preprocessed to negatives, and so cannot be
             imaged yet '''
 
-        templist = TempList().temp_list(tempfilelist) #Arbrirary redshift to read filelist
+        tempList = TempList().temp_list(tempfilelist) #Arbrirary redshift to read filelist
         typeList = []
         images = np.empty((0, int(self.nw)), np.float16)  # Number of pixels
         labels = np.empty((0, self.nLabels), np.uint8)  # Number of labels (SN types)
@@ -273,31 +267,33 @@ class CreateArrays(object):
         typeNames = []#np.empty(0)
         agesList = []
 
-        for i in range(0, len(templist)):
+        for i in range(0, len(tempList)):
             ncols = 15
-            readSpectra = ReadSpectra(self.w0, self.w1, self.nw, snidTemplateLocation + templist[i])
+            readSpectra = ReadSpectra(self.w0, self.w1, self.nw, snidTemplateLocation + tempList[i])
             
-            for ageidx in range(0, 100):
-                if (ageidx < ncols):
+            for ageidx in range(0, 1000):
+                if ageidx < ncols:
                     for z in np.linspace(self.minZ, self.maxZ, self.numOfRedshifts + 1):
                         tempwave, tempflux, ncols, ages, ttype, tminindex, tmaxindex = readSpectra.snid_template_data(ageidx, z)
                         agesList.append(ages[ageidx])
-                        
-                    
-                        if ((float(ages[ageidx]) > self.minAge and float(ages[ageidx]) < self.maxAge)):
+
+                        if self.minAge < float(ages[ageidx]) < self.maxAge:
                             label, typeName = self.createLabels.label_array(ttype, ages[ageidx])
                             nonzeroflux = tempflux[tminindex:tmaxindex + 1]
                             newflux = (nonzeroflux - min(nonzeroflux)) / (max(nonzeroflux) - min(nonzeroflux))
                             newflux2 = np.concatenate((tempflux[0:tminindex], newflux, tempflux[tmaxindex + 1:]))
                             images = np.append(images, np.array([newflux2]), axis=0)  # images.append(newflux2)
                             labels = np.append(labels, np.array([label]), axis=0)  # labels.append(ttype)
-                            filenames.append(templist[i] + '_' + ttype + '_' + str(ages[ageidx]) + '_z' + str(z))
+                            filenames.append(tempList[i] + '_' + ttype + '_' + str(ages[ageidx]) + '_z' + str(z))
                             typeNames.append(typeName)
+                else:
+                    break
 
-            print(templist[i])
+            print(tempList[i])
             # Create List of all SN types
             if ttype not in typeList:
                 typeList.append(ttype)
+            print(len(images))
 
         return typeList, images, labels, np.array(filenames), np.array(typeNames)
 
@@ -316,13 +312,13 @@ class CreateArrays(object):
                 readSpectra = ReadSpectra(self.w0, self.w1, self.nw, snTemplateLocation + snTempList[i], galTemplateLocation + galTempList[j])
                 for ageidx in range(0, 1000):
                     if (ageidx < ncols):
-                        for snCoeff in [0.5]:
+                        for snCoeff in [0.5]:#[0.01, 0.02, 0.05, 0.07, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.9]:
                             galCoeff = 1 - snCoeff
                             for z in np.linspace(self.minZ, self.maxZ, self.numOfRedshifts + 1):
                                 tempwave, tempflux, ncols, ages, ttype, tminindex, tmaxindex = readSpectra.sn_plus_gal_template(ageidx, snCoeff, galCoeff, z)
                                 agesList.append(ages[ageidx])
 
-                                if ((float(ages[ageidx]) > self.minAge and float(ages[ageidx]) < self.maxAge)):
+                                if self.minAge < float(ages[ageidx]) < self.maxAge:
                                     label, typeName = self.createLabels.label_array(ttype, ages[ageidx])
                                     nonzeroflux = tempflux[tminindex:tmaxindex + 1]
                                     newflux = (nonzeroflux - min(nonzeroflux)) / (max(nonzeroflux) - min(nonzeroflux))

@@ -111,8 +111,8 @@ class SaveTrainingSet(object):
             print(str(self.typeAmounts[i]) + ": " + str(self.typeNamesList[i]))
         return self.typeNamesList, self.typeAmounts
 
-    def save_arrays(self):
-        saveFilename = 'type_age_atRedshiftZero_v03_combined_5050.npz'
+    def save_arrays(self, saveFilename):
+        saveFilename = saveFilename
         np.savez_compressed(saveFilename, trainImages=self.trainImages, trainLabels=self.trainLabels,
                         trainFilenames=self.trainFilenames, trainTypeNames=self.trainTypeNames,
                         testImages=self.testImages, testLabels=self.testLabels,
@@ -139,7 +139,8 @@ if __name__ == '__main__':
     galTemplateLocation1 = os.path.join(scriptDirectory, "../templates/superfit_templates/gal/")
     galTempFileList1 = galTemplateLocation1 + 'gal.list'
 
-    saveTrainingSet = SaveTrainingSet(snidTemplateLocation1, snidTempFileList1, w01, w11, nw1, nTypes1, minAge1, maxAge1, ageBinSize1, typeList1, minZ1, maxZ1)#, galTemplateLocation1, galTempFileList1)
+    saveTrainingSet = SaveTrainingSet(snidTemplateLocation1, snidTempFileList1, w01, w11, nw1, nTypes1, minAge1, maxAge1, ageBinSize1, typeList1, minZ1, maxZ1, galTemplateLocation1, galTempFileList1)
     typeNamesList1, typeAmounts1 = saveTrainingSet.type_amounts()
 
-    saveTrainingSet.save_arrays()
+    saveFilename1 = 'type_age_atRedshiftZero_v03_combined_5050.npz'
+    saveTrainingSet.save_arrays(saveFilename1)
