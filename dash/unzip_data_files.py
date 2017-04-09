@@ -1,10 +1,11 @@
 import zipfile
+import os
 
 
 def unzip_data_files(dataZipFilename):
-    extractedFolder = 'data_files'
+    scriptDirectory = os.path.dirname(os.path.abspath(__file__))
     zipRef = zipfile.ZipFile(dataZipFilename, 'r')
-    zipRef.extractall(extractedFolder)
+    zipRef.extractall(scriptDirectory)
     zipRef.close()
 
 

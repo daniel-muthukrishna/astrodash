@@ -12,6 +12,7 @@ mainDirectory = os.path.dirname(os.path.abspath(__file__))
 from dash.restore_model import *
 from dash.create_arrays import AgeBinning
 
+
 class MainApp(QtGui.QMainWindow, Ui_MainWindow):
     def __init__(self, parent=None, inputFilename="DefaultFilename"):
         super(MainApp, self).__init__(parent)

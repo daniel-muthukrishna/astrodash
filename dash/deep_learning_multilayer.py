@@ -19,21 +19,24 @@ def train_model():
     npyFiles = {}
     for filename in os.listdir(extractedFolder):
         if filename.endswith('.gz'):
-            npyFiles[filename.strip('.npy.gz')] = gzip.GzipFile(os.path.join(scriptDirectory, extractedFolder, filename), 'r')
+            f = os.path.join(scriptDirectory, extractedFolder, filename)
+            # npyFiles[filename.strip('.npy.gz')] = gzip.GzipFile(f, 'r')
+            gzFile = gzip.open(f, "rb")
+            unCompressedFile = open(f.strip('.gz'), "wb")
+            decoded = gzFile.read()
+            unCompressedFile.write(decoded)
+            gzFile.close()
+            unCompressedFile.close()
+            npyFiles[filename.strip('.npy.gz')] = f.strip('.gz')
 
-    trainImages = np.load(npyFiles['trainImages'])
-    trainLabels = np.load(npyFiles['trainLabels'])
-    testImages = np.load(npyFiles['testImages'])
-    testLabels = np.load(npyFiles['testLabels'])
+    trainImages = np.load(npyFiles['trainImages'], mmap_mode='r')
+    trainLabels = np.load(npyFiles['trainLabels'], mmap_mode='r')
+    testImages = np.load(npyFiles['testImages'], mmap_mode='r')
+    testLabels = np.load(npyFiles['testLabels'], mmap_mode='r')
     testTypeNames = np.load(npyFiles['testTypeNames'])
     typeNamesList = np.load(npyFiles['typeNamesList'])
 
-
-
-
-
     print("Completed creatingArrays")
-
 
     N = 1024
     ntypes = len(testLabels[0])
