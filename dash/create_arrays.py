@@ -51,7 +51,6 @@ class CreateLabels(object):
     def label_array(self, ttype, age):
         ageBin = self.ageBinning.age_bin(age)
         labelArray = np.zeros((self.nTypes, self.numOfAgeBins))
-        typeNames = []
 
         try:
             typeIndex = self.typeList.index(ttype)
@@ -62,10 +61,9 @@ class CreateLabels(object):
         labelArray[typeIndex][ageBin] = 1
         labelArray = labelArray.flatten()
 
-        typeNames.append(ttype + ": " + self.ageLabels[ageBin])
-        typeNames = np.array(typeNames)
+        typeName = ttype + ": " + self.ageLabels[ageBin]
 
-        return labelArray, typeNames
+        return labelArray, typeName
 
     def type_names_list(self):
         typeNamesList = []
@@ -293,7 +291,7 @@ class CreateArrays(object):
             # Create List of all SN types
             if ttype not in typeList:
                 typeList.append(ttype)
-            print(len(images))
+        print(len(images))
 
         return typeList, images, labels, np.array(filenames), np.array(typeNames)
 

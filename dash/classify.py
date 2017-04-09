@@ -17,7 +17,7 @@ except ImportError:
 
 
 class Classify(object):
-    loaded = np.load(os.path.join(scriptDirectory, "templates_v03.npz"))
+    loaded = np.load(os.path.join(scriptDirectory, "data_files/templates.npz"))
     templateImages = loaded['templateFluxesAll']
     templateLabels = loaded['templateLabelsAll']
 
@@ -31,9 +31,9 @@ class Classify(object):
         self.numSpectra = len(filenames)
         self.mainDirectory = os.path.dirname(os.path.abspath(__file__))
 
-        download_all_files()
+        download_all_files('v01')
 
-        self.modelFilename = os.path.join(self.mainDirectory, "model_trainedAtZeroZ_v03.ckpt")
+        self.modelFilename = os.path.join(self.mainDirectory, "data_files/model_trainedAtZeroZ.ckpt")
 
     def _get_images(self, filename, redshift, trainParams):
         loadInputSpectra = LoadInputSpectra(filename, redshift, redshift, self.smooth, trainParams)

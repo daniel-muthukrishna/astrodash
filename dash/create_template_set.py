@@ -1,7 +1,10 @@
 import os
 import numpy as np
+import zipfile
+import gzip
 
-def save_templates():
+
+def save_templates(saveFilename, trainImages, trainLabels, trainFilenames, trainTypeNames):
     nTypes = len(trainLabels[0])
 
     templateFluxesAll = []
@@ -43,20 +46,35 @@ def save_templates():
     
     np.savez_compressed(saveFilename, templateFluxesAll=templateFluxesAll, templateLabelsAll=templateLabelsAll, templateNamesAll=templateNamesAll, templateFilenamesAll=templateFilenamesAll)
 
-if __name__ == '__main__':
-    scriptDirectory = os.path.dirname(os.path.abspath(__file__))
-    trainingSet = "type_age_atRedshiftZero_v03.npz"
-    print("Reading " + trainingSet + " ...")
-    loaded = np.load(os.path.join(scriptDirectory, trainingSet))
-    trainImages = loaded['trainImages']
-    trainLabels = loaded['trainLabels']
-    trainFilenames = loaded['trainFilenames']
-    trainTypeNames = loaded['trainTypeNames']
 
-    saveFilename = 'templates_v03.npz'
+def create_template_set_file():
+    scriptDirectory = os.path.dirname(os.path.abspath(__file__))
+    trainingSet = 'data_files/trainingSet_type_age_atRedshiftZero.zip'
+    extractedFolder = 'data_files/trainingSet_type_age_atRedshiftZero'
+    zipRef = zipfile.ZipFile(trainingSet, 'r')
+    zipRef.extractall(extractedFolder)
+    zipRef.close()
+
+    npyFiles = {}
+    for filename in os.listdir(extractedFolder):
+        if filename.endswith('.gz'):
+            npyFiles[filename.strip('.npy.gz')] = gzip.GzipFile(os.path.join(scriptDirectory, extractedFolder, filename), 'r')
+
+    trainImages = np.load(npyFiles['trainImages'])
+    trainLabels = np.load(npyFiles['trainLabels'])
+    trainFilenames = np.load(npyFiles['trainFilenames'])
+    trainTypeNames = np.load(npyFiles['trainTypeNames'])
+
+    saveFilename = 'data_files/templates.npz'
 
     print("Saving Templates...")
-    save_templates()
+    save_templates(saveFilename, trainImages, trainLabels, trainFilenames, trainTypeNames)
     print("Saved Templates to: " + saveFilename)
 
     loaded = np.load(os.path.join(scriptDirectory, saveFilename))
+
+    return saveFilename
+
+
+if __name__ == '__main__':
+    templateSetFilename = create_template_set_file()

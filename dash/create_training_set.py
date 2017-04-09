@@ -1,6 +1,10 @@
 import pickle
 import numpy as np
 from dash.create_arrays import AgeBinning, CreateLabels, ArrayTools, CreateArrays
+import zipfile
+import gzip
+import os
+
 
 
 class CreateTrainingSet(object):
@@ -105,7 +109,6 @@ class SaveTrainingSet(object):
 
         self.typeNamesList = self.createLabels.type_names_list()
 
-
     def type_amounts(self):
         for i in range(len(self.typeNamesList)):
             print(str(self.typeAmounts[i]) + ": " + str(self.typeNamesList[i]))
@@ -113,24 +116,36 @@ class SaveTrainingSet(object):
 
     def save_arrays(self, saveFilename):
         saveFilename = saveFilename
-        np.savez_compressed(saveFilename, trainImages=self.trainImages, trainLabels=self.trainLabels,
-                        trainFilenames=self.trainFilenames, trainTypeNames=self.trainTypeNames,
-                        testImages=self.testImages, testLabels=self.testLabels,
-                        testFilenames=self.testFilenames, testTypeNames=self.testTypeNames,
-                        typeNamesList = self.typeNamesList)
+        arraysToSave = {'trainImages.npy.gz': self.trainImages, 'trainLabels.npy.gz': self.trainLabels,
+                        'testImages.npy.gz': self.testImages, 'testLabels.npy.gz': self.testLabels,
+                        'testTypeNames.npy.gz': self.testTypeNames, 'typeNamesList.npy.gz': self.typeNamesList,
+                        'trainFilenames.npy.gz': self.trainFilenames, 'trainTypeNames.npy.gz': self.trainTypeNames}
+
+        for filename, array in arraysToSave.items():
+            f = gzip.GzipFile(filename, "w")
+            np.save(file=f, arr=array)
+            f.close()
+
+        with zipfile.ZipFile(saveFilename, 'w') as myzip:
+            for f in arraysToSave.keys():
+                myzip.write(f)
+
         print("Saved Training Set to: " + saveFilename)
 
+        # Delete npy.gz files
+        for filename in arraysToSave.keys():
+            os.remove(filename)
 
-if __name__ == '__main__':
-    with open('training_params_v03.pickle', 'rb') as f:
-        pars = pickle.load(f)
+
+def create_training_set_files():
+    with open('data_files/training_params.pickle', 'rb') as f1:
+        pars = pickle.load(f1)
     nTypes1, w01, w11, nw1, minAge1, maxAge1, ageBinSize1, typeList1 = pars['nTypes'], pars['w0'], pars['w1'], pars['nw'], \
                                                                pars['minAge'], pars['maxAge'], pars['ageBinSize'], \
                                                                pars['typeList']
 
     minZ1 = 0
     maxZ1 = 0.0
-    import os
 
     scriptDirectory = os.path.dirname(os.path.abspath(__file__))
 
@@ -139,8 +154,14 @@ if __name__ == '__main__':
     galTemplateLocation1 = os.path.join(scriptDirectory, "../templates/superfit_templates/gal/")
     galTempFileList1 = galTemplateLocation1 + 'gal.list'
 
-    saveTrainingSet = SaveTrainingSet(snidTemplateLocation1, snidTempFileList1, w01, w11, nw1, nTypes1, minAge1, maxAge1, ageBinSize1, typeList1, minZ1, maxZ1, galTemplateLocation1, galTempFileList1)
+    saveTrainingSet = SaveTrainingSet(snidTemplateLocation1, snidTempFileList1, w01, w11, nw1, nTypes1, minAge1, maxAge1, ageBinSize1, typeList1, minZ1, maxZ1)#, galTemplateLocation1, galTempFileList1)
     typeNamesList1, typeAmounts1 = saveTrainingSet.type_amounts()
 
-    saveFilename1 = 'type_age_atRedshiftZero_v03_combined_5050.npz'
+    saveFilename1 = 'data_files/trainingSet_type_age_atRedshiftZero.zip'
     saveTrainingSet.save_arrays(saveFilename1)
+
+    return saveFilename1
+
+
+if __name__ == '__main__':
+    trainingSetFilename = create_training_set_files()

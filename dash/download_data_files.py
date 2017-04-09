@@ -1,8 +1,10 @@
 import os
 import sys
+import shutil
+from dash.unzip_data_files import unzip_data_files
 
 
-def download_file(filename, urlpath, printStatus, scriptDirectory):
+def download_file(filename, urlpath, printStatus, scriptDirectory, zipVersion):
     dataFilename = os.path.join(scriptDirectory, filename)
     if not os.path.isfile(dataFilename):
         print(printStatus)
@@ -15,38 +17,7 @@ def download_file(filename, urlpath, printStatus, scriptDirectory):
             urllib.request.urlretrieve(urlpath, dataFilename)
 
         print(dataFilename)
-
-
-def download_all_files():
-    scriptDirectory = os.path.dirname(os.path.abspath(__file__))
-
-    oldFilenames = ['model_trainedAtZeroZ.ckpt', 'type_age_atRedshiftZero.npz', 'training_params.pickle', 'templates.npz',
-                    'model_trainedAtZeroZ_v02.ckpt', 'type_age_atRedshiftZero_v02.npz', 'training_params_v02.pickle', 'templates_v02.npz']
-    delete_previous_versions(oldFilenames, scriptDirectory)
-
-    saveFilenames = ['model_trainedAtZeroZ_v03.ckpt.data-00000-of-00001',
-                     'model_trainedAtZeroZ_v03.ckpt.index',
-                     'model_trainedAtZeroZ_v03.ckpt.meta',
-                     'type_age_atRedshiftZero_v03.npz',
-                     'training_params_v03.pickle',
-                     'templates_v03.npz']
-
-    urlpaths = ["https://raw.githubusercontent.com/daniel-muthukrishna/DASH/master/dash/model_trainedAtZeroZ_v03.ckpt.data-00000-of-00001",
-                "https://raw.githubusercontent.com/daniel-muthukrishna/DASH/master/dash/model_trainedAtZeroZ_v03.ckpt.index",
-                "https://raw.githubusercontent.com/daniel-muthukrishna/DASH/master/dash/model_trainedAtZeroZ_v03.ckpt.meta",
-                "https://raw.githubusercontent.com/daniel-muthukrishna/DASH/master/dash/type_age_atRedshiftZero_v03.npz",
-                "https://raw.githubusercontent.com/daniel-muthukrishna/DASH/master/dash/training_params_v03.pickle",
-                "https://raw.githubusercontent.com/daniel-muthukrishna/DASH/master/dash/templates_v03.npz"]
-
-    printStatuses = ["Downloading Tensorflow trained model 1 of 3...",
-                     "Downloading Tensorflow trained model 2 of 3...",
-                     "Downloading Tensorflow trained model 3 of 3...",
-                     "Downloading template data file...",
-                     "Downloading model parameters file...",
-                     "Downloading template data files..."]
-
-    for i in range(len(urlpaths)):
-        download_file(saveFilenames[i], urlpaths[i], printStatuses[i], scriptDirectory)
+        unzip_data_files('data_files_{0}.zip'.format(zipVersion))
 
 
 def delete_previous_versions(oldFilenames, scriptDirectory):
@@ -55,4 +26,31 @@ def delete_previous_versions(oldFilenames, scriptDirectory):
         if os.path.isfile(dataFilename):
             print("Deleting previous version of data file: %s" % oldFilename)
             os.remove(dataFilename)
+            shutil.rmtree(os.path.join(scriptDirectory, 'data_files'))
+
+
+def download_all_files(zipVersion):
+    scriptDirectory = os.path.dirname(os.path.abspath(__file__))
+
+    oldFilenames = ['model_trainedAtZeroZ.ckpt', 'type_age_atRedshiftZero.npz', 'training_params.pickle', 'templates.npz',
+                    'model_trainedAtZeroZ_v02.ckpt', 'type_age_atRedshiftZero_v02.npz', 'training_params_v02.pickle', 'templates_v02.npz',
+                    'model_trainedAtZeroZ_v03.ckpt', 'type_age_atRedshiftZero_v03.npz', 'training_params.pickle', 'templates_v03.npz',
+                    'model_trainedAtZeroZ_v03.ckpt.data-00000-of-00001', 'model_trainedAtZeroZ_v03.ckpt.index', 'model_trainedAtZeroZ_v03.ckpt.meta',
+                    'data_files_v00.zip']
+    delete_previous_versions(oldFilenames, scriptDirectory)
+
+    saveFilenames = ['data_files_{0}.zip'.format(zipVersion)]
+
+    urlpaths = ["https://raw.githubusercontent.com/daniel-muthukrishna/DASH/master/dash/data_files_{0}.zip".format(zipVersion)]
+
+    printStatuses = ["Downloading data files..."]
+
+    for i in range(len(urlpaths)):
+        download_file(saveFilenames[i], urlpaths[i], printStatuses[i], scriptDirectory, zipVersion)
+
+
+if __name__ == '__main__':
+    download_all_files('v01')
+
+
 

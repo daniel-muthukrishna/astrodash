@@ -1,29 +1,29 @@
 import os
 import pickle
+import zipfile
+import gzip
 import tensorflow as tf
 from dash.input_spectra import *
 from dash.multilayer_convnet import convnet_variables
-from dash.download_data_files import download_all_files
 
 scriptDirectory = os.path.dirname(os.path.abspath(__file__))
+trainingSet = 'data_files/trainingSet_type_age_atRedshiftZero.zip'
+extractedFolder = 'data_files/trainingSet_type_age_atRedshiftZero'
+zipRef = zipfile.ZipFile(trainingSet, 'r')
+zipRef.extractall(extractedFolder)
+zipRef.close()
 
-loaded = np.load(os.path.join(scriptDirectory, "type_age_atRedshiftZero_v03.npz"))
-trainImages = loaded['trainImages']
-trainLabels = loaded['trainLabels']
-# loaded = np.load(os.path.join(scriptDirectory, "templates_v03.npz"))
-# trainImages = loaded['templateFluxesAll']
-# trainLabels = loaded['templateLabelsAll']
-##trainFilenames = loaded['trainFilenames']
-##trainTypeNames = loaded['trainTypeNames']
-##testImages = loaded['testImages']
-##testLabels = loaded['testLabels']
-##testFilenames = loaded['testFilenames']
-##testTypeNames = loaded['testTypeNames']
-##typeNamesList = loaded['typeNamesList']
+npyFiles = {}
+for filename in os.listdir(extractedFolder):
+    if filename.endswith('.gz'):
+        npyFiles[filename.strip('.npy.gz')] = gzip.GzipFile(os.path.join(scriptDirectory, extractedFolder, filename),
+                                                            'r')
+trainImages = np.load(npyFiles['trainImages'])
+trainLabels = np.load(npyFiles['trainLabels'])
 
 
 def get_training_parameters():
-    with open(os.path.join(scriptDirectory, "training_params_v03.pickle"), 'rb') as f:
+    with open(os.path.join(scriptDirectory, "data_files/training_params.pickle"), 'rb') as f:
         pars = pickle.load(f)
 
     return pars
