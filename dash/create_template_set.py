@@ -58,10 +58,18 @@ def create_template_set_file():
     npyFiles = {}
     for filename in os.listdir(extractedFolder):
         if filename.endswith('.gz'):
-            npyFiles[filename.strip('.npy.gz')] = gzip.GzipFile(os.path.join(scriptDirectory, extractedFolder, filename), 'r')
+            f = os.path.join(scriptDirectory, extractedFolder, filename)
+            # npyFiles[filename.strip('.npy.gz')] = gzip.GzipFile(f, 'r')
+            gzFile = gzip.open(f, "rb")
+            unCompressedFile = open(f.strip('.gz'), "wb")
+            decoded = gzFile.read()
+            unCompressedFile.write(decoded)
+            gzFile.close()
+            unCompressedFile.close()
+            npyFiles[filename.strip('.npy.gz')] = f.strip('.gz')
 
-    trainImages = np.load(npyFiles['trainImages'])
-    trainLabels = np.load(npyFiles['trainLabels'])
+    trainImages = np.load(npyFiles['trainImages'], mmap_mode='r')
+    trainLabels = np.load(npyFiles['trainLabels'], mmap_mode='r')
     trainFilenames = np.load(npyFiles['trainFilenames'])
     trainTypeNames = np.load(npyFiles['trainTypeNames'])
 

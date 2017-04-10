@@ -2,6 +2,9 @@ import numpy as np
 from random import shuffle
 from dash.sn_processing import PreProcessing
 from dash.combine_sn_and_host import CombineSnAndHost
+import multiprocessing as mp
+import random
+import time
 
 
 class AgeBinning(object):
@@ -295,9 +298,8 @@ class CreateArrays(object):
 
         return typeList, images, labels, np.array(filenames), np.array(typeNames)
 
-    def combined_sn_gal_templates_to_arrays(self, snTemplateLocation, snTempFileList, galTemplateLocation, galTempFileList):
+    def combined_sn_gal_templates_to_arrays(self, snTemplateLocation, snTempFileList, galTemplateLocation, galTempList):
         snTempList = TempList().temp_list(snTempFileList)
-        galTempList = TempList().temp_list(galTempFileList)
         typeList = []
         images = np.empty((0, int(self.nw)), np.float16)  # Number of pixels
         labels = np.empty((0, self.nLabels), np.uint8)  # Number of labels (SN types)
@@ -336,4 +338,33 @@ class CreateArrays(object):
         print(len(images))
 
         return typeList, images, labels, np.array(filenames), np.array(typeNames)
+
+    def combined_sn_gal_arrays_multiprocessing(self, snTemplateLocation, snTempFileList, galTemplateLocation, galTempFileList):
+        galTempList = TempList().temp_list(galTempFileList)
+
+        images = np.empty((0, int(self.nw)), np.float16)
+        labels = np.empty((0, self.nLabels), np.uint8)
+        filenames = np.empty(0)
+        typeNames = np.empty(0)
+
+        t1 = time.time()
+        pool = mp.Pool(processes=11)
+        results = [pool.apply_async(self.combined_sn_gal_templates_to_arrays, args=(snTemplateLocation, snTempFileList, galTemplateLocation, [gList],)) for gList in galTempList]
+
+        outputs = [p.get() for p in results]
+
+        for out in outputs:
+            typeList, imagesPart, labelsPart, filenamesPart, typeNamesPart = out
+            images = np.append(images, imagesPart, axis=0)
+            labels = np.append(labels, labelsPart, axis=0)
+            filenames = np.append(filenames, filenamesPart)
+            typeNames = np.append(typeNames, typeNamesPart)
+
+        t2 = time.time()
+        print("time spent: {0:.2f}".format(t2 - t1))
+
+        return typeList, images, labels, filenames, typeNames
+
+
+
 

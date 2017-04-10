@@ -37,7 +37,7 @@ class CreateTrainingSet(object):
         if self.galTemplateLocation is None or self.galTempFileList is None:
             snTypeList, images, labels, filenames, typeNames = self.createArrays.snid_templates_to_arrays(self.snidTemplateLocation, self.snidTempFileList)
         else:
-            snTypeList, images, labels, filenames, typeNames = self.createArrays.combined_sn_gal_templates_to_arrays(self.snidTemplateLocation, self.snidTempFileList, self.galTemplateLocation, self.galTempFileList)
+            snTypeList, images, labels, filenames, typeNames = self.createArrays.combined_sn_gal_arrays_multiprocessing(self.snidTemplateLocation, self.snidTempFileList, self.galTemplateLocation, self.galTempFileList)
 
         imagesShuf, labelsShuf, filenamesShuf, typeNamesShuf = self.arrayTools.shuffle_arrays(images, labels, filenames, typeNames)
 
@@ -71,10 +71,12 @@ class CreateTrainingSet(object):
         trainImagesOverSample, trainLabelsOverSample, trainFilenamesOverSample, trainTypeNamesOverSample = self.arrayTools.over_sample_arrays(trainImages, trainLabels, trainFilenames, trainTypeNames)
         testImagesShortlist, testLabelsShortlist, testFilenamesShortlist, testTypeNamesShortlist = testImages, testLabels, testFilenames, testTypeNames  # (testImages, testLabels, testFilenames)
 
+        typeAmountsOverSampled = self.type_amounts(trainLabelsOverSample)
+
         return ((trainImagesOverSample, trainLabelsOverSample, trainFilenamesOverSample, trainTypeNamesOverSample),
                 (testImagesShortlist, testLabelsShortlist, testFilenamesShortlist, testTypeNamesShortlist),
                 (validateImages, validateLabels, validateFilenames, validateTypeNames),
-                typeAmounts)
+                (typeAmounts, typeAmountsOverSampled))
 
 
 class SaveTrainingSet(object):
@@ -105,7 +107,8 @@ class SaveTrainingSet(object):
         self.validateLabels = self.sortData[2][1]
         self.validateFilenames = self.sortData[2][2]
         self.validateTypeNames = self.sortData[2][3]
-        self.typeAmounts = self.sortData[3]
+        self.typeAmounts = self.sortData[3][0]
+        self.typeAmountsOverSampled = self.sortData[3][1]
 
         self.typeNamesList = self.createLabels.type_names_list()
 
@@ -154,7 +157,7 @@ def create_training_set_files():
     galTemplateLocation1 = os.path.join(scriptDirectory, "../templates/superfit_templates/gal/")
     galTempFileList1 = galTemplateLocation1 + 'gal.list'
 
-    saveTrainingSet = SaveTrainingSet(snidTemplateLocation1, snidTempFileList1, w01, w11, nw1, nTypes1, minAge1, maxAge1, ageBinSize1, typeList1, minZ1, maxZ1)#, galTemplateLocation1, galTempFileList1)
+    saveTrainingSet = SaveTrainingSet(snidTemplateLocation1, snidTempFileList1, w01, w11, nw1, nTypes1, minAge1, maxAge1, ageBinSize1, typeList1, minZ1, maxZ1, galTemplateLocation1, galTempFileList1)
     typeNamesList1, typeAmounts1 = saveTrainingSet.type_amounts()
 
     saveFilename1 = 'data_files/trainingSet_type_age_atRedshiftZero.zip'

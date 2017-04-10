@@ -5,11 +5,18 @@ import tensorflow as tf
 from dash.multilayer_convnet import convnet_variables
 import zipfile
 import gzip
+import multiprocessing
+import time
 
 
-def train_model():
+def train_model(randint=0):
+    # Multiprocessing Random Seed
+    # print("Set new seed:", randint)
+    # np.random.seed(randint)
+    # tf.set_random_seed(randint)
+
+    # Open training data files
     scriptDirectory = os.path.dirname(os.path.abspath(__file__))
-
     trainingSet = 'data_files/trainingSet_type_age_atRedshiftZero.zip'
     extractedFolder = 'data_files/trainingSet_type_age_atRedshiftZero'
     zipRef = zipfile.ZipFile(trainingSet, 'r')
@@ -31,24 +38,25 @@ def train_model():
 
     trainImages = np.load(npyFiles['trainImages'], mmap_mode='r')
     trainLabels = np.load(npyFiles['trainLabels'], mmap_mode='r')
-    testImages = np.load(npyFiles['testImages'], mmap_mode='r')
-    testLabels = np.load(npyFiles['testLabels'], mmap_mode='r')
-    testTypeNames = np.load(npyFiles['testTypeNames'])
+    testImagesWithGal = np.load(npyFiles['testImages'], mmap_mode='r')
+    testLabelsWithGal = np.load(npyFiles['testLabels'], mmap_mode='r')
+    testTypeNamesWithGal = np.load(npyFiles['testTypeNames'])
     typeNamesList = np.load(npyFiles['typeNamesList'])
+    testImages = np.load(npyFiles['testImagesNoGal'], mmap_mode='r')
+    testLabels = np.load(npyFiles['testLabelsNoGal'], mmap_mode='r')
+    testTypeNames = np.load(npyFiles['testTypeNamesNoGal'])
 
     print("Completed creatingArrays")
 
+    # Set up the convolutional network architecture
     N = 1024
     ntypes = len(testLabels[0])
     imWidth = 32  # Image size and width
     imWidthReduc = 8
-
     a = []
-
     x, y_, keep_prob, y_conv = convnet_variables(imWidth, imWidthReduc, N, ntypes)
 
-    with tf.Session() as sess:
-
+    with tf.Session() as sess: # config=tf.ConfigProto(inter_op_parallelism_threads=1, intra_op_parallelism_threads=1)) as sess:
         # TRAIN AND EVALUATE MODEL
         cross_entropy = tf.reduce_mean(-tf.reduce_sum(y_ * tf.log(y_conv), reduction_indices=[1]))
         train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy)
@@ -59,16 +67,20 @@ def train_model():
 
         trainImagesCycle = itertools.cycle(trainImages)
         trainLabelsCycle = itertools.cycle(trainLabels)
-        for i in range(30000):
+        for i in range(37000):
             batch_xs = np.array(list(itertools.islice(trainImagesCycle, 50 * i, 50 * i + 50)))
             batch_ys = np.array(list(itertools.islice(trainLabelsCycle, 50 * i, 50 * i + 50)))
             train_step.run(feed_dict={x: batch_xs, y_: batch_ys, keep_prob: 0.5})
-            if (i % 100 == 0):
+            if i % 100 == 0:
                 train_accuracy = accuracy.eval(feed_dict={x: batch_xs, y_: batch_ys, keep_prob: 1.0})
-                print("step %d, training accuracy %g" % (i, train_accuracy))
+                print("step %d_%d, training accuracy %g" % (i, randint,train_accuracy))
                 testacc = accuracy.eval(feed_dict={x: testImages, y_: testLabels, keep_prob: 1.0})
                 print("test accuracy %g" % testacc)
                 a.append(testacc)
+                if i % 1000 == 0:
+                    testWithGalacc = accuracy.eval(feed_dict={x: testImagesWithGal, y_: testLabelsWithGal, keep_prob: 1.0})
+                    print("test With Gal accuracy %g" % testWithGalacc)
+
         print("test accuracy %g" % accuracy.eval(feed_dict={x: testImages, y_: testLabels, keep_prob: 1.0}))
 
         yy = y_conv.eval(feed_dict={x: testImages, y_: testLabels, keep_prob: 1.0})
@@ -140,4 +152,26 @@ def train_model():
         return modelFilenames
 
 if __name__ == '__main__':
+    t1 = time.time()
+    # p1 = multiprocessing.Process(target=train_model, args=(np.random.randint(10000000),))
+    # p2 = multiprocessing.Process(target=train_model, args=(np.random.randint(10000000),))
+    # p3 = multiprocessing.Process(target=train_model, args=(np.random.randint(10000000),))
+    # p4 = multiprocessing.Process(target=train_model, args=(np.random.randint(10000000),))
+    # p5 = multiprocessing.Process(target=train_model, args=(np.random.randint(10000000),))
+    # p6 = multiprocessing.Process(target=train_model, args=(np.random.randint(10000000),))
+    # p1.start()
+    # p2.start()
+    # p3.start()
+    # p4.start()
+    # p5.start()
+    # p6.start()
+    # p1.join()
+    # p2.join()
+    # p3.join()
+    # p4.join()
+    # p5.join()
+    # p6.join()
     savedFilenames = train_model()
+    t2 = time.time()
+    print("time spent: {0:.2f}".format(t2 - t1))
+
