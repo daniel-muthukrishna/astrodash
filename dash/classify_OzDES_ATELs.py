@@ -85,7 +85,7 @@ classification = dash.Classify(filenames, knownRedshifts)
 bestFits, bestTypes, rejectionLabels = classification.list_best_matches(n=3)
 
 # SAVE BEST MATCHES
-print bestFits
+print(bestFits)
 f = open('classification_results.csv', 'w')
 for i in range(len(atels)):
     f.write("%s   %s     %s      %s\n %s\n\n" % (atels[i][0], atels[i][1], bestTypes[i], rejectionLabels[i], bestFits[i]))
