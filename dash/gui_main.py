@@ -81,7 +81,6 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.templateSubIndex -= 1
         self.plot_sub_templates()
 
-
     def plot_sub_templates(self):
         numOfSubTemplates = len(self.templateFileNamesAll[self.templateIndex])
         if self.templateSubIndex >= numOfSubTemplates:
@@ -102,8 +101,6 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         print(self.templatePlotName)
         self.plot_best_matches()
 
-
-
     def add_combo_box_entries(self):
         minAge = -20
         maxAge = 50
@@ -115,11 +112,9 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         for typeName in self.typeList:
             self.comboBoxSNType.addItem(typeName)
 
-
     def redshift_slider_changed(self):
         self.plotZ = self.horizontalSliderRedshift.value()/10000.
         self.lineEditRedshift.setText(str(self.plotZ))
-
 
     def redshift_text_changed(self):
         try:
@@ -145,21 +140,21 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             pass
 
     def zero_redshift_model(self):
-        if (self.checkBoxZeroZTrained.isChecked() == True):
+        if self.checkBoxZeroZTrained.isChecked() == True:
             self.modelFilename = os.path.join(self.mainDirectory, "data_files/model_trainedAtZeroZ.ckpt")
             self.checkBoxKnownZ.setEnabled(True)
             self.lineEditKnownZ.setEnabled(True)
             self.checkBoxAgnosticZTrained.setEnabled(False)
             self.checkBoxAgnosticZTrained.setChecked(False)
 
-            if (self.checkBoxKnownZ.isChecked() == True):
+            if self.checkBoxKnownZ.isChecked() == True:
                 self.lineEditMinZ.setEnabled(False)
                 self.lineEditMaxZ.setEnabled(False)
             else:
                 self.lineEditMinZ.setEnabled(True)
                 self.lineEditMaxZ.setEnabled(True)
 
-        elif (self.checkBoxZeroZTrained.isChecked() == False):
+        elif self.checkBoxZeroZTrained.isChecked() == False:
             self.checkBoxKnownZ.setEnabled(False)
             self.lineEditKnownZ.setEnabled(False)
             self.checkBoxZeroZTrained.setEnabled(False)
@@ -169,19 +164,15 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             self.agnostic_redshift_model()
 
     def agnostic_redshift_model(self):
-        if (self.checkBoxAgnosticZTrained.isChecked() == True):
+        if self.checkBoxAgnosticZTrained.isChecked() == True:
             self.checkBoxZeroZTrained.setEnabled(False)
             self.checkBoxZeroZTrained.setChecked(False)
             self.modelFilename = os.path.join(self.mainDirectory, "model_agnostic_redshift.ckpt")
-        elif (self.checkBoxAgnosticZTrained.isChecked() == False):
+        elif self.checkBoxAgnosticZTrained.isChecked() == False:
             self.checkBoxZeroZTrained.setEnabled(True)
             self.checkBoxZeroZTrained.setChecked(True)
             self.zero_redshift_model()
 
-
-
-
-        
     def select_input_file(self):
         inputFilename = QtGui.QFileDialog.getOpenFileName(self,"Select a spectrum file")[0]
         print(inputFilename)
@@ -205,7 +196,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         except ValueError:
             QtGui.QMessageBox.critical(self, "Error", "Smooth must be positive integer")
 
-        if (self.checkBoxKnownZ.isChecked() == True):
+        if self.checkBoxKnownZ.isChecked() == True:
             self.redshiftFlag = True
             try:
                 self.knownZ = float(self.lineEditKnownZ.text())
@@ -217,7 +208,6 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
 
             self.fitThread = FitSpectrumThread(self.inputFilename, self.minZ, self.maxZ, self.redshiftFlag, self.modelFilename, self.smooth)
             self.fitThread.trigger.connect(self.load_spectrum_single_redshift)
-
 
         else:
             self.redshiftFlag = False
@@ -233,7 +223,6 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
 
         self.btnCancel.clicked.connect(self.cancel)
 
-
     def cancel(self):
         if (self.cancelledFitting == False):
             self.cancelledFitting = True
@@ -241,14 +230,13 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             self.progressBar.setValue(100)
             QtGui.QMessageBox.information(self, "Cancelled!", "Stopped Fitting Input Spectrum")
 
-
     def load_spectrum_single_redshift(self, spectrumInfo):
         self.bestTypes, self.softmax, self.idx, self.templateFluxes, self.inputFluxes, self.typeNamesList, self.inputImageUnRedshifted = spectrumInfo
         self.progressBar.setValue(85)#self.progressBar.value()+)
         self.done_fit_thread_single_redshift()
 
     def done_fit_thread_single_redshift(self):
-        if (self.cancelledFitting == False):
+        if self.cancelledFitting == False:
             self.plotted = True
             self.list_best_matches_single_redshift()
             self.plot_best_matches()
@@ -274,13 +262,12 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.progressBar.setValue(85)#self.progressBar.value()+)
 
     def done_fit_thread(self):
-        if (self.cancelledFitting == False):
+        if self.cancelledFitting == False:
             self.list_best_matches()
             self.plot_best_matches()
             self.plot_redshift_graphs()
             self.progressBar.setValue(100)
             QtGui.QMessageBox.information(self, "Done!", "Finished Fitting Input Spectrum")
-        
 
     def list_best_matches(self):
         print("listing best matches...")
@@ -290,7 +277,6 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             bestIndex = int(self.bestForEachType[i][0])
             name, age = self.typeNamesList[bestIndex].split(': ')
             self.listWidget.addItem("".join(word.ljust(25) for word in [str(i+1), name, age , str(self.bestForEachType[i][1]), str(self.bestForEachType[i][2])]))
-
 
     def list_item_clicked(self, item):
         index, self.SNTypePlot, age1, age2, age3, softmax = str(item.text()).split()
@@ -309,7 +295,6 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         if self.redshiftFlag == False:
             self.plot_redshift_graphs()
 
-        
     def plot_best_matches(self):
         if self.plotted == True:
             templateWave = self.wave * (1 + (self.plotZ))
@@ -325,9 +310,6 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             self.graphicsView.plot(self.wave, inputPlotFlux, name='Input Spectrum', pen={'color': (0, 255, 0)})
             self.graphicsView.plot(templateWave, self.templatePlotFlux, name=self.templatePlotName, pen={'color': (255,0,0)})
             self.graphicsView.setRange(xRange=[2500,10000])
-
-
-
 
     def plot_redshift_graphs(self):
         print("listing Redshift Graphs...")

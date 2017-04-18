@@ -1,5 +1,6 @@
 import pickle
 
+
 def create_training_params_file():
     parameters = {
         'typeList': ['Ia-norm', 'Ia-91T', 'Ia-91bg', 'Ia-csm', 'Ia-02cx', 'Ia-pec',

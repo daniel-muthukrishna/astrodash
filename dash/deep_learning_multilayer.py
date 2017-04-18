@@ -5,7 +5,6 @@ import tensorflow as tf
 from dash.multilayer_convnet import convnet_variables
 import zipfile
 import gzip
-import multiprocessing
 import time
 
 
@@ -24,7 +23,8 @@ def train_model(randint=0):
     zipRef.close()
 
     npyFiles = {}
-    for filename in os.listdir(extractedFolder):
+    fileList = os.listdir(extractedFolder)
+    for filename in fileList:
         if filename.endswith('.gz'):
             f = os.path.join(scriptDirectory, extractedFolder, filename)
             # npyFiles[filename.strip('.npy.gz')] = gzip.GzipFile(f, 'r')
@@ -40,7 +40,6 @@ def train_model(randint=0):
     trainLabels = np.load(npyFiles['trainLabels'], mmap_mode='r')
     testImagesWithGal = np.load(npyFiles['testImages'], mmap_mode='r')
     testLabelsWithGal = np.load(npyFiles['testLabels'], mmap_mode='r')
-    testTypeNamesWithGal = np.load(npyFiles['testTypeNames'])
     typeNamesList = np.load(npyFiles['typeNamesList'])
     testImages = np.load(npyFiles['testImagesNoGal'], mmap_mode='r')
     testLabels = np.load(npyFiles['testLabelsNoGal'], mmap_mode='r')
@@ -58,7 +57,7 @@ def train_model(randint=0):
 
     with tf.Session() as sess: # config=tf.ConfigProto(inter_op_parallelism_threads=1, intra_op_parallelism_threads=1)) as sess:
         # TRAIN AND EVALUATE MODEL
-        cross_entropy = tf.reduce_mean(-tf.reduce_sum(y_ * tf.log(y_conv), reduction_indices=[1]))
+        cross_entropy = tf.reduce_mean(-tf.reduce_sum(y_ * tf.log(y_conv + 1e-8), reduction_indices=[1]))
         train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy)
         correct_prediction = tf.equal(tf.argmax(y_conv, 1), tf.argmax(y_, 1))
         accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
@@ -78,7 +77,7 @@ def train_model(randint=0):
                 print("test accuracy %g" % testacc)
                 a.append(testacc)
                 if i % 1000 == 0:
-                    testWithGalacc = accuracy.eval(feed_dict={x: testImagesWithGal, y_: testLabelsWithGal, keep_prob: 1.0})
+                    testWithGalacc = accuracy.eval(feed_dict={x: testImagesWithGal[0:200], y_: testLabelsWithGal[0:200], keep_prob: 1.0})
                     print("test With Gal accuracy %g" % testWithGalacc)
 
         print("test accuracy %g" % accuracy.eval(feed_dict={x: testImages, y_: testLabels, keep_prob: 1.0}))
@@ -87,7 +86,7 @@ def train_model(randint=0):
         cp = correct_prediction.eval(feed_dict={x: testImages, y_: testLabels, keep_prob: 1.0})
         print(cp)
         for i in range(len(cp)):
-            if (cp[i] == False):
+            if cp[i] == False:
                 predictedIndex = np.argmax(yy[i])
                 print(i, testTypeNames[i], typeNamesList[predictedIndex])
 
@@ -112,19 +111,17 @@ def train_model(randint=0):
             actualAge = typeNamesList[predictedIndex].split(': ')[1]
             nearTestAge = testAge.split(' to ')
 
-            if (testTypeNames[i] == typeNamesList[predictedIndex]):
+            if testTypeNames[i] == typeNamesList[predictedIndex]:
                 typeAndAgeCorrect += 1
-            if (testType == actualType):  # correct type
+            if testType == actualType:  # correct type
                 typeCorrect += 1
-                if ((nearTestAge[0] in actualAge) or (
-                    nearTestAge[1] in actualAge)):  # check if the age is in the neigbouring bin
+                if (nearTestAge[0] in actualAge) or (nearTestAge[1] in actualAge):  # check if the age is in the neigbouring bin
                     typeAndNearAgeCorrect += 1  # all correct except nearby bin
-            if (testBroadType == actualBroadType):  # correct broadtype
+            if testBroadType == actualBroadType:  # correct broadtype
                 broadTypeCorrect += 1
                 if testAge == actualAge:
                     broadTypeAndAgeCorrect += 1
-                if ((nearTestAge[0] in actualAge) or (
-                    nearTestAge[1] in actualAge)):  # check if the age is in the neigbouring bin
+                if (nearTestAge[0] in actualAge) or (nearTestAge[1] in actualAge):  # check if the age is in the neigbouring bin
                     broadTypeAndNearAgeCorrect += 1  # Broadtype and nearby bin
 
         typeAndAgeAccuracy = float(typeAndAgeCorrect) / len(testTypeNames)
@@ -153,24 +150,6 @@ def train_model(randint=0):
 
 if __name__ == '__main__':
     t1 = time.time()
-    # p1 = multiprocessing.Process(target=train_model, args=(np.random.randint(10000000),))
-    # p2 = multiprocessing.Process(target=train_model, args=(np.random.randint(10000000),))
-    # p3 = multiprocessing.Process(target=train_model, args=(np.random.randint(10000000),))
-    # p4 = multiprocessing.Process(target=train_model, args=(np.random.randint(10000000),))
-    # p5 = multiprocessing.Process(target=train_model, args=(np.random.randint(10000000),))
-    # p6 = multiprocessing.Process(target=train_model, args=(np.random.randint(10000000),))
-    # p1.start()
-    # p2.start()
-    # p3.start()
-    # p4.start()
-    # p5.start()
-    # p6.start()
-    # p1.join()
-    # p2.join()
-    # p3.join()
-    # p4.join()
-    # p5.join()
-    # p6.join()
     savedFilenames = train_model()
     t2 = time.time()
     print("time spent: {0:.2f}".format(t2 - t1))
