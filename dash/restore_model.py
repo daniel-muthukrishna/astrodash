@@ -7,33 +7,14 @@ from dash.input_spectra import *
 from dash.multilayer_convnet import convnet_variables
 
 scriptDirectory = os.path.dirname(os.path.abspath(__file__))
-trainingSet = 'data_files/trainingSet_type_age_atRedshiftZero.zip'
-extractedFolder = 'data_files/trainingSet_type_age_atRedshiftZero'
-zipRef = zipfile.ZipFile(trainingSet, 'r')
-zipRef.extractall(extractedFolder)
-zipRef.close()
-
-npyFiles = {}
-for filename in os.listdir(extractedFolder):
-    if filename.endswith('.gz'):
-        f = os.path.join(scriptDirectory, extractedFolder, filename)
-        # npyFiles[filename.strip('.npy.gz')] = gzip.GzipFile(f, 'r')
-        gzFile = gzip.open(f, "rb")
-        unCompressedFile = open(f.strip('.gz'), "wb")
-        decoded = gzFile.read()
-        unCompressedFile.write(decoded)
-        gzFile.close()
-        unCompressedFile.close()
-        npyFiles[filename.strip('.npy.gz')] = f.strip('.gz')
-
-trainImages = np.load(npyFiles['trainImages'], mmap_mode='r')
-trainLabels = np.load(npyFiles['trainLabels'], mmap_mode='r')
+loaded = np.load(os.path.join(scriptDirectory, "data_files/templates.npz"))
+templateImages = loaded['templateFluxesAll']
+templateLabels = loaded['templateLabelsAll']
 
 
 def get_training_parameters():
     with open(os.path.join(scriptDirectory, "data_files/training_params.pickle"), 'rb') as f:
         pars = pickle.load(f)
-
     return pars
 
 
@@ -105,29 +86,6 @@ class BestTypesListSingleRedshift(object):
 
         return bestTypes, idx, softmax[idx[::-1]]
 
-    def plot_best_types(self, specNum=0):
-        inputFluxes = []
-        templateFluxes = []
-        for j in range(20):#len(self.bestTypes)): #index of best Types in order
-            c = self.idx[specNum][::-1][j]
-            typeName = self.typeNamesList[c] #Name of best type
-            for i in range(len(trainLabels)): #Checking through templates
-                if trainLabels[i][c] == 1:    #to find template for the best Type
-                    templateFlux = trainImages[i]  #plot template
-                    inputFlux = self.inputImages[specNum] #Plot inputImage at red
-                    break
-            if i == len(trainLabels)-1:
-                print("No Template") #NEED TO GET TEMPLATE PLOTS IN A BETTER WAY
-                templateFlux = np.zeros(len(trainImages[0]))
-                inputFlux = self.inputImages[specNum]
-
-            templateFluxes.append(templateFlux)
-            inputFluxes.append(inputFlux)
-            
-        templateFluxes = np.array(templateFluxes)
-        inputFluxes = np.array(inputFluxes)
-        return templateFluxes, inputFluxes
-
 
 class BestTypesList(object):
     def __init__(self, modelFilename, inputImages, inputRedshifts, typeNamesList, nw, nBins):
@@ -169,15 +127,15 @@ class BestTypesList(object):
         for j in range(len(self.bestForEachType)): #index of best Types in order
             c = int(self.bestForEachType[:,0][j])
             typeName = self.typeNamesList[c] #Name of best type
-            for i in range(0,len(trainLabels)): #Checking through templates
-                if (trainLabels[i][c] == 1):    #to find template for the best Type
-                    templateFlux = trainImages[i]  #plot template
+            for i in range(0, len(templateLabels)): #Checking through templates
+                if templateLabels[i][c] == 1:    #to find template for the best Type
+                    templateFlux = templateImages[i]  #plot template
                     inputFlux = self.inputImages[int(self.redshiftIndex[c])] #Pliot inputImage at red
                     #plt.title(typeName+ ": " + str(bestForEachType[c][1]))
                     break
-            if (i == len(trainLabels)-1):
+            if i == len(templateLabels)-1:
                 #print("No Template") #NEED TO GET TEMPLATE PLOTS IN A BETTER WAY
-                templateFlux = np.zeros(len(trainImages[0]))
+                templateFlux = np.zeros(len(templateImages[0]))
                 inputFlux = self.inputImages[int(self.redshiftIndex[c])]
 
             templateFluxes.append(templateFlux)

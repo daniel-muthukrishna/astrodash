@@ -17,7 +17,7 @@ def download_file(filename, urlpath, printStatus, scriptDirectory, zipVersion):
             urllib.request.urlretrieve(urlpath, dataFilename)
 
         print(dataFilename)
-        unzip_data_files('data_files_{0}.zip'.format(zipVersion))
+        unzip_data_files('model_{0}.zip'.format(zipVersion))
 
 
 def delete_previous_versions(oldFilenames, scriptDirectory):
@@ -36,12 +36,12 @@ def download_all_files(zipVersion):
                     'model_trainedAtZeroZ_v02.ckpt', 'type_age_atRedshiftZero_v02.npz', 'training_params_v02.pickle', 'templates_v02.npz',
                     'model_trainedAtZeroZ_v03.ckpt', 'type_age_atRedshiftZero_v03.npz', 'training_params.pickle', 'templates_v03.npz',
                     'model_trainedAtZeroZ_v03.ckpt.data-00000-of-00001', 'model_trainedAtZeroZ_v03.ckpt.index', 'model_trainedAtZeroZ_v03.ckpt.meta',
-                    'data_files_v00.zip']
+                    'model_v00.zip']
     delete_previous_versions(oldFilenames, scriptDirectory)
 
-    saveFilenames = ['data_files_{0}.zip'.format(zipVersion)]
+    saveFilenames = ['model_{0}.zip'.format(zipVersion)]
 
-    urlpaths = ["https://raw.githubusercontent.com/daniel-muthukrishna/DASH/master/dash/data_files_{0}.zip".format(zipVersion)]
+    urlpaths = ["https://raw.githubusercontent.com/daniel-muthukrishna/DASH/master/dash/model_{0}.zip".format(zipVersion)]
 
     printStatuses = ["Downloading data files..."]
 

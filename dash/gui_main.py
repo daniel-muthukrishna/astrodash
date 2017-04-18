@@ -22,7 +22,6 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.plotted = False
         self.indexToPlot = 0
         self.plotZ = 0
-        self.templateFluxes = np.zeros((2, int(self.nw)))
         self.inputFluxes = np.zeros((2, int(self.nw)))
         self.inputImageUnRedshifted = np.zeros((2, int(self.nw)))
         self.templatePlotFlux = np.zeros(int(self.nw))
@@ -231,7 +230,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             QtGui.QMessageBox.information(self, "Cancelled!", "Stopped Fitting Input Spectrum")
 
     def load_spectrum_single_redshift(self, spectrumInfo):
-        self.bestTypes, self.softmax, self.idx, self.templateFluxes, self.inputFluxes, self.typeNamesList, self.inputImageUnRedshifted = spectrumInfo
+        self.bestTypes, self.softmax, self.idx, self.typeNamesList, self.inputImageUnRedshifted = spectrumInfo
         self.progressBar.setValue(85)#self.progressBar.value()+)
         self.done_fit_thread_single_redshift()
 
@@ -367,9 +366,8 @@ class FitSpectrumThread(QThread):
         bestTypes = bestTypesList.bestTypes[0]
         softmax = bestTypesList.softmaxOrdered[0]
         idx = bestTypesList.idx[0]
-        templateFluxes, inputFluxes = bestTypesList.plot_best_types()
 
-        return bestTypes, softmax, idx, templateFluxes, inputFluxes, typeNamesList, inputImageUnRedshifted
+        return bestTypes, softmax, idx, typeNamesList, inputImageUnRedshifted
 
     def run(self):
         if self.redshiftFlag == True:
