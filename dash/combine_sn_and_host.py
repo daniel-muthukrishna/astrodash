@@ -10,6 +10,12 @@ def zero_non_overlap_part(array, minIndex, maxIndex):
     return array
 
 
+def normalise_spectrum(flux):
+    fluxNorm = (flux - min(flux)) / (max(flux) - min(flux))
+
+    return fluxNorm
+
+
 class CombineSnAndHost(object):
     def __init__(self, snFile, galFile, w0, w1, nw):
         self.w0 = w0
@@ -29,7 +35,7 @@ class CombineSnAndHost(object):
         wave, flux = self.snReadSpectrumFile.snid_template_undo_processing(self.snWave, self.snFluxes[ageIdx], self.splineInfo, ageIdx)
 
         binnedWave, binnedFlux, minIndex, maxIndex = self.preProcess.log_wavelength(wave, flux)
-        binnedFluxNorm = self._normalise_spectrum(binnedFlux)
+        binnedFluxNorm = normalise_spectrum(binnedFlux)
 
         return binnedWave, binnedFluxNorm, minIndex, maxIndex
 
@@ -39,14 +45,9 @@ class CombineSnAndHost(object):
         # Limit bounds from w0 to w1 and normalise flux
         wave, flux = self.galReadSpectrumFile.two_col_input_spectrum(wave, flux, z=0)
         binnedWave, binnedFlux, minIndex, maxIndex = self.preProcess.log_wavelength(wave, flux)
-        binnedFluxNorm = self._normalise_spectrum(binnedFlux)
+        binnedFluxNorm = normalise_spectrum(binnedFlux)
 
         return binnedWave, binnedFluxNorm, minIndex, maxIndex
-
-    def _normalise_spectrum(self, flux):
-        fluxNorm = (flux - min(flux)) / (max(flux) - min(flux))
-
-        return fluxNorm
 
     def overlapped_spectra(self, snAgeIdx):
         snWave, snFlux, snMinIndex, snMaxIndex = self.snid_sn_template_data(snAgeIdx)

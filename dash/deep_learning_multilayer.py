@@ -9,31 +9,26 @@ import time
 
 
 def train_model(randint=0):
-    # Multiprocessing Random Seed
-    # print("Set new seed:", randint)
-    # np.random.seed(randint)
-    # tf.set_random_seed(randint)
-
     # Open training data files
     scriptDirectory = os.path.dirname(os.path.abspath(__file__))
     trainingSet = 'data_files/trainingSet_type_age_atRedshiftZero.zip'
     extractedFolder = 'data_files/trainingSet_type_age_atRedshiftZero'
-    zipRef = zipfile.ZipFile(trainingSet, 'r')
-    zipRef.extractall(extractedFolder)
-    zipRef.close()
+    # zipRef = zipfile.ZipFile(trainingSet, 'r')
+    # zipRef.extractall(extractedFolder)
+    # zipRef.close()
 
     npyFiles = {}
     fileList = os.listdir(extractedFolder)
     for filename in fileList:
         if filename.endswith('.gz'):
             f = os.path.join(scriptDirectory, extractedFolder, filename)
-            # npyFiles[filename.strip('.npy.gz')] = gzip.GzipFile(f, 'r')
-            gzFile = gzip.open(f, "rb")
-            unCompressedFile = open(f.strip('.gz'), "wb")
-            decoded = gzFile.read()
-            unCompressedFile.write(decoded)
-            gzFile.close()
-            unCompressedFile.close()
+            # # npyFiles[filename.strip('.npy.gz')] = gzip.GzipFile(f, 'r')
+            # gzFile = gzip.open(f, "rb")
+            # unCompressedFile = open(f.strip('.gz'), "wb")
+            # decoded = gzFile.read()
+            # unCompressedFile.write(decoded)
+            # gzFile.close()
+            # unCompressedFile.close()
             npyFiles[filename.strip('.npy.gz')] = f.strip('.gz')
 
     trainImages = np.load(npyFiles['trainImages'], mmap_mode='r')
@@ -66,7 +61,7 @@ def train_model(randint=0):
 
         trainImagesCycle = itertools.cycle(trainImages)
         trainLabelsCycle = itertools.cycle(trainLabels)
-        for i in range(37000):
+        for i in range(250000):
             batch_xs = np.array(list(itertools.islice(trainImagesCycle, 50 * i, 50 * i + 50)))
             batch_ys = np.array(list(itertools.islice(trainLabelsCycle, 50 * i, 50 * i + 50)))
             train_step.run(feed_dict={x: batch_xs, y_: batch_ys, keep_prob: 0.5})

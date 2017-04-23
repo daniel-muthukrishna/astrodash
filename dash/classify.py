@@ -31,7 +31,7 @@ class Classify(object):
         self.numSpectra = len(filenames)
         self.mainDirectory = os.path.dirname(os.path.abspath(__file__))
 
-        download_all_files('v01')
+        # download_all_files('v01')
 
         self.modelFilename = os.path.join(self.mainDirectory, "data_files/model_trainedAtZeroZ.ckpt")
 
@@ -62,6 +62,7 @@ class Classify(object):
         bestMatchLists = []
         bestBroadTypes = []
         rejectionLabels = []
+        reliableFlags = []
         for specNum in range(self.numSpectra):
             bestMatchList = []
             for i in range(n):
@@ -70,15 +71,16 @@ class Classify(object):
                 bestMatchList.append((name, age, prob))
             bestMatchList = np.array(bestMatchList)
             bestMatchLists.append(bestMatchList)
-            bestBroadType = self.best_broad_type(bestMatchList)
+            bestBroadType, reliableFlag = self.best_broad_type(bestMatchList)
             bestBroadTypes.append(bestBroadType)
+            reliableFlags.append(reliableFlag)
             rejectionLabels.append(self.false_positive_rejection(bestLabels[specNum][::-1], inputImages[specNum]))
 
         bestMatchLists = np.array(bestMatchLists)
         # self.bestMatchLists = bestMatchLists
         # self.n = n
 
-        return bestMatchLists, bestBroadTypes, rejectionLabels
+        return bestMatchLists, bestBroadTypes, rejectionLabels, reliableFlags
 
     def best_broad_type(self, bestMatchList):
         prevName = bestMatchList[0][0]
@@ -95,13 +97,15 @@ class Classify(object):
                 break
         bestAge = '%d to %d' % (min(agesList), max(agesList))
 
-        return prevName, bestAge, round(probTotal, 4)
+        reliableFlag = not (min(agesList), max(agesList)) == (int(prevMinAge), int(prevMaxAge))
+
+        return (prevName, bestAge, round(probTotal, 4)), reliableFlag
 
     def false_positive_rejection(self, bestLabel, inputImage):
         c = bestLabel[0] # best Index
         templateImages = []
         for i in range(len(Classify.templateLabels)):  # Checking through templates
-            if (Classify.templateLabels[i][0][c] == 1):  # to find template for the best Type
+            if Classify.templateLabels[i][0][c] == 1:  # to find template for the best Type
                 templateImage = Classify.templateImages[i][0]  # plot template. Select index 0 for the first of the templates up to the number of templates available
                 templateImages.append(templateImage)
         falsePositiveRejection = FalsePositiveRejection(inputImage, templateImages)
