@@ -13,7 +13,9 @@ def create_training_params_file():
         'minAge': -20.,
         'maxAge': 50.,
         'ageBinSize': 4.,
-        'galTypeList': ['E', 'S0', 'Sa', 'Sb', 'Sc', 'SB1', 'SB2', 'SB3', 'SB4', 'SB5', 'SB6']
+        'galTypeList': ['E', 'S0', 'Sa', 'Sb', 'Sc', 'SB1', 'SB2', 'SB3', 'SB4', 'SB5', 'SB6'],
+        'nLabelsNoHost': 306,
+        'nLabelsWithHost': 3366
     }
 
     trainingParamsFilename = 'data_files/training_params.pickle'

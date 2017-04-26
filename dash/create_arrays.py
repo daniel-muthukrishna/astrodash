@@ -74,7 +74,9 @@ class CreateLabels(object):
             labelArray = labelArray.flatten()
             typeName = "{} {}: {}".format(host, ttype, self.ageLabels[ageBin])
 
-        return labelArray, typeName
+        labelIndex = np.argmax(labelArray)
+
+        return labelIndex, typeName
 
     def type_names_list(self):
         typeNamesList = []
@@ -161,7 +163,7 @@ class ArrayTools(object):
     def shuffle_arrays(self, images, labels, filenames, typeNames):
         arraySize = len(labels)
         imagesShuf = np.empty((arraySize, int(self.nw)), np.float16)
-        labelsShuf = np.empty((arraySize, self.nLabels), np.uint8)
+        labelsShuf = np.empty(arraySize, np.uint8)
         filenamesShuf = np.empty(arraySize, dtype=object)
         typeNamesShuf = np.empty(arraySize, dtype=object)
         idx = 0
@@ -187,7 +189,7 @@ class ArrayTools(object):
         counts = np.zeros(self.nLabels)
 
         for i in range(len(labels)):
-            counts = labels[i] + counts
+            counts[labels[i]] += 1
 
         return counts
 
@@ -210,7 +212,7 @@ class ArrayTools(object):
         print(np.array(overSampleAmount, int))
         print(overSampleArraySize, len(labels))
         imagesOverSampled = np.zeros((overSampleArraySize, int(self.nw)), np.float16)
-        labelsOverSampled = np.zeros((overSampleArraySize, self.nLabels), np.uint8)
+        labelsOverSampled = np.zeros(overSampleArraySize, np.uint8)
         filenamesOverSampled = np.empty(overSampleArraySize, dtype=object)
         typeNamesOverSampled = np.empty(overSampleArraySize, dtype=object)
 
@@ -224,7 +226,7 @@ class ArrayTools(object):
             filename = filenamesShuf[i]
             typeName = typeNamesShuf[i]
 
-            labelIndex = np.argmax(label)
+            labelIndex = label # np.argmax(label)
             
             print(idx, i, int(overSampleAmount[labelIndex]))
             for r in range(int(overSampleAmount[labelIndex])):
@@ -232,7 +234,7 @@ class ArrayTools(object):
                 labelsOverSampled[idx] = label #np.concatenate(labelsOverSampled, np.array([label]), axis=0)
                 filenamesOverSampled[idx] = filename #filenamesOverSampled = np.append(filenamesOverSampled, filename)
                 typeNamesOverSampled[idx] = typeName #typeNamesOverSampled = np.append(typeNamesOverSampled, typeName)
-                counts1 = label + counts1
+                counts1[labelIndex] += 1
                 idx += 1
 
         print("After OverSample")  #
@@ -259,8 +261,6 @@ class CreateArrays(object):
         self.numOfRedshifts = (maxZ - minZ) * 1./redshiftPrecision
         self.ageBinning = AgeBinning(minAge, maxAge, ageBinSize)
         self.numOfAgeBins = self.ageBinning.age_bin(maxAge-0.1) + 1
-        if nHostTypes is None:
-            nHostTypes = 1
         self.nLabels = nTypes * self.numOfAgeBins * nHostTypes
         self.createLabels = CreateLabels(self.nTypes, self.minAge, self.maxAge, self.ageBinSize, self.typeList, hostTypes, nHostTypes)
         self.hostTypes = hostTypes
@@ -273,12 +273,12 @@ class CreateArrays(object):
         tempList = TempList().temp_list(tempfilelist) #Arbrirary redshift to read filelist
         typeList = []
         images = np.empty((0, int(self.nw)), np.float16)  # Number of pixels
-        labels = np.empty((0, self.nLabels), np.uint8)  # Number of labels (SN types)
+        labelsIndexes = [] # labels = np.empty((0, self.nLabels), np.uint8)  # Number of labels (SN types)
         filenames = []#np.empty(0)
         typeNames = []#np.empty(0)
         agesList = []
 
-        for i in range(0, len(tempList)):
+        for i in range(0, 20): # len(tempList)):
             ncols = 15
             readSpectra = ReadSpectra(self.w0, self.w1, self.nw, snidTemplateLocation + tempList[i])
             
@@ -292,12 +292,12 @@ class CreateArrays(object):
                             break
 
                         if self.minAge < float(ages[ageidx]) < self.maxAge:
-                            label, typeName = self.createLabels.label_array(ttype, ages[ageidx])
+                            labelIndex, typeName = self.createLabels.label_array(ttype, ages[ageidx])
                             nonzeroflux = tempflux[tminindex:tmaxindex + 1]
                             newflux = (nonzeroflux - min(nonzeroflux)) / (max(nonzeroflux) - min(nonzeroflux))
                             newflux2 = np.concatenate((tempflux[0:tminindex], newflux, tempflux[tmaxindex + 1:]))
                             images = np.append(images, np.array([newflux2]), axis=0)  # images.append(newflux2)
-                            labels = np.append(labels, np.array([label]), axis=0)  # labels.append(ttype)
+                            labelsIndexes.append(labelIndex) # labels = np.append(labels, np.array([label]), axis=0)  # labels.append(ttype)
                             filenames.append(tempList[i] + '_' + ttype + '_' + str(ages[ageidx]) + '_z' + str(z))
                             typeNames.append(typeName)
 
@@ -313,29 +313,29 @@ class CreateArrays(object):
         try:
             print("SIZE OF ARRAYS:")
             print(images.nbytes)
-            print(labels.nbytes)
-            print(filenames.nbytes)
-            print(typeNames.nbytes)
+            print(np.array(labelsIndexes).nbytes)
+            print(np.array(filenames).nbytes)
+            print(np.array(typeNames).nbytes)
         except:
             print("Exception Raised")
 
-        return typeList, images, labels, np.array(filenames), np.array(typeNames)
+        return typeList, images, np.array(labelsIndexes), np.array(filenames), np.array(typeNames)
 
     def combined_sn_gal_templates_to_arrays(self, snTemplateLocation, snTempFileList, galTemplateLocation, galTempList):
         snTempList = TempList().temp_list(snTempFileList)
         typeList = []
         images = np.empty((0, int(self.nw)), np.float16)  # Number of pixels
-        labels = np.empty((0, self.nLabels), np.uint8)  # Number of labels (SN types)
+        labelsIndexes = [] # labels = np.empty((0, self.nLabels), np.uint8)  # Number of labels (SN types)
         filenames = []  # np.empty(0)
         typeNames = []  # np.empty(0)
         agesList = []
         for j in range(len(galTempList)):
-            for i in range(0, len(snTempList)):
+            for i in range(0, 5): # len(snTempList)):
                 ncols = 15
                 readSpectra = ReadSpectra(self.w0, self.w1, self.nw, snTemplateLocation + snTempList[i], galTemplateLocation + galTempList[j])
                 for ageidx in range(0, 1000):
                     if ageidx < ncols:
-                        for snCoeff in [0.01, 0.02, 0.05, 0.07, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:
+                        for snCoeff in [0.01]:#, 0.02, 0.05, 0.07, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:
                             galCoeff = 1 - snCoeff
                             for z in np.linspace(self.minZ, self.maxZ, self.numOfRedshifts + 1):
                                 tempwave, tempflux, ncols, ages, ttype, tminindex, tmaxindex = readSpectra.sn_plus_gal_template(ageidx, snCoeff, galCoeff, z)
@@ -346,14 +346,14 @@ class CreateArrays(object):
 
                                 if self.minAge < float(ages[ageidx]) < self.maxAge:
                                     if self.hostTypes is None: # Checks if we are classifying by host as well
-                                        label, typeName = self.createLabels.label_array(ttype, ages[ageidx], host=None)
+                                        labelIndex, typeName = self.createLabels.label_array(ttype, ages[ageidx], host=None)
                                     else:
-                                        label, typeName = self.createLabels.label_array(ttype, ages[ageidx], host=galTempList[j])
+                                        labelIndex, typeName = self.createLabels.label_array(ttype, ages[ageidx], host=galTempList[j])
                                     nonzeroflux = tempflux[tminindex:tmaxindex + 1]
                                     newflux = (nonzeroflux - min(nonzeroflux)) / (max(nonzeroflux) - min(nonzeroflux))
                                     newflux2 = np.concatenate((tempflux[0:tminindex], newflux, tempflux[tmaxindex + 1:]))
                                     images = np.append(images, np.array([newflux2]), axis=0)
-                                    labels = np.append(labels, np.array([label]), axis=0)
+                                    labelsIndexes.append(labelIndex) # labels = np.append(labels, np.array([label]), axis=0)
                                     filenames.append("{0}_{1}_{2}_{3}_snCoeff{4}_z{5}".format(snTempList[i], ttype, str(ages[ageidx]), galTempList[j], snCoeff, (z)))
                                     typeNames.append(typeName)
 
@@ -369,19 +369,19 @@ class CreateArrays(object):
         try:
             print("SIZE OF ARRAYS:")
             print(images.nbytes)
-            print(labels.nbytes)
-            print(filenames.nbytes)
-            print(typeNames.nbytes)
+            print(np.array(labelsIndexes).nbytes)
+            print(np.array(filenames).nbytes)
+            print(np.array(typeNames).nbytes)
         except:
             print("Exception Raised")
 
-        return typeList, images, labels, np.array(filenames), np.array(typeNames)
+        return typeList, images, np.array(labelsIndexes), np.array(filenames), np.array(typeNames)
 
     def combined_sn_gal_arrays_multiprocessing(self, snTemplateLocation, snTempFileList, galTemplateLocation, galTempFileList):
         galTempList = TempList().temp_list(galTempFileList)
 
         images = np.empty((0, int(self.nw)), np.float16)
-        labels = np.empty((0, self.nLabels), np.uint8)
+        labelsIndexes = np.empty(0, np.uint8)
         filenames = np.empty(0)
         typeNames = np.empty(0)
 
@@ -394,7 +394,7 @@ class CreateArrays(object):
         for out in outputs:
             typeList, imagesPart, labelsPart, filenamesPart, typeNamesPart = out
             images = np.append(images, imagesPart, axis=0)
-            labels = np.append(labels, labelsPart, axis=0)
+            labelsIndexes = np.append(labelsIndexes, labelsPart, axis=0)
             filenames = np.append(filenames, filenamesPart)
             typeNames = np.append(typeNames, typeNamesPart)
 
@@ -404,13 +404,13 @@ class CreateArrays(object):
         try:
             print("SIZE OF ARRAYS:")
             print(images.nbytes)
-            print(labels.nbytes)
+            print(labelsIndexes.nbytes)
             print(filenames.nbytes)
             print(typeNames.nbytes)
         except:
             print("Exception Raised")
 
-        return typeList, images, labels, filenames, typeNames
+        return typeList, images, labelsIndexes, filenames, typeNames
 
 
 

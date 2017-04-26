@@ -9,6 +9,7 @@ import time
 
 if __name__ == '__main__':
     dataFilenames = []
+    classifyHost = True
 
     # CREATE PARAMETERS PICKLE FILE
     t1 = time.time()
@@ -18,19 +19,19 @@ if __name__ == '__main__':
     print("time spent: {0:.2f}".format(t2 - t1))
 
     # CREATE TRAINING SET FILES
-    trainingSetFilename = create_training_set_files(minZ=0, maxZ=0., redshiftPrecision=0.1, trainWithHost=True, classifyHost=True)
+    trainingSetFilename = create_training_set_files(minZ=0, maxZ=0., redshiftPrecision=0.1, trainWithHost=True, classifyHost=classifyHost)
     dataFilenames.append(trainingSetFilename)
     t3 = time.time()
     print("time spent: {0:.2f}".format(t3 - t2))
 
     # CREATE TEMPLATE SET FILE
-    templateSetFilename = create_template_set_file()
+    templateSetFilename = create_template_set_file(classifyHost=classifyHost)
     dataFilenames.append(templateSetFilename)
     t4 = time.time()
     print("time spent: {0:.2f}".format(t4 - t3))
 
     # TRAIN TENSORFLOW MODEL
-    modelFilenames = train_model()
+    modelFilenames = train_model(classifyHost=classifyHost)
     dataFilenames.extend(modelFilenames)
     t5 = time.time()
     print("time spent: {0:.2f}".format(t5 - t4))

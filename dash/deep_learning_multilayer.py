@@ -6,29 +6,39 @@ from dash.multilayer_convnet import convnet_variables
 import zipfile
 import gzip
 import time
+import pickle
 
 
-def train_model(randint=0):
+def labels_indexes_to_arrays(labelsIndexes, nLabels):
+    numArrays = len(labelsIndexes)
+    labelsIndexes = labelsIndexes
+    labels = np.zeros((numArrays, nLabels))
+    labels[np.arange(numArrays), labelsIndexes] = 1
+
+    return labels
+
+
+def train_model(classifyHost=False):
     # Open training data files
     scriptDirectory = os.path.dirname(os.path.abspath(__file__))
-    trainingSet = 'data_files/trainingSet_type_age_atRedshiftZero.zip'
-    extractedFolder = 'data_files/trainingSet_type_age_atRedshiftZero'
-    # zipRef = zipfile.ZipFile(trainingSet, 'r')
-    # zipRef.extractall(extractedFolder)
-    # zipRef.close()
+    trainingSet = 'data_files/training_set.zip'
+    extractedFolder = 'data_files/training_set'
+    zipRef = zipfile.ZipFile(trainingSet, 'r')
+    zipRef.extractall(extractedFolder)
+    zipRef.close()
 
     npyFiles = {}
     fileList = os.listdir(extractedFolder)
     for filename in fileList:
         if filename.endswith('.gz'):
             f = os.path.join(scriptDirectory, extractedFolder, filename)
-            # # npyFiles[filename.strip('.npy.gz')] = gzip.GzipFile(f, 'r')
-            # gzFile = gzip.open(f, "rb")
-            # unCompressedFile = open(f.strip('.gz'), "wb")
-            # decoded = gzFile.read()
-            # unCompressedFile.write(decoded)
-            # gzFile.close()
-            # unCompressedFile.close()
+            # npyFiles[filename.strip('.npy.gz')] = gzip.GzipFile(f, 'r')
+            gzFile = gzip.open(f, "rb")
+            unCompressedFile = open(f.strip('.gz'), "wb")
+            decoded = gzFile.read()
+            unCompressedFile.write(decoded)
+            gzFile.close()
+            unCompressedFile.close()
             npyFiles[filename.strip('.npy.gz')] = f.strip('.gz')
 
     trainImages = np.load(npyFiles['trainImages'], mmap_mode='r')
@@ -41,14 +51,21 @@ def train_model(randint=0):
     testTypeNames = np.load(npyFiles['testTypeNamesNoGal'])
 
     print("Completed creatingArrays")
+    print(len(trainImages))
+
+    with open('data_files/training_params.pickle', 'rb') as f1:
+        pars = pickle.load(f1)
+    if classifyHost:
+        nLabels = pars['nLabelsWithHost']
+    else:
+        nLabels = pars['nLabelsNoHost']
 
     # Set up the convolutional network architecture
     N = 1024
-    ntypes = len(testLabels[0])
     imWidth = 32  # Image size and width
     imWidthReduc = 8
     a = []
-    x, y_, keep_prob, y_conv = convnet_variables(imWidth, imWidthReduc, N, ntypes)
+    x, y_, keep_prob, y_conv = convnet_variables(imWidth, imWidthReduc, N, nLabels)
 
     with tf.Session() as sess: # config=tf.ConfigProto(inter_op_parallelism_threads=1, intra_op_parallelism_threads=1)) as sess:
         # TRAIN AND EVALUATE MODEL
@@ -59,20 +76,22 @@ def train_model(randint=0):
 
         sess.run(tf.initialize_all_variables())
 
+        # testLabelsArrays = labels_indexes_to_arrays(testLabels, nLabels)
+        testLabelsArraysWithGal = labels_indexes_to_arrays(testLabelsWithGal, nLabels)
+
         trainImagesCycle = itertools.cycle(trainImages)
         trainLabelsCycle = itertools.cycle(trainLabels)
-        for i in range(250000):
+        for i in range(1500):
             batch_xs = np.array(list(itertools.islice(trainImagesCycle, 50 * i, 50 * i + 50)))
-            batch_ys = np.array(list(itertools.islice(trainLabelsCycle, 50 * i, 50 * i + 50)))
+            batch_ys = labels_indexes_to_arrays(list(itertools.islice(trainLabelsCycle, 50 * i, 50 * i + 50)), nLabels)
             train_step.run(feed_dict={x: batch_xs, y_: batch_ys, keep_prob: 0.5})
             if i % 100 == 0:
                 train_accuracy = accuracy.eval(feed_dict={x: batch_xs, y_: batch_ys, keep_prob: 1.0})
-                print("step %d_%d, training accuracy %g" % (i, randint,train_accuracy))
-                testacc = accuracy.eval(feed_dict={x: testImages, y_: testLabels, keep_prob: 1.0})
-                print("test accuracy %g" % testacc)
-                a.append(testacc)
+                print("step %d, training accuracy %g" % (i, train_accuracy))
+                # testacc = accuracy.eval(feed_dict={x: testImages, y_: testLabels, keep_prob: 1.0})
+                # print("test accuracy %g" % testacc)
                 if i % 1000 == 0:
-                    testWithGalacc = accuracy.eval(feed_dict={x: testImagesWithGal[0:200], y_: testLabelsWithGal[0:200], keep_prob: 1.0})
+                    testWithGalacc = accuracy.eval(feed_dict={x: testImagesWithGal[0:200], y_: testLabelsArraysWithGal[0:200], keep_prob: 1.0})
                     print("test With Gal accuracy %g" % testWithGalacc)
 
         print("test accuracy %g" % accuracy.eval(feed_dict={x: testImages, y_: testLabels, keep_prob: 1.0}))

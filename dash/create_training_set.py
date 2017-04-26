@@ -23,7 +23,7 @@ class CreateTrainingSet(object):
         self.typeList = typeList
         self.ageBinning = AgeBinning(self.minAge, self.maxAge, self.ageBinSize)
         self.numOfAgeBins = self.ageBinning.age_bin(self.maxAge-0.1) + 1
-        self.nLabels = self.nTypes * self.numOfAgeBins
+        self.nLabels = self.nTypes * self.numOfAgeBins * nHostTypes
         self.createArrays = CreateArrays(w0, w1, nw, nTypes, minAge, maxAge, ageBinSize, typeList, minZ, maxZ, redshiftPrecision, hostTypes, nHostTypes)
         self.arrayTools = ArrayTools(self.nLabels, self.nw)
         
@@ -79,7 +79,7 @@ class CreateTrainingSet(object):
 
 
 class SaveTrainingSet(object):
-    def __init__(self, snidTemplateLocation, snidTempFileList, w0, w1, nw, nTypes, minAge, maxAge, ageBinSize, typeList, minZ, maxZ, redshiftPrecision, galTemplateLocation=None, galTempFileList=None, hostTypes=None, nHostTypes=None):
+    def __init__(self, snidTemplateLocation, snidTempFileList, w0, w1, nw, nTypes, minAge, maxAge, ageBinSize, typeList, minZ, maxZ, redshiftPrecision, galTemplateLocation=None, galTempFileList=None, hostTypes=None, nHostTypes=1):
         self.snidTemplateLocation = snidTemplateLocation
         self.snidTempFileList = snidTempFileList
         self.w0 = w0
@@ -154,7 +154,7 @@ def create_training_set_files(minZ=0, maxZ=0, redshiftPrecision=0.01, trainWithH
     nTypes, w0, w1, nw, minAge, maxAge, ageBinSize, typeList = pars['nTypes'], pars['w0'], pars['w1'], \
                                                                          pars['nw'], pars['minAge'], pars['maxAge'], \
                                                                          pars['ageBinSize'], pars['typeList']
-    hostList, nHostTypes = None, None
+    hostList, nHostTypes = None, 1
 
     scriptDirectory = os.path.dirname(os.path.abspath(__file__))
 
@@ -172,7 +172,7 @@ def create_training_set_files(minZ=0, maxZ=0, redshiftPrecision=0.01, trainWithH
     saveTrainingSet = SaveTrainingSet(snidTemplateLocation, snidTempFileList, w0, w1, nw, nTypes, minAge, maxAge, ageBinSize, typeList, minZ, maxZ, redshiftPrecision, galTemplateLocation, galTempFileList, hostList, nHostTypes)
     typeNamesList, typeAmounts = saveTrainingSet.type_amounts()
 
-    saveFilename = 'data_files/trainingSet_type_age_atRedshiftZero.zip'
+    saveFilename = 'data_files/training_set.zip'
     saveTrainingSet.save_arrays(saveFilename)
 
     return saveFilename
