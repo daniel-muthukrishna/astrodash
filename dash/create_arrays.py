@@ -237,7 +237,7 @@ class ArrayTools(object):
 
 
 class CreateArrays(object):
-    def __init__(self, w0, w1, nw, nTypes, minAge, maxAge, ageBinSize, typeList, minZ, maxZ):
+    def __init__(self, w0, w1, nw, nTypes, minAge, maxAge, ageBinSize, typeList, minZ, maxZ, redshiftPrecision):
         self.w0 = w0
         self.w1 = w1
         self.nw = nw
@@ -248,17 +248,16 @@ class CreateArrays(object):
         self.typeList = typeList
         self.minZ = minZ
         self.maxZ = maxZ
-        self.redshiftPrecision = 50
-        self.numOfRedshifts = (maxZ - minZ) * self.redshiftPrecision
+        self.numOfRedshifts = (maxZ - minZ) * 1./redshiftPrecision
         self.ageBinning = AgeBinning(minAge, maxAge, ageBinSize)
         self.numOfAgeBins = self.ageBinning.age_bin(maxAge-0.1) + 1
         self.nLabels = nTypes * self.numOfAgeBins
         self.createLabels = CreateLabels(self.nTypes, self.minAge, self.maxAge, self.ageBinSize, self.typeList)
 
     def snid_templates_to_arrays(self, snidTemplateLocation, tempfilelist):
-        ''' This function is for the SNID processed files, which
+        """ This function is for the SNID processed files, which
             have been preprocessed to negatives, and so cannot be
-            imaged yet '''
+            imaged yet """
 
         tempList = TempList().temp_list(tempfilelist) #Arbrirary redshift to read filelist
         typeList = []
@@ -287,10 +286,11 @@ class CreateArrays(object):
                             labels = np.append(labels, np.array([label]), axis=0)  # labels.append(ttype)
                             filenames.append(tempList[i] + '_' + ttype + '_' + str(ages[ageidx]) + '_z' + str(z))
                             typeNames.append(typeName)
+
+                    print(tempList[i], ageidx, ncols)
                 else:
                     break
 
-            print(tempList[i])
             # Create List of all SN types
             if ttype not in typeList:
                 typeList.append(ttype)
@@ -328,7 +328,7 @@ class CreateArrays(object):
                                     filenames.append("{0}_{1}_{2}_{3}_snCoeff{4}_z{5}".format(snTempList[i], ttype, str(ages[ageidx]), galTempList[j], snCoeff, (z)))
                                     typeNames.append(typeName)
 
-                        print(snTempList[i], ageidx, ncols, galTempList[j])
+                        print(snTempList[i], ageidx, ncols, galTempList[j], snCoeff)
                     else:
                         break
 
