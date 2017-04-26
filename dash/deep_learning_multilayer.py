@@ -81,15 +81,16 @@ def train_model(classifyHost=False):
 
         trainImagesCycle = itertools.cycle(trainImages)
         trainLabelsCycle = itertools.cycle(trainLabels)
-        for i in range(1500):
+        for i in range(100000):
             batch_xs = np.array(list(itertools.islice(trainImagesCycle, 50 * i, 50 * i + 50)))
             batch_ys = labels_indexes_to_arrays(list(itertools.islice(trainLabelsCycle, 50 * i, 50 * i + 50)), nLabels)
             train_step.run(feed_dict={x: batch_xs, y_: batch_ys, keep_prob: 0.5})
             if i % 100 == 0:
                 train_accuracy = accuracy.eval(feed_dict={x: batch_xs, y_: batch_ys, keep_prob: 1.0})
                 print("step %d, training accuracy %g" % (i, train_accuracy))
-                # testacc = accuracy.eval(feed_dict={x: testImages, y_: testLabels, keep_prob: 1.0})
-                # print("test accuracy %g" % testacc)
+                testacc = accuracy.eval(feed_dict={x: testImages, y_: testLabels, keep_prob: 1.0})
+                print("test accuracy %g" % testacc)
+                a.append(testacc)
                 if i % 1000 == 0:
                     testWithGalacc = accuracy.eval(feed_dict={x: testImagesWithGal[0:200], y_: testLabelsArraysWithGal[0:200], keep_prob: 1.0})
                     print("test With Gal accuracy %g" % testWithGalacc)

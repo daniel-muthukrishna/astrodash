@@ -278,7 +278,7 @@ class CreateArrays(object):
         typeNames = []#np.empty(0)
         agesList = []
 
-        for i in range(0, 20): # len(tempList)):
+        for i in range(0, len(tempList)):
             ncols = 15
             readSpectra = ReadSpectra(self.w0, self.w1, self.nw, snidTemplateLocation + tempList[i])
             
@@ -330,12 +330,12 @@ class CreateArrays(object):
         typeNames = []  # np.empty(0)
         agesList = []
         for j in range(len(galTempList)):
-            for i in range(0, 5): # len(snTempList)):
+            for i in range(0, len(snTempList)):
                 ncols = 15
                 readSpectra = ReadSpectra(self.w0, self.w1, self.nw, snTemplateLocation + snTempList[i], galTemplateLocation + galTempList[j])
                 for ageidx in range(0, 1000):
                     if ageidx < ncols:
-                        for snCoeff in [0.01]:#, 0.02, 0.05, 0.07, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:
+                        for snCoeff in [0.01, 0.02, 0.05, 0.07, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:
                             galCoeff = 1 - snCoeff
                             for z in np.linspace(self.minZ, self.maxZ, self.numOfRedshifts + 1):
                                 tempwave, tempflux, ncols, ages, ttype, tminindex, tmaxindex = readSpectra.sn_plus_gal_template(ageidx, snCoeff, galCoeff, z)
