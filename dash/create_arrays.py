@@ -280,6 +280,9 @@ class CreateArrays(object):
                         if self.minAge < float(ages[ageidx]) < self.maxAge:
                             label, typeName = self.createLabels.label_array(ttype, ages[ageidx])
                             nonzeroflux = tempflux[tminindex:tmaxindex + 1]
+                            if not nonzeroflux.size:
+                                print("NO DATA for {} ageIdx:{} z>={}".format(tempList[i], ageidx, z))
+                                break
                             newflux = (nonzeroflux - min(nonzeroflux)) / (max(nonzeroflux) - min(nonzeroflux))
                             newflux2 = np.concatenate((tempflux[0:tminindex], newflux, tempflux[tmaxindex + 1:]))
                             images = np.append(images, np.array([newflux2]), axis=0)  # images.append(newflux2)
@@ -337,6 +340,15 @@ class CreateArrays(object):
                     typeList.append(ttype)
         print(len(images))
 
+        try:
+            print("SIZE OF ARRAYS:")
+            print(images.nbytes)
+            print(labels.nbytes)
+            print(filenames.nbytes)
+            print(typeNames.nbytes)
+        except:
+            print("Exception Raised")
+
         return typeList, images, labels, np.array(filenames), np.array(typeNames)
 
     def combined_sn_gal_arrays_multiprocessing(self, snTemplateLocation, snTempFileList, galTemplateLocation, galTempFileList):
@@ -362,6 +374,15 @@ class CreateArrays(object):
 
         t2 = time.time()
         print("time spent: {0:.2f}".format(t2 - t1))
+
+        try:
+            print("SIZE OF ARRAYS:")
+            print(images.nbytes)
+            print(labels.nbytes)
+            print(filenames.nbytes)
+            print(typeNames.nbytes)
+        except:
+            print("Exception Raised")
 
         return typeList, images, labels, filenames, typeNames
 

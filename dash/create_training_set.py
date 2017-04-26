@@ -123,6 +123,15 @@ class SaveTrainingSet(object):
                         'testTypeNames.npy.gz': self.testTypeNames, 'typeNamesList.npy.gz': self.typeNamesList,
                         'trainFilenames.npy.gz': self.trainFilenames, 'trainTypeNames.npy.gz': self.trainTypeNames}
 
+        try:
+            print("SIZE OF ARRAYS TRAINING:")
+            print(self.trainImages.nbytes, self.testImages.nbytes)
+            print(self.trainLabels.nbytes, self.testLabels.nbytes)
+            print(self.trainFilenames.nbytes, self.testFilenames.nbytes)
+            print(self.trainTypeNames.nbytes, self.testTypeNames.nbytes)
+        except:
+            print("Exception Raised")
+
         for filename, array in arraysToSave.items():
             f = gzip.GzipFile(filename, "w")
             np.save(file=f, arr=array)
