@@ -40,7 +40,7 @@ class AgeBinning(object):
 
 class CreateLabels(object):
 
-    def __init__(self, nTypes, minAge, maxAge, ageBinSize, typeList):
+    def __init__(self, nTypes, minAge, maxAge, ageBinSize, typeList, hostList=None, nHostTypes=None):
         self.nTypes = nTypes
         self.minAge = minAge
         self.maxAge = maxAge
@@ -50,10 +50,11 @@ class CreateLabels(object):
         self.numOfAgeBins = self.ageBinning.age_bin(self.maxAge-0.1) + 1
         self.nLabels = self.nTypes * self.numOfAgeBins
         self.ageLabels = self.ageBinning.age_labels()
+        self.hostList = hostList
+        self.nHostTypes = nHostTypes
 
-    def label_array(self, ttype, age):
+    def label_array(self, ttype, age, host=None):
         ageBin = self.ageBinning.age_bin(age)
-        labelArray = np.zeros((self.nTypes, self.numOfAgeBins))
 
         try:
             typeIndex = self.typeList.index(ttype)
@@ -61,10 +62,17 @@ class CreateLabels(object):
             print("INVALID TYPE: {0}".format(err))
             raise ValueError
 
-        labelArray[typeIndex][ageBin] = 1
-        labelArray = labelArray.flatten()
-
-        typeName = ttype + ": " + self.ageLabels[ageBin]
+        if host is None:
+            labelArray = np.zeros((self.nTypes, self.numOfAgeBins))
+            labelArray[typeIndex][ageBin] = 1
+            labelArray = labelArray.flatten()
+            typeName = ttype + ": " + self.ageLabels[ageBin]
+        else:
+            hostIndex = self.hostList.index(host)
+            labelArray = np.zeros((self.nHostTypes, self.nTypes, self.numOfAgeBins))
+            labelArray[hostIndex][typeIndex][ageBin] = 1
+            labelArray = labelArray.flatten()
+            typeName = "{} {}: {}".format(host, ttype, self.ageLabels[ageBin])
 
         return labelArray, typeName
 
@@ -237,7 +245,7 @@ class ArrayTools(object):
 
 
 class CreateArrays(object):
-    def __init__(self, w0, w1, nw, nTypes, minAge, maxAge, ageBinSize, typeList, minZ, maxZ, redshiftPrecision):
+    def __init__(self, w0, w1, nw, nTypes, minAge, maxAge, ageBinSize, typeList, minZ, maxZ, redshiftPrecision, hostTypes=None, nHostTypes=None):
         self.w0 = w0
         self.w1 = w1
         self.nw = nw
@@ -251,8 +259,11 @@ class CreateArrays(object):
         self.numOfRedshifts = (maxZ - minZ) * 1./redshiftPrecision
         self.ageBinning = AgeBinning(minAge, maxAge, ageBinSize)
         self.numOfAgeBins = self.ageBinning.age_bin(maxAge-0.1) + 1
-        self.nLabels = nTypes * self.numOfAgeBins
-        self.createLabels = CreateLabels(self.nTypes, self.minAge, self.maxAge, self.ageBinSize, self.typeList)
+        if nHostTypes is None:
+            nHostTypes = 1
+        self.nLabels = nTypes * self.numOfAgeBins * nHostTypes
+        self.createLabels = CreateLabels(self.nTypes, self.minAge, self.maxAge, self.ageBinSize, self.typeList, hostTypes, nHostTypes)
+        self.hostTypes = hostTypes
 
     def snid_templates_to_arrays(self, snidTemplateLocation, tempfilelist):
         """ This function is for the SNID processed files, which
@@ -276,13 +287,13 @@ class CreateArrays(object):
                     for z in np.linspace(self.minZ, self.maxZ, self.numOfRedshifts + 1):
                         tempwave, tempflux, ncols, ages, ttype, tminindex, tmaxindex = readSpectra.snid_template_data(ageidx, z)
                         agesList.append(ages[ageidx])
+                        if not tempflux.any():
+                            print("NO DATA for {} ageIdx:{} z>={}".format(tempList[i], ageidx, z))
+                            break
 
                         if self.minAge < float(ages[ageidx]) < self.maxAge:
                             label, typeName = self.createLabels.label_array(ttype, ages[ageidx])
                             nonzeroflux = tempflux[tminindex:tmaxindex + 1]
-                            if not nonzeroflux.size:
-                                print("NO DATA for {} ageIdx:{} z>={}".format(tempList[i], ageidx, z))
-                                break
                             newflux = (nonzeroflux - min(nonzeroflux)) / (max(nonzeroflux) - min(nonzeroflux))
                             newflux2 = np.concatenate((tempflux[0:tminindex], newflux, tempflux[tmaxindex + 1:]))
                             images = np.append(images, np.array([newflux2]), axis=0)  # images.append(newflux2)
@@ -299,6 +310,15 @@ class CreateArrays(object):
                 typeList.append(ttype)
         print(len(images))
 
+        try:
+            print("SIZE OF ARRAYS:")
+            print(images.nbytes)
+            print(labels.nbytes)
+            print(filenames.nbytes)
+            print(typeNames.nbytes)
+        except:
+            print("Exception Raised")
+
         return typeList, images, labels, np.array(filenames), np.array(typeNames)
 
     def combined_sn_gal_templates_to_arrays(self, snTemplateLocation, snTempFileList, galTemplateLocation, galTempList):
@@ -314,15 +334,21 @@ class CreateArrays(object):
                 ncols = 15
                 readSpectra = ReadSpectra(self.w0, self.w1, self.nw, snTemplateLocation + snTempList[i], galTemplateLocation + galTempList[j])
                 for ageidx in range(0, 1000):
-                    if (ageidx < ncols):
+                    if ageidx < ncols:
                         for snCoeff in [0.01, 0.02, 0.05, 0.07, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:
                             galCoeff = 1 - snCoeff
                             for z in np.linspace(self.minZ, self.maxZ, self.numOfRedshifts + 1):
                                 tempwave, tempflux, ncols, ages, ttype, tminindex, tmaxindex = readSpectra.sn_plus_gal_template(ageidx, snCoeff, galCoeff, z)
                                 agesList.append(ages[ageidx])
+                                if not tempflux.any():
+                                    print("NO DATA for {} {} ageIdx:{} z>={}".format(galTempList[j], snTempList[i], ageidx, z))
+                                    break
 
                                 if self.minAge < float(ages[ageidx]) < self.maxAge:
-                                    label, typeName = self.createLabels.label_array(ttype, ages[ageidx])
+                                    if self.hostTypes is None: # Checks if we are classifying by host as well
+                                        label, typeName = self.createLabels.label_array(ttype, ages[ageidx], host=None)
+                                    else:
+                                        label, typeName = self.createLabels.label_array(ttype, ages[ageidx], host=galTempList[j])
                                     nonzeroflux = tempflux[tminindex:tmaxindex + 1]
                                     newflux = (nonzeroflux - min(nonzeroflux)) / (max(nonzeroflux) - min(nonzeroflux))
                                     newflux2 = np.concatenate((tempflux[0:tminindex], newflux, tempflux[tmaxindex + 1:]))

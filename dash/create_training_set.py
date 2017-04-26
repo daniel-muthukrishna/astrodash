@@ -8,7 +8,7 @@ import os
 
 class CreateTrainingSet(object):
 
-    def __init__(self, snidTemplateLocation, snidTempFileList, w0, w1, nw, nTypes, minAge, maxAge, ageBinSize, typeList, minZ, maxZ, redshiftPrecision, galTemplateLocation, galTempFileList):
+    def __init__(self, snidTemplateLocation, snidTempFileList, w0, w1, nw, nTypes, minAge, maxAge, ageBinSize, typeList, minZ, maxZ, redshiftPrecision, galTemplateLocation, galTempFileList, hostTypes, nHostTypes):
         self.snidTemplateLocation = snidTemplateLocation
         self.snidTempFileList = snidTempFileList
         self.galTemplateLocation = galTemplateLocation
@@ -24,7 +24,7 @@ class CreateTrainingSet(object):
         self.ageBinning = AgeBinning(self.minAge, self.maxAge, self.ageBinSize)
         self.numOfAgeBins = self.ageBinning.age_bin(self.maxAge-0.1) + 1
         self.nLabels = self.nTypes * self.numOfAgeBins
-        self.createArrays = CreateArrays(w0, w1, nw, nTypes, minAge, maxAge, ageBinSize, typeList, minZ, maxZ, redshiftPrecision)
+        self.createArrays = CreateArrays(w0, w1, nw, nTypes, minAge, maxAge, ageBinSize, typeList, minZ, maxZ, redshiftPrecision, hostTypes, nHostTypes)
         self.arrayTools = ArrayTools(self.nLabels, self.nw)
         
     def type_amounts(self, labels):
@@ -79,7 +79,7 @@ class CreateTrainingSet(object):
 
 
 class SaveTrainingSet(object):
-    def __init__(self, snidTemplateLocation, snidTempFileList, w0, w1, nw, nTypes, minAge, maxAge, ageBinSize, typeList, minZ, maxZ, redshiftPrecision, galTemplateLocation=None, galTempFileList=None):
+    def __init__(self, snidTemplateLocation, snidTempFileList, w0, w1, nw, nTypes, minAge, maxAge, ageBinSize, typeList, minZ, maxZ, redshiftPrecision, galTemplateLocation=None, galTempFileList=None, hostTypes=None, nHostTypes=None):
         self.snidTemplateLocation = snidTemplateLocation
         self.snidTempFileList = snidTempFileList
         self.w0 = w0
@@ -92,7 +92,7 @@ class SaveTrainingSet(object):
         self.typeList = typeList
         self.createLabels = CreateLabels(nTypes, minAge, maxAge, ageBinSize, typeList)
         
-        self.createTrainingSet = CreateTrainingSet(snidTemplateLocation, snidTempFileList, w0, w1, nw, nTypes, minAge, maxAge, ageBinSize, typeList, minZ, maxZ, redshiftPrecision, galTemplateLocation, galTempFileList)
+        self.createTrainingSet = CreateTrainingSet(snidTemplateLocation, snidTempFileList, w0, w1, nw, nTypes, minAge, maxAge, ageBinSize, typeList, minZ, maxZ, redshiftPrecision, galTemplateLocation, galTempFileList, hostTypes, nHostTypes)
         self.sortData = self.createTrainingSet.sort_data()
         self.trainImages = self.sortData[0][0]
         self.trainLabels = self.sortData[0][1]
@@ -148,24 +148,28 @@ class SaveTrainingSet(object):
             os.remove(filename)
 
 
-def create_training_set_files(minZ=0, maxZ=0, redshiftPrecision=0.01, withHost=True):
+def create_training_set_files(minZ=0, maxZ=0, redshiftPrecision=0.01, trainWithHost=True, classifyHost=False):
     with open('data_files/training_params.pickle', 'rb') as f1:
         pars = pickle.load(f1)
-    nTypes, w0, w1, nw, minAge, maxAge, ageBinSize, typeList = pars['nTypes'], pars['w0'], pars['w1'], pars['nw'], \
-                                                               pars['minAge'], pars['maxAge'], pars['ageBinSize'], \
-                                                               pars['typeList']
+    nTypes, w0, w1, nw, minAge, maxAge, ageBinSize, typeList = pars['nTypes'], pars['w0'], pars['w1'], \
+                                                                         pars['nw'], pars['minAge'], pars['maxAge'], \
+                                                                         pars['ageBinSize'], pars['typeList']
+    hostList, nHostTypes = None, None
 
     scriptDirectory = os.path.dirname(os.path.abspath(__file__))
 
     snidTemplateLocation = os.path.join(scriptDirectory, "../templates/snid_templates_Modjaz_BSNIP/")
     snidTempFileList = snidTemplateLocation + 'templist.txt'
-    if withHost:
+    if trainWithHost:
         galTemplateLocation = os.path.join(scriptDirectory, "../templates/superfit_templates/gal/")
         galTempFileList = galTemplateLocation + 'gal.list'
+        if classifyHost:
+            hostList = pars['galTypeList']
+            nHostTypes = len(hostList)
     else:
         galTemplateLocation, galTempFileList = None, None
 
-    saveTrainingSet = SaveTrainingSet(snidTemplateLocation, snidTempFileList, w0, w1, nw, nTypes, minAge, maxAge, ageBinSize, typeList, minZ, maxZ, redshiftPrecision, galTemplateLocation, galTempFileList)
+    saveTrainingSet = SaveTrainingSet(snidTemplateLocation, snidTempFileList, w0, w1, nw, nTypes, minAge, maxAge, ageBinSize, typeList, minZ, maxZ, redshiftPrecision, galTemplateLocation, galTempFileList, hostList, nHostTypes)
     typeNamesList, typeAmounts = saveTrainingSet.type_amounts()
 
     saveFilename = 'data_files/trainingSet_type_age_atRedshiftZero.zip'
@@ -175,4 +179,4 @@ def create_training_set_files(minZ=0, maxZ=0, redshiftPrecision=0.01, withHost=T
 
 
 if __name__ == '__main__':
-    trainingSetFilename = create_training_set_files(minZ=0, maxZ=0, redshiftPrecision=0.01, withHost=True)
+    trainingSetFilename = create_training_set_files(minZ=0, maxZ=0, redshiftPrecision=0.01, trainWithHost=True, classifyHost=False)
