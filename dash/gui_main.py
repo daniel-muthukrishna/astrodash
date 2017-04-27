@@ -186,7 +186,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
 
             self.fit_spectra()
 
-    def fit_spectra(self):
+    def fit_spectra(self, classifyHost=False):
         self.cancelledFitting = False
         self.progressBar.setMaximum(100) #
         self.progressBar.setValue(36)
@@ -205,7 +205,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             self.maxZ = self.knownZ
             self.set_plot_redshift(self.knownZ)
 
-            self.fitThread = FitSpectrumThread(self.inputFilename, self.minZ, self.maxZ, self.redshiftFlag, self.modelFilename, self.smooth)
+            self.fitThread = FitSpectrumThread(self.inputFilename, self.minZ, self.maxZ, self.redshiftFlag, self.modelFilename, self.smooth, classifyHost)
             self.fitThread.trigger.connect(self.load_spectrum_single_redshift)
 
         else:
@@ -214,7 +214,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             self.maxZ = float(self.lineEditMaxZ.text())
             self.knownZ = self.minZ
             print(self.minZ, self.maxZ)
-            self.fitThread = FitSpectrumThread(self.inputFilename, self.minZ, self.maxZ, self.redshiftFlag, self.modelFilename, self.smooth)
+            self.fitThread = FitSpectrumThread(self.inputFilename, self.minZ, self.maxZ, self.redshiftFlag, self.modelFilename, self.smooth, classifyHost)
             self.connect(self.fitThread, SIGNAL("load_spectrum(PyQt_PyObject)"), self.load_spectrum)
             self.connect(self.fitThread, SIGNAL("finished()"), self.done_fit_thread)
 
@@ -330,7 +330,7 @@ class FitSpectrumThread(QThread):
 
     trigger = pyqtSignal('PyQt_PyObject')
 
-    def __init__(self, inputFilename, minZ, maxZ, redshiftFlag, modelFilename, smooth):
+    def __init__(self, inputFilename, minZ, maxZ, redshiftFlag, modelFilename, smooth, classifyHost):
         QThread.__init__(self)
         self.inputFilename = str(inputFilename)
         self.minZ = minZ
@@ -338,13 +338,14 @@ class FitSpectrumThread(QThread):
         self.redshiftFlag = redshiftFlag
         self.modelFilename = modelFilename
         self.smooth = smooth
+        self.classifyHost = classifyHost
 
     def __del__(self):
         self.wait()
 
     def _input_spectrum(self):
         trainParams = get_training_parameters()
-        loadInputSpectra = LoadInputSpectra(self.inputFilename, self.minZ, self.maxZ, self.smooth, trainParams)
+        loadInputSpectra = LoadInputSpectra(self.inputFilename, self.minZ, self.maxZ, self.smooth, trainParams, self.classifyHost)
         inputImages, inputRedshifts, typeNamesList, nw, nTypes = loadInputSpectra.input_spectra()
         bestTypesList = BestTypesList(self.modelFilename, inputImages, inputRedshifts, typeNamesList, nw, nTypes)
         bestForEachType, redshiftIndex = bestTypesList.print_list()
@@ -356,11 +357,11 @@ class FitSpectrumThread(QThread):
 
     def _input_spectrum_single_redshift(self):
         trainParams = get_training_parameters()
-        loadInputSpectraUnRedshifted = LoadInputSpectra(self.inputFilename, 0, 0, self.smooth, trainParams)
+        loadInputSpectraUnRedshifted = LoadInputSpectra(self.inputFilename, 0, 0, self.smooth, trainParams, self.classifyHost)
         inputImageUnRedshifted, inputRedshift, typeNamesList, nw, nBins = loadInputSpectraUnRedshifted.input_spectra()
 
         trainParams = get_training_parameters()
-        loadInputSpectra = LoadInputSpectra(self.inputFilename, self.minZ, self.maxZ, self.smooth, trainParams)
+        loadInputSpectra = LoadInputSpectra(self.inputFilename, self.minZ, self.maxZ, self.smooth, trainParams, self.classifyHost)
         inputImage, inputRedshift, typeNamesList, nw, nBins = loadInputSpectra.input_spectra()
         bestTypesList = BestTypesListSingleRedshift(self.modelFilename, inputImage, typeNamesList, nw, nBins)
         bestTypes = bestTypesList.bestTypes[0]

@@ -9,7 +9,7 @@ from dash.multilayer_convnet import convnet_variables
 scriptDirectory = os.path.dirname(os.path.abspath(__file__))
 loaded = np.load(os.path.join(scriptDirectory, "data_files/templates.npz"))
 templateImages = loaded['templateFluxesAll']
-templateLabels = loaded['templateLabelsAll']
+templateLabelsIndexes = loaded['templateLabelsAll']
 
 
 def get_training_parameters():
@@ -19,12 +19,18 @@ def get_training_parameters():
 
 
 class LoadInputSpectra(object):
-    def __init__(self, inputFilename, minZ, maxZ, smooth, pars):
+    def __init__(self, inputFilename, minZ, maxZ, smooth, pars, classifyHost):
         self.nw = pars['nw']
         nTypes, w0, w1, minAge, maxAge, ageBinSize, typeList = pars['nTypes'], pars['w0'], pars['w1'], pars['minAge'], \
                                                                pars['maxAge'], pars['ageBinSize'], pars['typeList']
 
-        self.inputSpectra = InputSpectra(inputFilename, minZ, maxZ, nTypes, minAge, maxAge, ageBinSize, w0, w1, self.nw, typeList, smooth)
+        if classifyHost:
+            hostList = pars['galTypeList']
+            nHostTypes = len(hostList)
+        else:
+            hostList, nHostTypes = None, 1
+
+        self.inputSpectra = InputSpectra(inputFilename, minZ, maxZ, nTypes, minAge, maxAge, ageBinSize, w0, w1, self.nw, typeList, smooth, hostList, nHostTypes)
 
         self.inputImages, self.inputFilenames, self.inputRedshifts, self.typeNamesList = self.inputSpectra.redshifting()
         self.nBins = len(self.typeNamesList)
@@ -127,14 +133,12 @@ class BestTypesList(object):
         for j in range(len(self.bestForEachType)): #index of best Types in order
             c = int(self.bestForEachType[:,0][j])
             typeName = self.typeNamesList[c] #Name of best type
-            for i in range(0, len(templateLabels)): #Checking through templates
-                if templateLabels[i][c] == 1:    #to find template for the best Type
-                    templateFlux = templateImages[i]  #plot template
-                    inputFlux = self.inputImages[int(self.redshiftIndex[c])] #Pliot inputImage at red
-                    #plt.title(typeName+ ": " + str(bestForEachType[c][1]))
-                    break
-            if i == len(templateLabels)-1:
-                #print("No Template") #NEED TO GET TEMPLATE PLOTS IN A BETTER WAY
+            templateFlux = templateImages[c][0]  #plot template
+            inputFlux = self.inputImages[int(self.redshiftIndex[c])] #Pliot inputImage at red
+            #plt.title(typeName+ ": " + str(bestForEachType[c][1]))
+
+            if not templateFlux.any():
+                #print("No Template")
                 templateFlux = np.zeros(len(templateImages[0]))
                 inputFlux = self.inputImages[int(self.redshiftIndex[c])]
 

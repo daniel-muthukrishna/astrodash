@@ -90,7 +90,7 @@ class SaveTrainingSet(object):
         self.maxAge = maxAge
         self.ageBinSize = ageBinSize
         self.typeList = typeList
-        self.createLabels = CreateLabels(nTypes, minAge, maxAge, ageBinSize, typeList)
+        self.createLabels = CreateLabels(nTypes, minAge, maxAge, ageBinSize, typeList, hostTypes, nHostTypes)
         
         self.createTrainingSet = CreateTrainingSet(snidTemplateLocation, snidTempFileList, w0, w1, nw, nTypes, minAge, maxAge, ageBinSize, typeList, minZ, maxZ, redshiftPrecision, galTemplateLocation, galTempFileList, hostTypes, nHostTypes)
         self.sortData = self.createTrainingSet.sort_data()

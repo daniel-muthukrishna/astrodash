@@ -28,19 +28,19 @@ class AgeBinning(object):
 
             if ageBin != ageBinPrev:
                 ageLabelMax = int(round(age))
-                ageLabels.append(str(ageLabelMin) + " to " + str(ageLabelMax))
+                ageLabels.append(str(int(ageLabelMin)) + " to " + str(ageLabelMax))
                 ageLabelMin = ageLabelMax
 
             ageBinPrev = ageBin
 
-        ageLabels.append(str(ageLabelMin) + " to " + str(int(self.maxAge)))
+        ageLabels.append(str(int(ageLabelMin)) + " to " + str(int(self.maxAge)))
 
         return ageLabels
 
 
 class CreateLabels(object):
 
-    def __init__(self, nTypes, minAge, maxAge, ageBinSize, typeList, hostList=None, nHostTypes=None):
+    def __init__(self, nTypes, minAge, maxAge, ageBinSize, typeList, hostList, nHostTypes):
         self.nTypes = nTypes
         self.minAge = minAge
         self.maxAge = maxAge
@@ -80,9 +80,15 @@ class CreateLabels(object):
 
     def type_names_list(self):
         typeNamesList = []
-        for tType in self.typeList:
-            for ageLabel in self.ageBinning.age_labels():
-                typeNamesList.append(tType + ": " + ageLabel)
+        if self.hostList is None:
+            for tType in self.typeList:
+                for ageLabel in self.ageBinning.age_labels():
+                    typeNamesList.append("{}: {}".format(tType, ageLabel))
+        else:
+            for host in self.hostList:
+                for tType in self.typeList:
+                    for ageLabel in self.ageBinning.age_labels():
+                        typeNamesList.append("{} {}: {}".format(host, tType, ageLabel))
 
         return typeNamesList
         

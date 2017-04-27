@@ -3,7 +3,7 @@ from dash.create_arrays import *
 
 
 class InputSpectra(object):
-    def __init__(self, filename, minZ, maxZ, nTypes, minAge, maxAge, ageBinSize, w0, w1, nw, typeList, smooth):
+    def __init__(self, filename, minZ, maxZ, nTypes, minAge, maxAge, ageBinSize, w0, w1, nw, typeList, smooth, hostList, nHostTypes):
         self.filename = filename
         self.minZ = minZ
         self.maxZ = maxZ
@@ -17,10 +17,10 @@ class InputSpectra(object):
         self.typeList = typeList
         self.ageBinning = AgeBinning(self.minAge, self.maxAge, self.ageBinSize)
         self.numOfAgeBins = self.ageBinning.age_bin(self.maxAge) + 1
-        self.nLabels = self.nTypes * self.numOfAgeBins
+        self.nLabels = self.nTypes * self.numOfAgeBins * nHostTypes
         self.redshiftPrecision = 1000
         self.numOfRedshifts = (self.maxZ - self.minZ) * self.redshiftPrecision
-        self.createLabels = CreateLabels(self.nTypes, self.minAge, self.maxAge, self.ageBinSize, self.typeList)
+        self.createLabels = CreateLabels(self.nTypes, self.minAge, self.maxAge, self.ageBinSize, self.typeList, hostList, nHostTypes)
         self.fileType = 'fits or twocolumn etc.' #Will use later on
         self.typeNamesList = self.createLabels.type_names_list()
         self.smooth = smooth

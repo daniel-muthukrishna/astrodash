@@ -7,18 +7,10 @@ import zipfile
 import gzip
 import time
 import pickle
+from dash.array_tools import labels_indexes_to_arrays
 
 
-def labels_indexes_to_arrays(labelsIndexes, nLabels):
-    numArrays = len(labelsIndexes)
-    labelsIndexes = labelsIndexes
-    labels = np.zeros((numArrays, nLabels))
-    labels[np.arange(numArrays), labelsIndexes] = 1
-
-    return labels
-
-
-def train_model(classifyHost=False):
+def train_model():
     # Open training data files
     scriptDirectory = os.path.dirname(os.path.abspath(__file__))
     trainingSet = 'data_files/training_set.zip'
@@ -43,22 +35,18 @@ def train_model(classifyHost=False):
 
     trainImages = np.load(npyFiles['trainImages'], mmap_mode='r')
     trainLabels = np.load(npyFiles['trainLabels'], mmap_mode='r')
-    testImagesWithGal = np.load(npyFiles['testImages'], mmap_mode='r')
-    testLabelsWithGal = np.load(npyFiles['testLabels'], mmap_mode='r')
+    testImages = np.load(npyFiles['testImages'], mmap_mode='r')
+    testLabelsIndexes = np.load(npyFiles['testLabels'], mmap_mode='r')
     typeNamesList = np.load(npyFiles['typeNamesList'])
-    testImages = np.load(npyFiles['testImagesNoGal'], mmap_mode='r')
-    testLabels = np.load(npyFiles['testLabelsNoGal'], mmap_mode='r')
-    testTypeNames = np.load(npyFiles['testTypeNamesNoGal'])
+    testTypeNames = np.load(npyFiles['testTypeNames'])
+    # testImages = np.load(npyFiles['testImagesNoGal'], mmap_mode='r')
+    # testLabels = np.load(npyFiles['testLabelsNoGal'], mmap_mode='r')
+
 
     print("Completed creatingArrays")
     print(len(trainImages))
 
-    with open('data_files/training_params.pickle', 'rb') as f1:
-        pars = pickle.load(f1)
-    if classifyHost:
-        nLabels = pars['nLabelsWithHost']
-    else:
-        nLabels = pars['nLabelsNoHost']
+    nLabels = len(typeNamesList)
 
     # Set up the convolutional network architecture
     N = 1024
@@ -76,12 +64,12 @@ def train_model(classifyHost=False):
 
         sess.run(tf.initialize_all_variables())
 
-        # testLabelsArrays = labels_indexes_to_arrays(testLabels, nLabels)
-        testLabelsArraysWithGal = labels_indexes_to_arrays(testLabelsWithGal, nLabels)
+        testLabels = labels_indexes_to_arrays(testLabelsIndexes, nLabels)
+        # testLabelsArraysWithGal = labels_indexes_to_arrays(testLabelsWithGal, nLabels)
 
         trainImagesCycle = itertools.cycle(trainImages)
         trainLabelsCycle = itertools.cycle(trainLabels)
-        for i in range(100000):
+        for i in range(5000):
             batch_xs = np.array(list(itertools.islice(trainImagesCycle, 50 * i, 50 * i + 50)))
             batch_ys = labels_indexes_to_arrays(list(itertools.islice(trainLabelsCycle, 50 * i, 50 * i + 50)), nLabels)
             train_step.run(feed_dict={x: batch_xs, y_: batch_ys, keep_prob: 0.5})
@@ -91,9 +79,9 @@ def train_model(classifyHost=False):
                 testacc = accuracy.eval(feed_dict={x: testImages, y_: testLabels, keep_prob: 1.0})
                 print("test accuracy %g" % testacc)
                 a.append(testacc)
-                if i % 1000 == 0:
-                    testWithGalacc = accuracy.eval(feed_dict={x: testImagesWithGal[0:200], y_: testLabelsArraysWithGal[0:200], keep_prob: 1.0})
-                    print("test With Gal accuracy %g" % testWithGalacc)
+                # if i % 1000 == 0:
+                #     testWithGalacc = accuracy.eval(feed_dict={x: testImagesWithGal[0:200], y_: testLabelsArraysWithGal[0:200], keep_prob: 1.0})
+                #     print("test With Gal accuracy %g" % testWithGalacc)
 
         print("test accuracy %g" % accuracy.eval(feed_dict={x: testImages, y_: testLabels, keep_prob: 1.0}))
 

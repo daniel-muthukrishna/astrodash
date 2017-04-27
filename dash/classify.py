@@ -19,15 +19,16 @@ except ImportError:
 class Classify(object):
     loaded = np.load(os.path.join(scriptDirectory, "data_files/templates.npz"))
     templateImages = loaded['templateFluxesAll']
-    templateLabels = loaded['templateLabelsAll']
+    # templateLabelsIndexes = loaded['templateLabelsAll']
 
-    def __init__(self, filenames=[], redshifts=[], smooth=15):
+    def __init__(self, filenames=[], redshifts=[], smooth=15, classifyHost=False):
         """ Takes a list of filenames and corresponding redshifts for supernovae.
         Files should contain a single spectrum, and redshifts should be a list of corresponding redshift floats
         """
         self.filenames = filenames
         self.redshifts = redshifts
         self.smooth = smooth
+        self.classifyHost = classifyHost
         self.numSpectra = len(filenames)
         self.mainDirectory = os.path.dirname(os.path.abspath(__file__))
 
@@ -36,7 +37,7 @@ class Classify(object):
         self.modelFilename = os.path.join(self.mainDirectory, "data_files/model_trainedAtZeroZ.ckpt")
 
     def _get_images(self, filename, redshift, trainParams):
-        loadInputSpectra = LoadInputSpectra(filename, redshift, redshift, self.smooth, trainParams)
+        loadInputSpectra = LoadInputSpectra(filename, redshift, redshift, self.smooth, trainParams, self.classifyHost)
         inputImage, inputRedshift, typeNamesList, nw, nBins = loadInputSpectra.input_spectra()
 
         return inputImage, typeNamesList, nw, nBins
@@ -103,14 +104,12 @@ class Classify(object):
 
     def false_positive_rejection(self, bestLabel, inputImage):
         c = bestLabel[0] # best Index
-        templateImages = []
-        for i in range(len(Classify.templateLabels)):  # Checking through templates
-            if Classify.templateLabels[i][0][c] == 1:  # to find template for the best Type
-                templateImage = Classify.templateImages[i][0]  # plot template. Select index 0 for the first of the templates up to the number of templates available
-                templateImages.append(templateImage)
-        falsePositiveRejection = FalsePositiveRejection(inputImage, templateImages)
-
-        rejectionLabel = "(chi2=%s, rlap=%s)" % (falsePositiveRejection.rejection_label(), falsePositiveRejection.rejection_label2())
+        templateImages = Classify.templateImages[c]
+        if templateImages[0].any():
+            falsePositiveRejection = FalsePositiveRejection(inputImage, templateImages)
+            rejectionLabel = "(chi2=%s, rlap=%s)" % (falsePositiveRejection.rejection_label(), falsePositiveRejection.rejection_label2())
+        else:
+            rejectionLabel = "(NO_TEMPLATES)"
 
         # import matplotlib
         # matplotlib.use('TkAgg')
@@ -132,7 +131,7 @@ class Classify(object):
         form.lblInputFilename.setText(self.filenames[indexToPlot])
         form.lineEditKnownZ.setText(str(self.redshifts[indexToPlot]))
         form.lineEditSmooth.setText(str(self.smooth))
-        form.fit_spectra()
+        form.fit_spectra(self.classifyHost)
         form.show()
         app.exec_()
 

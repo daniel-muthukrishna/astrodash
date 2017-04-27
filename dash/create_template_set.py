@@ -5,8 +5,8 @@ import gzip
 import pickle
 
 
-def save_templates(saveFilename, trainImages, trainLabels, trainFilenames, nLabels):
-
+def save_templates(saveFilename, trainImages, trainLabels, trainFilenames, typeNamesList):
+    nLabels = len(typeNamesList)
     templateFluxesAll = []
     templateLabelsAll = []
     templateFilenamesAll = []
@@ -47,17 +47,11 @@ def save_templates(saveFilename, trainImages, trainLabels, trainFilenames, nLabe
     templateFilenamesAll = np.array(templateFilenamesAll)
 
     print("Saving...")
-    np.savez_compressed(saveFilename, templateFluxesAll=templateFluxesAll, templateLabelsAll=templateLabelsAll, templateFilenamesAll=templateFilenamesAll)
+    np.savez_compressed(saveFilename, templateFluxesAll=templateFluxesAll, templateLabelsAll=templateLabelsAll,
+                        templateFilenamesAll=templateFilenamesAll)
 
 
-def create_template_set_file(classifyHost=False):
-    with open('data_files/training_params.pickle', 'rb') as f1:
-        pars = pickle.load(f1)
-    if classifyHost:
-        nLabels = pars['nLabelsWithHost']
-    else:
-        nLabels = pars['nLabelsNoHost']
-
+def create_template_set_file():
     scriptDirectory = os.path.dirname(os.path.abspath(__file__))
     trainingSet = 'data_files/training_set.zip'
     extractedFolder = 'data_files/training_set'
@@ -82,11 +76,12 @@ def create_template_set_file(classifyHost=False):
     trainImages = np.load(npyFiles['trainImages'], mmap_mode='r')
     trainLabels = np.load(npyFiles['trainLabels'], mmap_mode='r')
     trainFilenames = np.load(npyFiles['trainFilenames'])
+    typeNamesList = np.load(npyFiles['typeNamesList'])
 
     saveFilename = 'data_files/templates.npz'
 
     print("Saving Templates...")
-    save_templates(saveFilename, trainImages, trainLabels, trainFilenames, nLabels)
+    save_templates(saveFilename, trainImages, trainLabels, trainFilenames, typeNamesList)
     print("Saved Templates to: " + saveFilename)
 
     loaded = np.load(os.path.join(scriptDirectory, saveFilename))
