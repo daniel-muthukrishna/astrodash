@@ -327,7 +327,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
     def list_best_matches_single_redshift(self):
         print("listing best matches...")
         self.listWidget.clear()
-        self.listWidget.addItem("".join(word.ljust(25) for word in ['No.', 'Type', 'Age', 'Softmax_Probability']))
+        self.listWidget.addItem("".join(word.ljust(25) for word in ['No.', 'Type', 'Age', 'Softmax Prob.']))
         for i in range(20):
             classification = self.bestTypes[i].split(': ')
             prob = self.softmax[i]
@@ -376,24 +376,21 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
 
 
     def list_item_clicked(self, item):
-        index, self.SNTypePlot, age1, age2, age3, softmax = str(item.text()).split()
-        self.AgePlot = age1 + ' to ' + age3
-        host = "No Host" #
-
-        try:
+        if item.text()[0].isdigit():
+            index, self.snTypePlot, age1, age2, age3, softmax = str(item.text()).split()
+            self.agePlot = age1 + ' to ' + age3
+            host = "No Host" #
             self.indexToPlot = int(index) - 1 #Two digit numbers
-        except ValueError:
-            self.indexToPlot = 0
 
-        SNTypeComboBoxIndex = self.comboBoxSNType.findText(self.SNTypePlot)
-        self.comboBoxSNType.setCurrentIndex(SNTypeComboBoxIndex)
-        AgeComboBoxIndex = self.comboBoxAge.findText(self.AgePlot)
-        self.comboBoxAge.setCurrentIndex(AgeComboBoxIndex)
-        hostComboBoxIndex = self.comboBoxHost.findText(host)
-        self.comboBoxHost.setCurrentIndex(hostComboBoxIndex)
+            snTypeComboBoxIndex = self.comboBoxSNType.findText(self.snTypePlot)
+            self.comboBoxSNType.setCurrentIndex(snTypeComboBoxIndex)
+            AgeComboBoxIndex = self.comboBoxAge.findText(self.agePlot)
+            self.comboBoxAge.setCurrentIndex(AgeComboBoxIndex)
+            hostComboBoxIndex = self.comboBoxHost.findText(host)
+            self.comboBoxHost.setCurrentIndex(hostComboBoxIndex)
 
-        if self.redshiftFlag == False:
-            self.plot_redshift_graphs()
+            if self.redshiftFlag == False:
+                self.plot_redshift_graphs()
 
     def plot_best_matches(self):
         if self.plotted == True:
