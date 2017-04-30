@@ -1,16 +1,14 @@
 import os
 import sys
 import pickle
-
 from PyQt5 import QtGui
 from PyQt5.QtCore import QThread, pyqtSignal
-
 from dash.design import Ui_MainWindow
-
-mainDirectory = os.path.dirname(os.path.abspath(__file__))
-
 from dash.restore_model import *
 from dash.create_arrays import AgeBinning
+from dash.read_binned_templates import load_templates, ReadBinnedTemplates
+
+mainDirectory = os.path.dirname(os.path.abspath(__file__))
 
 
 class MainApp(QtGui.QMainWindow, Ui_MainWindow):
@@ -60,10 +58,13 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
     def templates(self):
         with open(os.path.join(scriptDirectory, "data_files/training_params.pickle"), 'rb') as f:
             pars = pickle.load(f)
-        self.nTypes = pars['nTypes']
-        self.nw = pars['nw']
-        w0, w1, minAge, maxAge, ageBinSize, self.typeList = pars['w0'], pars['w1'], pars['minAge'], pars['maxAge'], \
-                                                       pars['ageBinSize'], pars['typeList']
+        w0, w1, self.minAge, self.maxAge, self.ageBinSize, self.typeList, self.nTypes, self.nw = pars['w0'], pars['w1'], \
+                                                                                                 pars['minAge'], \
+                                                                                                 pars['maxAge'], \
+                                                                                                 pars['ageBinSize'], \
+                                                                                                 pars['typeList'], \
+                                                                                                 pars['nTypes'], \
+                                                                                                 pars['nw']
 
         dwlog = np.log(w1/w0)/self.nw
         self.wave = w0 * np.exp(np.arange(0,self.nw) * dwlog)
@@ -71,6 +72,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         loaded = np.load(os.path.join(mainDirectory, 'data_files/templates.npz'))
         self.templateFluxesAll = loaded['templateFluxesAll']
         self.templateFileNamesAll = loaded['templateFilenamesAll']
+
 
     def select_sub_template_right(self):
         self.templateSubIndex += 1
@@ -101,10 +103,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.plot_best_matches()
 
     def add_combo_box_entries(self):
-        minAge = -20
-        maxAge = 50
-        ageBinSize = 4
-        ageLabels = AgeBinning(minAge, maxAge, ageBinSize).age_labels()
+        ageLabels = AgeBinning(self.minAge, self.maxAge, self.ageBinSize).age_labels()
         for i in range(len(ageLabels)):
             self.comboBoxAge.addItem(ageLabels[i])
 

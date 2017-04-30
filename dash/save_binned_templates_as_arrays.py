@@ -2,7 +2,7 @@ import numpy as np
 import pickle
 import os
 from dash.preprocessing import ReadSpectrumFile, ProcessingTools, PreProcessSpectrum
-from dash.create_arrays import TempList
+from dash.create_arrays import TempList, AgeBinning
 
 
 def normalise_spectrum(flux):
@@ -16,6 +16,7 @@ class BinTemplate(object):
         self.w0 = w0
         self.w1 = w1
         self.nw = nw
+        self.filename = filename.split('/')[-1]
         self.templateType = templateType
         self.preProcess = PreProcessSpectrum(w0, w1, nw)
         self.readSpectrumFile = ReadSpectrumFile(filename, w0, w1, nw)
@@ -24,6 +25,7 @@ class BinTemplate(object):
             self.wave, self.fluxes, self.nCols, self.ages, self.tType, self.splineInfo = self.spectrum
         elif templateType == 'gal':
             self.wave, self.flux = self.spectrum
+            self.tType = self.filename
         else:
             print("INVALID ARGUMENT FOR TEMPLATE TYPE")
 
@@ -56,29 +58,66 @@ class BinTemplate(object):
 
 
 def create_sn_and_host_arrays(snTemplateDirectory, snTempFileList, galTemplateDirectory, galTempFileList, paramsFile):
-    snInfoList = []
-    galInfoList = []
+    snTemplates = {}
+    galTemplates = {}
     snList = TempList().temp_list(snTempFileList)
     galList = TempList().temp_list(galTempFileList)
     with open(paramsFile, 'rb') as f:
         pars = pickle.load(f)
-    w0, w1, nw = pars['w0'], pars['w1'], pars['nw']
+    w0, w1, nw, snTypes, galTypes, minAge, maxAge, ageBinSize = pars['w0'], pars['w1'], pars['nw'], pars['typeList'], \
+                                                                pars['galTypeList'], pars['minAge'], pars['maxAge'], \
+                                                                pars['ageBinSize']
+    ageBinning = AgeBinning(minAge, maxAge, ageBinSize)
+    ageLabels = ageBinning.age_labels()
+    # Create dictionary of dictionaries for type and age of SN
+    for snType in snTypes:
+        snTemplates[snType] = {}
+        for ageLabel in ageLabels:
+            snTemplates[snType][ageLabel] = {}
+            snTemplates[snType][ageLabel]['snInfo'] = []
+            snTemplates[snType][ageLabel]['name'] = []
+    for galType in galTypes:
+        galTemplates[galType] = {}
+        galTemplates[galType]['galInfo'] = []
+        galTemplates[galType]['name'] = []
 
     for snFile in snList:
         snBinTemplate = BinTemplate(snTemplateDirectory + snFile, 'sn', w0, w1, nw)
         nAges = snBinTemplate.nCols
+        ages = snBinTemplate.ages
+        snType = snBinTemplate.tType
+        filename = snBinTemplate.filename
         for ageIdx in range(nAges):
-            snInfo = snBinTemplate.bin_template(ageIdx)
-            snInfoList.append(snInfo)
+            age = ages[ageIdx]
+            if minAge < age < maxAge:
+                ageBin = ageBinning.age_bin(age)
+                ageLabel = ageLabels[ageBin]
+                snInfo = snBinTemplate.bin_template(ageIdx)
+                snTemplates[snType][ageLabel]['snInfo'].append(snInfo)
+                snTemplates[snType][ageLabel]['name'].append("%s_%s" % (filename, age))
+
             print("Reading {} {} out of {}".format(snFile, ageIdx, nAges))
 
     for galFile in galList:
         galBinTemplate = BinTemplate(galTemplateDirectory + galFile, 'gal', w0, w1, nw)
+        galType = galBinTemplate.tType
+        filename = galBinTemplate.filename
         galInfo = galBinTemplate.bin_template()
-        galInfoList.append(galInfo)
+        galTemplates[galType]['galInfo'].append(galInfo)
+        galTemplates[galType]['name'].append(filename)
+
         print("Reading {}".format(galFile))
 
-    return np.array(snInfoList), np.array(galInfoList)
+    # Convert lists in dictionaries to numpy arrays
+    for snType in snTypes:
+        for ageLabel in ageLabels:
+            snTemplates[snType][ageLabel]['snInfo'] = np.array(snTemplates[snType][ageLabel]['snInfo'])
+            snTemplates[snType][ageLabel]['names'] = np.array(snTemplates[snType][ageLabel]['name'])
+    for galType in galTypes:
+        galTemplates[galType]['galInfo'] = np.array(galTemplates[galType]['galInfo'])
+        galTemplates[galType]['names'] = np.array(galTemplates[galType]['galInfo'])
+
+    return snTemplates, galTemplates
 
 
 def save_templates():
@@ -90,9 +129,9 @@ def save_templates():
     galTempFileList = galTemplateDirectory + 'gal.list'
     saveFilename = 'sn_and_host_templates.npz'
 
-    snInfoList, galInfoList = create_sn_and_host_arrays(snTemplateDirectory, snTempFileList, galTemplateDirectory, galTempFileList, parameterFile)
+    snTemplates, galTemplates = create_sn_and_host_arrays(snTemplateDirectory, snTempFileList, galTemplateDirectory, galTempFileList, parameterFile)
 
-    np.savez_compressed(saveFilename, snInfoList=snInfoList, galInfoList=galInfoList)
+    np.savez_compressed(saveFilename, snTemplates=snTemplates, galTemplates=galTemplates)
 
     return saveFilename
 
