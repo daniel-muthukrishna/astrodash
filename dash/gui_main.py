@@ -43,6 +43,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
 
         self.checkBoxZeroZTrained.setChecked(True)
         self.checkBoxKnownZ.setChecked(True)
+        self.lineEditKnownZ.setText("0")
         self.checkBoxAgnosticZTrained.setEnabled(False)
         self.checkBoxGalTrained.setEnabled(False)
         self.comboBoxHost.setEnabled(True)
@@ -289,19 +290,54 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             self.progressBar.setValue(100)
             QtGui.QMessageBox.information(self, "Done!", "Finished Fitting Input Spectrum")
 
-    def list_best_matches_single_redshift(self):
-        print("listing best matches...")
-        self.listWidget.clear()
-        self.listWidget.addItem("".join(word.ljust(25) for word in ['No.', 'Type', 'Age', 'Softmax Prob..']))
+    def best_broad_type(self):
+        prevClassification = self.bestTypes[0].split(': ')
+        prevName = prevClassification[0]
+        prevMinAge, prevMaxAge = prevClassification[1].split(' to ')
+        probTotal = 0.
+        agesList = [int(prevMinAge), int(prevMaxAge)]
         for i in range(20):
             classification = self.bestTypes[i].split(': ')
             if len(classification) == 2:
                 name, age = classification
-                self.listWidget.addItem("".join(word.ljust(25) for word in [str(i + 1), name, age, str(self.softmax[i])]))
+                host = ""
+            else:
+                host, name, age = classification
+            prob = self.softmax[i]
+            minAge, maxAge = list(map(int, age.split(' to ')))
+            if name == prevName and ((minAge in agesList) or (maxAge in agesList)):
+                probTotal += float(prob)
+                prevName = name
+                agesList = agesList + [minAge, maxAge]
+            else:
+                break
+        bestAge = '%d to %d days' % (min(agesList), max(agesList))
+        reliableFlag = not (min(agesList), max(agesList)) == (int(prevMinAge), int(prevMaxAge))
+        self.labelBestSnType.setText(prevName)
+        self.labelBestAgeRange.setText(bestAge)
+        self.labelBestHostType.setText(host)
+        self.labelBestRelProb.setText("%s%%" % str(100*round(probTotal, 4)))
+        if reliableFlag:
+            self.labelReliableFlag.setText("Reliable")
+            self.labelReliableFlag.setStyleSheet('color: green')
+        else:
+            self.labelReliableFlag.setText("Unreliable")
+            self.labelReliableFlag.setStyleSheet('color: red')
+
+    def list_best_matches_single_redshift(self):
+        print("listing best matches...")
+        self.listWidget.clear()
+        self.listWidget.addItem("".join(word.ljust(25) for word in ['No.', 'Type', 'Age', 'Softmax_Probability']))
+        for i in range(20):
+            classification = self.bestTypes[i].split(': ')
+            prob = self.softmax[i]
+            if len(classification) == 2:
+                name, age = classification
+                self.listWidget.addItem("".join(word.ljust(25) for word in [str(i + 1), name, age, str(prob)]))
                 host = "No Host"
             else:
                 host, name, age = classification
-                self.listWidget.addItem("".join(word.ljust(25) for word in [str(i + 1), host, name, age, str(self.softmax[i])]))
+                self.listWidget.addItem("".join(word.ljust(25) for word in [str(i + 1), host, name, age, str(prob)]))
 
             if i == 0:
                 SNTypeComboBoxIndex = self.comboBoxSNType.findText(name)
@@ -310,6 +346,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
                 self.comboBoxAge.setCurrentIndex(AgeComboBoxIndex)
                 hostComboBoxIndex = self.comboBoxHost.findText(host)
                 self.comboBoxHost.setCurrentIndex(hostComboBoxIndex)
+        self.best_broad_type()
 
     def load_spectrum(self, spectrumInfo):
         self.bestForEachType, self.templateFluxes, self.inputFluxes, self.inputRedshifts, self.redshiftGraphs, self.typeNamesList = spectrumInfo
