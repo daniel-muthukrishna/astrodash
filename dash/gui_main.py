@@ -20,6 +20,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.plotted = False
         self.indexToPlot = 0
         self.plotZ = 0
+        self.hostFraction = 0
         self.inputFluxes = np.zeros((2, int(self.nw)))
         self.inputImageUnRedshifted = np.zeros((2, int(self.nw)))
         self.templatePlotFlux = np.zeros(int(self.nw))
@@ -44,7 +45,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.checkBoxKnownZ.setChecked(True)
         self.checkBoxAgnosticZTrained.setEnabled(False)
         self.checkBoxGalTrained.setEnabled(False)
-        self.comboBoxHost.setEnabled(False)
+        self.comboBoxHost.setEnabled(True)
 
         self.horizontalSliderSmooth.valueChanged.connect(self.smooth_slider_changed)
         self.lineEditSmooth.textChanged.connect(self.smooth_text_changed)
@@ -52,27 +53,51 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.horizontalSliderRedshift.valueChanged.connect(self.redshift_slider_changed)
         self.lineEditRedshift.textChanged.connect(self.redshift_text_changed)
 
+        self.horizontalSliderHostFraction.valueChanged.connect(self.host_fraction_slider_changed)
+        self.lineEditHostFraction.editingFinished.connect(self.host_fraction_text_changed)
+
         self.comboBoxSNType.currentIndexChanged.connect(self.combo_box_changed)
         self.comboBoxAge.currentIndexChanged.connect(self.combo_box_changed)
+        self.comboBoxHost.currentIndexChanged.connect(self.combo_box_changed)
 
     def templates(self):
         with open(os.path.join(scriptDirectory, "data_files/training_params.pickle"), 'rb') as f:
             pars = pickle.load(f)
-        w0, w1, self.minAge, self.maxAge, self.ageBinSize, self.typeList, self.nTypes, self.nw = pars['w0'], pars['w1'], \
-                                                                                                 pars['minAge'], \
-                                                                                                 pars['maxAge'], \
-                                                                                                 pars['ageBinSize'], \
-                                                                                                 pars['typeList'], \
-                                                                                                 pars['nTypes'], \
-                                                                                                 pars['nw']
+        self.w0, self.w1, self.minAge, self.maxAge, self.ageBinSize, self.typeList, self.nTypes, self.nw, self.hostTypes \
+            = pars['w0'], pars['w1'], pars['minAge'], pars['maxAge'], pars['ageBinSize'], pars['typeList'], pars['nTypes'], pars['nw'], pars['galTypeList']
 
-        dwlog = np.log(w1/w0)/self.nw
-        self.wave = w0 * np.exp(np.arange(0,self.nw) * dwlog)
+        dwlog = np.log(self.w1/self.w0)/self.nw
+        self.wave = self.w0 * np.exp(np.arange(0,self.nw) * dwlog)
 
-        loaded = np.load(os.path.join(mainDirectory, 'data_files/templates.npz'))
-        self.templateFluxesAll = loaded['templateFluxesAll']
-        self.templateFileNamesAll = loaded['templateFilenamesAll']
+        # loaded = np.load(os.path.join(mainDirectory, 'data_files/templates.npz'))
+        # self.templateFluxesAll = loaded['templateFluxesAll']
+        # self.templateFileNamesAll = loaded['templateFilenamesAll']
+        self.snTemplates, self.galTemplates = load_templates('sn_and_host_templates.npz')  #
 
+    def get_sn_and_host_templates(self): #
+        snInfos = self.snTemplates[self.snName][self.snAge]['snInfo']
+        snNames = self.snTemplates[self.snName][self.snAge]['names']
+        if self.hostName != "No Host":
+            hostInfos = self.galTemplates[self.hostName]['galInfo']
+            hostNames = self.galTemplates[self.hostName]['names']
+        else:
+            hostInfos = np.array([[self.wave, np.zeros(self.nw), 1, self.nw-1]])
+            hostNames = np.array(["No Host"])
+
+        return snInfos, snNames, hostInfos, hostNames
+
+    def get_template_info(self): #
+        snInfos, snNames, hostInfos, hostNames = self.get_sn_and_host_templates() #
+        if snInfos != []:
+            readBinnedTemplates = ReadBinnedTemplates(snInfos[self.templateSubIndex], hostInfos[0], self.w0, self.w1, self.nw) #
+            wave, flux = readBinnedTemplates.template_data(snCoeff=1-self.hostFraction/100., galCoeff=self.hostFraction/100., z=0) #
+            name = "%s_%s" % (snNames[self.templateSubIndex], hostNames[0])
+            return flux, name
+        else:
+            flux = np.zeros(self.nw)
+            name = "NO_TEMPLATES!"
+
+        return flux, name
 
     def select_sub_template_right(self):
         self.templateSubIndex += 1
@@ -83,22 +108,28 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.plot_sub_templates()
 
     def plot_sub_templates(self):
-        numOfSubTemplates = len(self.templateFileNamesAll[self.templateIndex])
-        if self.templateSubIndex >= numOfSubTemplates:
-            self.templateSubIndex = 0
-        if self.templateSubIndex < 0:
-            self.templateSubIndex = numOfSubTemplates - 1
+        # numOfSubTemplates = len(self.templateFileNamesAll[self.templateIndex])
+        # if self.templateSubIndex >= numOfSubTemplates:
+        #     self.templateSubIndex = 0
+        # if self.templateSubIndex < 0:
+        #     self.templateSubIndex = numOfSubTemplates - 1
 
-        self.templatePlotFlux = self.templateFluxesAll[self.templateIndex][self.templateSubIndex]
-        self.templatePlotName = self.templateFileNamesAll[self.templateIndex][self.templateSubIndex]
+        flux, name = self.get_template_info() #
+
+        self.templatePlotFlux = flux  # self.templateFluxesAll[self.templateIndex][self.templateSubIndex]
+        self.templatePlotName = name  # self.templateFileNamesAll[self.templateIndex][self.templateSubIndex]
         print(self.templatePlotName)
         self.plot_best_matches()
 
     def combo_box_changed(self):
-        self.templateIndex = self.comboBoxSNType.currentIndex() * (self.nTypes + 1) +  self.comboBoxAge.currentIndex()
+        # self.templateIndex = self.comboBoxSNType.currentIndex() * (self.nTypes + 1) + self.comboBoxAge.currentIndex()
+        self.snName = str(self.comboBoxSNType.currentText()) #
+        self.snAge = str(self.comboBoxAge.currentText()) #
+        self.hostName = str(self.comboBoxHost.currentText()) #
 
-        self.templatePlotFlux = self.templateFluxesAll[self.templateIndex][0]
-        self.templatePlotName = self.templateFileNamesAll[self.templateIndex][0]
+        flux, name = self.get_template_info() #
+        self.templatePlotFlux = flux  # self.templateFluxesAll[self.templateIndex][0]
+        self.templatePlotName = name  # self.templateFileNamesAll[self.templateIndex][0]
         print(self.templatePlotName)
         self.plot_best_matches()
 
@@ -109,6 +140,23 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
 
         for typeName in self.typeList:
             self.comboBoxSNType.addItem(typeName)
+
+        self.comboBoxHost.addItem("No Host")
+        for hostName in self.hostTypes:
+            self.comboBoxHost.addItem(hostName)
+
+    def host_fraction_slider_changed(self):
+        self.hostFraction = self.horizontalSliderHostFraction.value()
+        self.lineEditHostFraction.setText("%s%%" % str(self.hostFraction))
+        self.templatePlotFlux, self.templatePlotName = self.get_template_info()  #
+        self.plot_best_matches()
+
+    def host_fraction_text_changed(self):
+        try:
+            self.hostFraction = float(self.lineEditHostFraction.text().strip("%%"))
+            self.horizontalSliderHostFraction.setValue(int(self.hostFraction))
+        except ValueError:
+            print("Host Fraction Value Error")
 
     def redshift_slider_changed(self):
         self.plotZ = self.horizontalSliderRedshift.value()/10000.
@@ -246,14 +294,22 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.listWidget.clear()
         self.listWidget.addItem("".join(word.ljust(25) for word in ['No.', 'Type', 'Age', 'Softmax Prob..']))
         for i in range(20):
-            name, age = self.bestTypes[i].split(': ')
-            self.listWidget.addItem("".join(word.ljust(25) for word in [str(i+1), name, age, str(self.softmax[i])]))
+            classification = self.bestTypes[i].split(': ')
+            if len(classification) == 2:
+                name, age = classification
+                self.listWidget.addItem("".join(word.ljust(25) for word in [str(i + 1), name, age, str(self.softmax[i])]))
+                host = "No Host"
+            else:
+                host, name, age = classification
+                self.listWidget.addItem("".join(word.ljust(25) for word in [str(i + 1), host, name, age, str(self.softmax[i])]))
 
             if i == 0:
                 SNTypeComboBoxIndex = self.comboBoxSNType.findText(name)
                 self.comboBoxSNType.setCurrentIndex(SNTypeComboBoxIndex)
                 AgeComboBoxIndex = self.comboBoxAge.findText(age)
                 self.comboBoxAge.setCurrentIndex(AgeComboBoxIndex)
+                hostComboBoxIndex = self.comboBoxHost.findText(host)
+                self.comboBoxHost.setCurrentIndex(hostComboBoxIndex)
 
     def load_spectrum(self, spectrumInfo):
         self.bestForEachType, self.templateFluxes, self.inputFluxes, self.inputRedshifts, self.redshiftGraphs, self.typeNamesList = spectrumInfo
@@ -273,12 +329,19 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.listWidget.addItem("".join(word.ljust(25) for word in ['No.', 'Type', 'Age', 'Redshift', 'Rel. Prob.']))
         for i in range(20): #len(bestForEachType)
             bestIndex = int(self.bestForEachType[i][0])
-            name, age = self.typeNamesList[bestIndex].split(': ')
-            self.listWidget.addItem("".join(word.ljust(25) for word in [str(i+1), name, age , str(self.bestForEachType[i][1]), str(self.bestForEachType[i][2])]))
+            classification = self.bestTypes[i].split(': ')
+            if len(classification) == 2:
+                name, age = classification
+                self.listWidget.addItem("".join(word.ljust(25) for word in [str(i + 1), name, age, str(self.bestForEachType[i][1]), str(self.bestForEachType[i][2])]))
+            else:
+                host, name, age = classification
+                self.listWidget.addItem("".join(word.ljust(25) for word in [str(i + 1), host, name, age, str(self.bestForEachType[i][1]), str(self.bestForEachType[i][2])]))
+
 
     def list_item_clicked(self, item):
         index, self.SNTypePlot, age1, age2, age3, softmax = str(item.text()).split()
         self.AgePlot = age1 + ' to ' + age3
+        host = "No Host" #
 
         try:
             self.indexToPlot = int(index) - 1 #Two digit numbers
@@ -289,6 +352,8 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.comboBoxSNType.setCurrentIndex(SNTypeComboBoxIndex)
         AgeComboBoxIndex = self.comboBoxAge.findText(self.AgePlot)
         self.comboBoxAge.setCurrentIndex(AgeComboBoxIndex)
+        hostComboBoxIndex = self.comboBoxHost.findText(host)
+        self.comboBoxHost.setCurrentIndex(hostComboBoxIndex)
 
         if self.redshiftFlag == False:
             self.plot_redshift_graphs()
@@ -315,7 +380,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.graphicsView_2.clear()
         self.graphicsView_2.plot(self.inputRedshifts, self.redshiftGraphs[self.indexToPlot])
         self.graphicsView_2.setLabels(left=("Rel. Prob."), bottom=("z"))
-        
+
     def browse_folder(self):
         self.listWidget.clear()
         directory = QtGui.QFileDialog.getExistingDirectory(self,"Pick a folder")
@@ -324,7 +389,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             for file_name in os.listdir(directory):
                 self.listWidget.addItem(file_name)
 
-    
+
 class FitSpectrumThread(QThread):
 
     trigger = pyqtSignal('PyQt_PyObject')
@@ -376,7 +441,7 @@ class FitSpectrumThread(QThread):
         else:
             spectrumInfo = self._input_spectrum()
             self.emit(SIGNAL('load_spectrum(PyQt_PyObject)'), spectrumInfo)
-        
+
 
 
 

@@ -75,11 +75,11 @@ def create_sn_and_host_arrays(snTemplateDirectory, snTempFileList, galTemplateDi
         for ageLabel in ageLabels:
             snTemplates[snType][ageLabel] = {}
             snTemplates[snType][ageLabel]['snInfo'] = []
-            snTemplates[snType][ageLabel]['name'] = []
+            snTemplates[snType][ageLabel]['names'] = []
     for galType in galTypes:
         galTemplates[galType] = {}
         galTemplates[galType]['galInfo'] = []
-        galTemplates[galType]['name'] = []
+        galTemplates[galType]['names'] = []
 
     for snFile in snList:
         snBinTemplate = BinTemplate(snTemplateDirectory + snFile, 'sn', w0, w1, nw)
@@ -94,7 +94,7 @@ def create_sn_and_host_arrays(snTemplateDirectory, snTempFileList, galTemplateDi
                 ageLabel = ageLabels[ageBin]
                 snInfo = snBinTemplate.bin_template(ageIdx)
                 snTemplates[snType][ageLabel]['snInfo'].append(snInfo)
-                snTemplates[snType][ageLabel]['name'].append("%s_%s" % (filename, age))
+                snTemplates[snType][ageLabel]['names'].append("%s_%s" % (filename, age))
 
             print("Reading {} {} out of {}".format(snFile, ageIdx, nAges))
 
@@ -104,7 +104,7 @@ def create_sn_and_host_arrays(snTemplateDirectory, snTempFileList, galTemplateDi
         filename = galBinTemplate.filename
         galInfo = galBinTemplate.bin_template()
         galTemplates[galType]['galInfo'].append(galInfo)
-        galTemplates[galType]['name'].append(filename)
+        galTemplates[galType]['names'].append(filename)
 
         print("Reading {}".format(galFile))
 
@@ -112,10 +112,10 @@ def create_sn_and_host_arrays(snTemplateDirectory, snTempFileList, galTemplateDi
     for snType in snTypes:
         for ageLabel in ageLabels:
             snTemplates[snType][ageLabel]['snInfo'] = np.array(snTemplates[snType][ageLabel]['snInfo'])
-            snTemplates[snType][ageLabel]['names'] = np.array(snTemplates[snType][ageLabel]['name'])
+            snTemplates[snType][ageLabel]['names'] = np.array(snTemplates[snType][ageLabel]['names'])
     for galType in galTypes:
         galTemplates[galType]['galInfo'] = np.array(galTemplates[galType]['galInfo'])
-        galTemplates[galType]['names'] = np.array(galTemplates[galType]['galInfo'])
+        galTemplates[galType]['names'] = np.array(galTemplates[galType]['names'])
 
     return snTemplates, galTemplates
 

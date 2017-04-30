@@ -72,7 +72,7 @@ class CreateLabels(object):
             labelArray = np.zeros((self.nHostTypes, self.nTypes, self.numOfAgeBins))
             labelArray[hostIndex][typeIndex][ageBin] = 1
             labelArray = labelArray.flatten()
-            typeName = "{} {}: {}".format(host, ttype, self.ageLabels[ageBin])
+            typeName = "{}: {}: {}".format(host, ttype, self.ageLabels[ageBin])
 
         labelIndex = np.argmax(labelArray)
 
@@ -88,7 +88,7 @@ class CreateLabels(object):
             for host in self.hostList:
                 for tType in self.typeList:
                     for ageLabel in self.ageBinning.age_labels():
-                        typeNamesList.append("{} {}: {}".format(host, tType, ageLabel))
+                        typeNamesList.append("{}: {}: {}".format(host, tType, ageLabel))
 
         return typeNamesList
         

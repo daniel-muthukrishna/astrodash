@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1167</width>
-    <height>683</height>
+    <width>1205</width>
+    <height>692</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -97,7 +97,7 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>215</width>
+              <width>223</width>
               <height>202</height>
              </rect>
             </property>
@@ -404,7 +404,7 @@
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_9" stretch="0,0,1,5">
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_9" stretch="3,100,100,100">
+          <layout class="QHBoxLayout" name="horizontalLayout_9" stretch="2,10,10,10,1,2,3">
            <property name="sizeConstraint">
             <enum>QLayout::SetDefaultConstraint</enum>
            </property>
@@ -435,12 +435,30 @@
             <widget class="QComboBox" name="comboBoxAge"/>
            </item>
            <item>
-            <widget class="QComboBox" name="comboBoxHost">
-             <item>
-              <property name="text">
-               <string>Host Galaxy</string>
-              </property>
-             </item>
+            <widget class="QComboBox" name="comboBoxHost"/>
+           </item>
+           <item>
+            <widget class="QLabel" name="label_5">
+             <property name="text">
+              <string>Host Fraction</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="lineEditHostFraction">
+             <property name="text">
+              <string>0%</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="horizontalSliderHostFraction">
+             <property name="maximum">
+              <number>100</number>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
             </widget>
            </item>
           </layout>
@@ -546,7 +564,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1167</width>
+     <width>1205</width>
      <height>22</height>
     </rect>
    </property>

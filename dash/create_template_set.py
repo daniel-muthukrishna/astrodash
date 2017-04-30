@@ -55,22 +55,22 @@ def create_template_set_file():
     scriptDirectory = os.path.dirname(os.path.abspath(__file__))
     trainingSet = 'data_files/training_set.zip'
     extractedFolder = 'data_files/training_set'
-    zipRef = zipfile.ZipFile(trainingSet, 'r')
-    zipRef.extractall(extractedFolder)
-    zipRef.close()
+    # zipRef = zipfile.ZipFile(trainingSet, 'r')
+    # zipRef.extractall(extractedFolder)
+    # zipRef.close()
 
     npyFiles = {}
     fileList = os.listdir(extractedFolder)
     for filename in fileList:
         if filename.endswith('.gz'):
             f = os.path.join(scriptDirectory, extractedFolder, filename)
-            npyFiles[filename.strip('.npy.gz')] = gzip.GzipFile(f, 'r')
-            gzFile = gzip.open(f, "rb")
-            unCompressedFile = open(f.strip('.gz'), "wb")
-            decoded = gzFile.read()
-            unCompressedFile.write(decoded)
-            gzFile.close()
-            unCompressedFile.close()
+            # # npyFiles[filename.strip('.npy.gz')] = gzip.GzipFile(f, 'r')
+            # gzFile = gzip.open(f, "rb")
+            # unCompressedFile = open(f.strip('.gz'), "wb")
+            # decoded = gzFile.read()
+            # unCompressedFile.write(decoded)
+            # gzFile.close()
+            # unCompressedFile.close()
             npyFiles[filename.strip('.npy.gz')] = f.strip('.gz')
 
     trainImages = np.load(npyFiles['trainImages'], mmap_mode='r')

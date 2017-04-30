@@ -57,5 +57,7 @@ if __name__ == "__main__":
     snTemplates1, galTemplates1 = load_templates(templateFilename1)
     snInfoList = snTemplates1['Ia-norm']['-2 to 2']['snInfo']
     galInfoList = galTemplates1['S0']['galInfo']
-    readBinnedTemplates = ReadBinnedTemplates(snInfoList[0], galInfoList[0], 2500, 10000, 1024)
-    print(readBinnedTemplates.template_data(snCoeff=0.5, galCoeff=0.5, z=0))
+    for i in range(len(snInfoList)):
+        readBinnedTemplates = ReadBinnedTemplates(snInfoList[i], galInfoList[0], 2500, 10000, 1024)
+        wave, flux = readBinnedTemplates.template_data(snCoeff=0.5, galCoeff=0.5, z=0)
+        print(i)
