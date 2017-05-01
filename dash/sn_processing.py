@@ -1,8 +1,18 @@
 #Pre-processing class
 
 from scipy.signal import medfilt
+import numpy as np
 from dash.preprocessing import ReadSpectrumFile, PreProcessSpectrum, ProcessingTools
 
+
+def limit_wavelength_range(wave, flux, minWave, maxWave):
+    minIdx = (np.abs(wave-minWave)).argmin()
+    maxIdx = (np.abs(wave-maxWave)).argmin()
+
+    flux[:minIdx] = np.zeros(minIdx)
+    flux[maxIdx:] = np.zeros(len(flux)-maxIdx)
+
+    return flux
 
 
 class PreProcessing(object):
@@ -41,8 +51,9 @@ class PreProcessing(object):
         return binnedwave, apodized, minindex, maxindex
 
 
-    def two_column_data(self, z, smooth):
+    def two_column_data(self, z, smooth, minWave, maxWave):
         self.wave, self.flux = self.spectrum
+        self.flux = limit_wavelength_range(self.wave, self.flux, minWave, maxWave)
 
         filterSize = int(len(self.wave)/self.nw) * smooth * 2 + 1
         preFiltered = medfilt(self.flux, kernel_size=filterSize)

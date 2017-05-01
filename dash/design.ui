@@ -16,7 +16,7 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="9,32">
     <item>
-     <layout class="QVBoxLayout" name="verticalLayout" stretch="1,3,1,1">
+     <layout class="QVBoxLayout" name="verticalLayout" stretch="1,6,1,1">
       <property name="sizeConstraint">
        <enum>QLayout::SetMaximumSize</enum>
       </property>
@@ -98,7 +98,7 @@
               <x>0</x>
               <y>0</y>
               <width>223</width>
-              <height>212</height>
+              <height>273</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_4" stretch="0">
@@ -187,30 +187,22 @@
                 </widget>
                </item>
                <item>
-                <layout class="QGridLayout" name="gridLayout" columnstretch="1,1,1" columnminimumwidth="0,0,0">
+                <layout class="QGridLayout" name="gridLayout" columnstretch="3,3,2" columnminimumwidth="0,0,0">
                  <property name="topMargin">
                   <number>0</number>
                  </property>
-                 <item row="1" column="0">
-                  <widget class="QLabel" name="label_2">
-                   <property name="text">
-                    <string>Max Redshift</string>
+                 <item row="1" column="2">
+                  <spacer name="horizontalSpacer_5">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
                    </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="1">
-                  <widget class="QLineEdit" name="lineEditMinZ">
-                   <property name="text">
-                    <string>0</string>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
                    </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="0">
-                  <widget class="QLabel" name="label">
-                   <property name="text">
-                    <string>Min Redshift</string>
-                   </property>
-                  </widget>
+                  </spacer>
                  </item>
                  <item row="1" column="1">
                   <widget class="QLineEdit" name="lineEditMaxZ">
@@ -232,8 +224,70 @@
                    </property>
                   </spacer>
                  </item>
-                 <item row="1" column="2">
-                  <spacer name="horizontalSpacer_5">
+                 <item row="3" column="0">
+                  <widget class="QLabel" name="label_8">
+                   <property name="text">
+                    <string>Max wave</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1">
+                  <widget class="QLineEdit" name="lineEditMinZ">
+                   <property name="text">
+                    <string>0</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="0">
+                  <widget class="QLabel" name="label_2">
+                   <property name="text">
+                    <string>Max redshift</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="label">
+                   <property name="text">
+                    <string>Min redshift</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="0">
+                  <widget class="QLabel" name="label_7">
+                   <property name="text">
+                    <string>Min wave</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="1">
+                  <widget class="QLineEdit" name="lineEditMinWave">
+                   <property name="text">
+                    <string>2500</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="1">
+                  <widget class="QLineEdit" name="lineEditMaxWave">
+                   <property name="text">
+                    <string>10000</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="2">
+                  <spacer name="horizontalSpacer_6">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item row="3" column="2">
+                  <spacer name="horizontalSpacer_7">
                    <property name="orientation">
                     <enum>Qt::Horizontal</enum>
                    </property>

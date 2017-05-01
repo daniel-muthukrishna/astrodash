@@ -147,15 +147,15 @@ class ReadSpectra(object):
 
     def superfit_template_data(self, z):
         """ Returns wavelength and flux after all preprocessing """
-        wave, flux, minIndex, maxIndex = self.data.two_column_data(z)
+        wave, flux, minIndex, maxIndex = self.data.two_column_data(z, minWave=self.w0, maxWave=self.nw)
         snName, ttype, age = self.sf_age()
 
         print(snName, ttype, age)
 
         return wave, flux, minIndex, maxIndex, age, snName, ttype
 
-    def input_spectrum(self, z, smooth):
-        wave, flux, minIndex, maxIndex = self.data.two_column_data(z, smooth)
+    def input_spectrum(self, z, smooth, minWave, maxWave):
+        wave, flux, minIndex, maxIndex = self.data.two_column_data(z, smooth, minWave, maxWave)
 
         return wave, flux, int(minIndex), int(maxIndex)
 

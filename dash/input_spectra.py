@@ -3,7 +3,7 @@ from dash.create_arrays import *
 
 
 class InputSpectra(object):
-    def __init__(self, filename, minZ, maxZ, nTypes, minAge, maxAge, ageBinSize, w0, w1, nw, typeList, smooth, hostList, nHostTypes):
+    def __init__(self, filename, minZ, maxZ, nTypes, minAge, maxAge, ageBinSize, w0, w1, nw, typeList, smooth, minWave, maxWave, hostList, nHostTypes):
         self.filename = filename
         self.minZ = minZ
         self.maxZ = maxZ
@@ -24,6 +24,8 @@ class InputSpectra(object):
         self.fileType = 'fits or twocolumn etc.' #Will use later on
         self.typeNamesList = self.createLabels.type_names_list()
         self.smooth = smooth
+        self.minWave = minWave
+        self.maxWave = maxWave
 
     def redshifting(self):
         images = np.empty((0, int(self.nw)), np.float16)  # Number of pixels
@@ -35,7 +37,7 @@ class InputSpectra(object):
 
         #Undo it's previous redshift)
         for z in np.linspace(self.minZ, self.maxZ, self.numOfRedshifts + 1):
-            tempwave, tempflux, tminindex, tmaxindex = readSpectra.input_spectrum(z, self.smooth)
+            tempwave, tempflux, tminindex, tmaxindex = readSpectra.input_spectrum(z, self.smooth, self.minWave, self.maxWave)
             nonzeroflux = tempflux[tminindex:tmaxindex + 1]
             newflux = (nonzeroflux - min(nonzeroflux)) / (max(nonzeroflux) - min(nonzeroflux))
             newflux2 = np.concatenate((tempflux[0:tminindex], newflux, tempflux[tmaxindex + 1:]))

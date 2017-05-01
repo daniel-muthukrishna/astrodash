@@ -91,8 +91,11 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         snInfos, snNames, hostInfos, hostNames = self.get_sn_and_host_templates() #
         if snInfos != []:
             readBinnedTemplates = ReadBinnedTemplates(snInfos[self.templateSubIndex], hostInfos[0], self.w0, self.w1, self.nw) #
-            wave, flux = readBinnedTemplates.template_data(snCoeff=1-self.hostFraction/100., galCoeff=self.hostFraction/100., z=0) #
             name = "%s_%s" % (snNames[self.templateSubIndex], hostNames[0])
+            if self.hostName != "No Host":
+                wave, flux = readBinnedTemplates.template_data(snCoeff=1 - self.hostFraction / 100., galCoeff=self.hostFraction / 100., z=0)  #
+            else:
+                wave, flux = readBinnedTemplates.template_data(snCoeff=1, galCoeff=0, z=0)
             return flux, name
         else:
             flux = np.zeros(self.nw)
@@ -242,6 +245,12 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             self.smooth = int(self.lineEditSmooth.text())
         except ValueError:
             QtGui.QMessageBox.critical(self, "Error", "Smooth must be positive integer")
+        try:
+            self.minWave = int(self.lineEditMinWave.text())
+            self.maxWave = int(self.lineEditMaxWave.text())
+        except ValueError:
+            QtGui.QMessageBox.critical(self, "Error", "Min and max waves must be integers between %d and %d" % (self.w0, self.w1))
+
 
         if self.checkBoxKnownZ.isChecked() == True:
             self.redshiftFlag = True
@@ -253,7 +262,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             self.maxZ = self.knownZ
             self.set_plot_redshift(self.knownZ)
 
-            self.fitThread = FitSpectrumThread(self.inputFilename, self.minZ, self.maxZ, self.redshiftFlag, self.modelFilename, self.smooth, classifyHost)
+            self.fitThread = FitSpectrumThread(self.inputFilename, self.minZ, self.maxZ, self.redshiftFlag, self.modelFilename, self.smooth, classifyHost, self.minWave, self.maxWave)
             self.fitThread.trigger.connect(self.load_spectrum_single_redshift)
 
         else:
@@ -262,7 +271,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             self.maxZ = float(self.lineEditMaxZ.text())
             self.knownZ = self.minZ
             print(self.minZ, self.maxZ)
-            self.fitThread = FitSpectrumThread(self.inputFilename, self.minZ, self.maxZ, self.redshiftFlag, self.modelFilename, self.smooth, classifyHost)
+            self.fitThread = FitSpectrumThread(self.inputFilename, self.minZ, self.maxZ, self.redshiftFlag, self.modelFilename, self.smooth, classifyHost, self.minWave, self.maxWave)
             self.connect(self.fitThread, SIGNAL("load_spectrum(PyQt_PyObject)"), self.load_spectrum)
             self.connect(self.fitThread, SIGNAL("finished()"), self.done_fit_thread)
 
@@ -316,7 +325,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.labelBestSnType.setText(prevName)
         self.labelBestAgeRange.setText(bestAge)
         self.labelBestHostType.setText(host)
-        self.labelBestRelProb.setText("%s%%" % str(100*round(probTotal, 4)))
+        self.labelBestRelProb.setText("%s%%" % str(round(100*probTotal, 2)))
         if reliableFlag:
             self.labelReliableFlag.setText("Reliable")
             self.labelReliableFlag.setStyleSheet('color: green')
@@ -377,6 +386,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
 
     def list_item_clicked(self, item):
         if item.text()[0].isdigit():
+            self.templateSubIndex = 0
             index, self.snTypePlot, age1, age2, age3, softmax = str(item.text()).split()
             self.agePlot = age1 + ' to ' + age3
             host = "No Host" #
@@ -428,7 +438,7 @@ class FitSpectrumThread(QThread):
 
     trigger = pyqtSignal('PyQt_PyObject')
 
-    def __init__(self, inputFilename, minZ, maxZ, redshiftFlag, modelFilename, smooth, classifyHost):
+    def __init__(self, inputFilename, minZ, maxZ, redshiftFlag, modelFilename, smooth, classifyHost, minWave, maxWave):
         QThread.__init__(self)
         self.inputFilename = str(inputFilename)
         self.minZ = minZ
@@ -437,13 +447,15 @@ class FitSpectrumThread(QThread):
         self.modelFilename = modelFilename
         self.smooth = smooth
         self.classifyHost = classifyHost
+        self.minWave = minWave
+        self.maxWave = maxWave
 
     def __del__(self):
         self.wait()
 
     def _input_spectrum(self):
         trainParams = get_training_parameters()
-        loadInputSpectra = LoadInputSpectra(self.inputFilename, self.minZ, self.maxZ, self.smooth, trainParams, self.classifyHost)
+        loadInputSpectra = LoadInputSpectra(self.inputFilename, self.minZ, self.maxZ, self.smooth, trainParams, self.minWave, self.maxWave, self.classifyHost)
         inputImages, inputRedshifts, typeNamesList, nw, nTypes = loadInputSpectra.input_spectra()
         bestTypesList = BestTypesList(self.modelFilename, inputImages, inputRedshifts, typeNamesList, nw, nTypes)
         bestForEachType, redshiftIndex = bestTypesList.print_list()
@@ -455,11 +467,11 @@ class FitSpectrumThread(QThread):
 
     def _input_spectrum_single_redshift(self):
         trainParams = get_training_parameters()
-        loadInputSpectraUnRedshifted = LoadInputSpectra(self.inputFilename, 0, 0, self.smooth, trainParams, self.classifyHost)
+        loadInputSpectraUnRedshifted = LoadInputSpectra(self.inputFilename, 0, 0, self.smooth, trainParams, self.minWave, self.maxWave, self.classifyHost)
         inputImageUnRedshifted, inputRedshift, typeNamesList, nw, nBins = loadInputSpectraUnRedshifted.input_spectra()
 
         trainParams = get_training_parameters()
-        loadInputSpectra = LoadInputSpectra(self.inputFilename, self.minZ, self.maxZ, self.smooth, trainParams, self.classifyHost)
+        loadInputSpectra = LoadInputSpectra(self.inputFilename, self.minZ, self.maxZ, self.smooth, trainParams, self.minWave, self.maxWave, self.classifyHost)
         inputImage, inputRedshift, typeNamesList, nw, nBins = loadInputSpectra.input_spectra()
         bestTypesList = BestTypesListSingleRedshift(self.modelFilename, inputImage, typeNamesList, nw, nBins)
         bestTypes = bestTypesList.bestTypes[0]
@@ -475,12 +487,6 @@ class FitSpectrumThread(QThread):
         else:
             spectrumInfo = self._input_spectrum()
             self.emit(SIGNAL('load_spectrum(PyQt_PyObject)'), spectrumInfo)
-
-
-
-
-
-
 
 
 def main():
