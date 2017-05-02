@@ -11,12 +11,15 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>DASH</string>
+  </property>
+  <property name="windowOpacity">
+   <double>1.000000000000000</double>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="9,32">
     <item>
-     <layout class="QVBoxLayout" name="verticalLayout" stretch="1,6,1,1">
+     <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0">
       <property name="sizeConstraint">
        <enum>QLayout::SetMaximumSize</enum>
       </property>
@@ -86,9 +89,15 @@
         <property name="title">
          <string>Priors</string>
         </property>
-        <layout class="QVBoxLayout" name="verticalLayout_6" stretch="0,0,0">
+        <layout class="QVBoxLayout" name="verticalLayout_6" stretch="1,0,0">
          <item>
           <widget class="QScrollArea" name="scrollArea">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="widgetResizable">
             <bool>true</bool>
            </property>
@@ -98,7 +107,7 @@
               <x>0</x>
               <y>0</y>
               <width>223</width>
-              <height>273</height>
+              <height>263</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_4" stretch="0">
