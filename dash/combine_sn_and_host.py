@@ -4,10 +4,11 @@ import numpy as np
 
 
 def zero_non_overlap_part(array, minIndex, maxIndex):
-    array[0:minIndex] = np.zeros(minIndex)
-    array[maxIndex:] = np.zeros(len(array)-maxIndex)
+    slicedArray = np.copy(array)
+    slicedArray[0:minIndex] = np.zeros(minIndex)
+    slicedArray[maxIndex:] = np.zeros(len(array)-maxIndex)
 
-    return array
+    return slicedArray
 
 
 def normalise_spectrum(flux):

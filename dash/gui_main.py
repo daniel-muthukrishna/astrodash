@@ -76,11 +76,11 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.snTemplates, self.galTemplates = load_templates('sn_and_host_templates.npz')  #
 
     def get_sn_and_host_templates(self): #
-        snInfos = self.snTemplates[self.snName][self.snAge]['snInfo']
-        snNames = self.snTemplates[self.snName][self.snAge]['names']
+        snInfos = np.copy(self.snTemplates[self.snName][self.snAge]['snInfo'])
+        snNames = np.copy(self.snTemplates[self.snName][self.snAge]['names'])
         if self.hostName != "No Host":
-            hostInfos = self.galTemplates[self.hostName]['galInfo']
-            hostNames = self.galTemplates[self.hostName]['names']
+            hostInfos = np.copy(self.galTemplates[self.hostName]['galInfo'])
+            hostNames = np.copy(self.galTemplates[self.hostName]['names'])
         else:
             hostInfos = np.array([[self.wave, np.zeros(self.nw), 1, self.nw-1]])
             hostNames = np.array(["No Host"])
@@ -89,11 +89,17 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
 
     def get_template_info(self): #
         snInfos, snNames, hostInfos, hostNames = self.get_sn_and_host_templates() #
+        numOfSubTemplates = len(snNames)
+        if self.templateSubIndex >= numOfSubTemplates:
+            self.templateSubIndex = 0
+        if self.templateSubIndex < 0:
+            self.templateSubIndex = numOfSubTemplates - 1
+
         if snInfos != []:
             readBinnedTemplates = ReadBinnedTemplates(snInfos[self.templateSubIndex], hostInfos[0], self.w0, self.w1, self.nw) #
             name = "%s_%s" % (snNames[self.templateSubIndex], hostNames[0])
             if self.hostName != "No Host":
-                wave, flux = readBinnedTemplates.template_data(snCoeff=1 - self.hostFraction / 100., galCoeff=self.hostFraction / 100., z=0)  #
+                wave, flux = readBinnedTemplates.template_data(snCoeff=1 - self.hostFraction/100., galCoeff=self.hostFraction/100., z=0)  #
             else:
                 wave, flux = readBinnedTemplates.template_data(snCoeff=1, galCoeff=0, z=0)
             return flux, name
@@ -112,12 +118,6 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.plot_sub_templates()
 
     def plot_sub_templates(self):
-        # numOfSubTemplates = len(self.templateFileNamesAll[self.templateIndex])
-        # if self.templateSubIndex >= numOfSubTemplates:
-        #     self.templateSubIndex = 0
-        # if self.templateSubIndex < 0:
-        #     self.templateSubIndex = numOfSubTemplates - 1
-
         flux, name = self.get_template_info() #
 
         self.templatePlotFlux = flux  # self.templateFluxesAll[self.templateIndex][self.templateSubIndex]
