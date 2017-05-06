@@ -53,8 +53,8 @@ def save_templates(saveFilename, trainImages, trainLabels, trainFilenames, typeN
 
 def create_template_set_file(dataDirName):
     scriptDirectory = os.path.dirname(os.path.abspath(__file__))
-    trainingSet = 'data_files/training_set.zip'
-    extractedFolder = 'data_files/training_set'
+    trainingSet = dataDirName + 'training_set.zip'
+    extractedFolder = dataDirName + 'training_set'
     # zipRef = zipfile.ZipFile(trainingSet, 'r')
     # zipRef.extractall(extractedFolder)
     # zipRef.close()
