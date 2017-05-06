@@ -21,7 +21,7 @@ class Classify(object):
     templateImages = loaded['templateFluxesAll']
     # templateLabelsIndexes = loaded['templateLabelsAll']
 
-    def __init__(self, filenames=[], redshifts=[], smooth=15, minWave=2500, maxWave=10000, classifyHost=False):
+    def __init__(self, filenames=[], redshifts=[], smooth=5, minWave=2500, maxWave=10000, classifyHost=False):
         """ Takes a list of filenames and corresponding redshifts for supernovae.
         Files should contain a single spectrum, and redshifts should be a list of corresponding redshift floats
         """
@@ -100,7 +100,7 @@ class Classify(object):
         templateImages = Classify.templateImages[c]
         if templateImages[0].any():
             falsePositiveRejection = FalsePositiveRejection(inputImage, templateImages)
-            rejectionLabel = "(chi2=%s, rlap=%s)" % (falsePositiveRejection.rejection_label(), falsePositiveRejection.rejection_label2())
+            rejectionLabel = "NONE"  # "(chi2=%s, rlap=%s)" % (falsePositiveRejection.rejection_label(), falsePositiveRejection.rejection_label2())
         else:
             rejectionLabel = "(NO_TEMPLATES)"
 
