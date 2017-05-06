@@ -1,7 +1,7 @@
 import pickle
 
 
-def create_training_params_file():
+def create_training_params_file(dataDirName):
     parameters = {
         'typeList': ['Ia-norm', 'Ia-91T', 'Ia-91bg', 'Ia-csm', 'Ia-02cx', 'Ia-pec',
                      'Ib-norm', 'Ibn', 'IIb', 'Ib-pec', 'Ic-norm', 'Ic-broad',
@@ -16,7 +16,7 @@ def create_training_params_file():
         'galTypeList': ['E', 'S0', 'Sa', 'Sb', 'Sc', 'SB1', 'SB2', 'SB3', 'SB4', 'SB5', 'SB6']
     }
 
-    trainingParamsFilename = 'data_files/training_params.pickle'
+    trainingParamsFilename = dataDirName + 'training_params.pickle'
 
     # Saving the objects:
     with open(trainingParamsFilename, 'wb') as f:
@@ -35,4 +35,4 @@ def create_training_params_file():
 
 
 if __name__ == '__main__':
-    trainingParamsFilename1 = create_training_params_file()
+    trainingParamsFilename1 = create_training_params_file('data_files/')

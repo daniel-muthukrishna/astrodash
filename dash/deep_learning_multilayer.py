@@ -10,11 +10,11 @@ import pickle
 from dash.array_tools import labels_indexes_to_arrays
 
 
-def train_model():
+def train_model(dataDirName):
     # Open training data files
     scriptDirectory = os.path.dirname(os.path.abspath(__file__))
-    trainingSet = 'data_files/training_set.zip'
-    extractedFolder = 'data_files/training_set'
+    trainingSet = dataDirName + 'training_set.zip'
+    extractedFolder = dataDirName + 'training_set'
     # zipRef = zipfile.ZipFile(trainingSet, 'r')
     # zipRef.extractall(extractedFolder)
     # zipRef.close()
@@ -69,7 +69,7 @@ def train_model():
 
         trainImagesCycle = itertools.cycle(trainImages)
         trainLabelsCycle = itertools.cycle(trainLabels)
-        for i in range(200000):
+        for i in range(350000):
             batch_xs = np.array(list(itertools.islice(trainImagesCycle, 50 * i, 50 * i + 50)))
             batch_ys = labels_indexes_to_arrays(list(itertools.islice(trainLabelsCycle, 50 * i, 50 * i + 50)), nLabels)
             train_step.run(feed_dict={x: batch_xs, y_: batch_ys, keep_prob: 0.5})
@@ -94,7 +94,7 @@ def train_model():
                 print(i, testTypeNames[i], typeNamesList[predictedIndex])
 
         # SAVE THE MODEL
-        saveFilename = "data_files/model_trainedAtZeroZ.ckpt"
+        saveFilename = dataDirName + "model_trainedAtZeroZ.ckpt"
         saver = tf.train.Saver()
         save_path = saver.save(sess, saveFilename)
         print("Model saved in file: %s" % save_path)
@@ -154,7 +154,7 @@ def train_model():
 
 if __name__ == '__main__':
     t1 = time.time()
-    savedFilenames = train_model()
+    savedFilenames = train_model('data_files/')
     t2 = time.time()
     print("time spent: {0:.2f}".format(t2 - t1))
 

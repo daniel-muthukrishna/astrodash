@@ -51,13 +51,15 @@ def save_templates(saveFilename, trainImages, trainLabels, trainFilenames, typeN
                         templateFilenamesAll=templateFilenamesAll)
 
 
-def create_template_set_file():
+def create_template_set_file(dataDirName):
     scriptDirectory = os.path.dirname(os.path.abspath(__file__))
     trainingSet = 'data_files/training_set.zip'
     extractedFolder = 'data_files/training_set'
     # zipRef = zipfile.ZipFile(trainingSet, 'r')
     # zipRef.extractall(extractedFolder)
     # zipRef.close()
+    os.system("unzip %s -d %s" % (trainingSet, extractedFolder))
+
 
     npyFiles = {}
     fileList = os.listdir(extractedFolder)
@@ -71,6 +73,7 @@ def create_template_set_file():
             # unCompressedFile.write(decoded)
             # gzFile.close()
             # unCompressedFile.close()
+            os.system("gzip -dk %s" % f)
             npyFiles[filename.strip('.npy.gz')] = f.strip('.gz')
 
     trainImages = np.load(npyFiles['trainImages'], mmap_mode='r')
@@ -78,7 +81,7 @@ def create_template_set_file():
     trainFilenames = np.load(npyFiles['trainFilenames'])
     typeNamesList = np.load(npyFiles['typeNamesList'])
 
-    saveFilename = 'data_files/templates.npz'
+    saveFilename = dataDirName + 'templates.npz'
 
     print("Saving Templates...")
     save_templates(saveFilename, trainImages, trainLabels, trainFilenames, typeNamesList)
@@ -90,4 +93,4 @@ def create_template_set_file():
 
 
 if __name__ == '__main__':
-    templateSetFilename = create_template_set_file()
+    templateSetFilename = create_template_set_file('data_files/')

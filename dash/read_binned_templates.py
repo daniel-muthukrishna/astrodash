@@ -48,6 +48,7 @@ class ReadBinnedTemplates(object):
         meanZero = self.preProcess.mean_zero(binnedWave, newFlux, minIndex, maxIndex)
         apodized = self.preProcess.apodize(binnedWave, meanZero, minIndex, maxIndex)
         fluxNorm = normalise_spectrum(apodized)
+        fluxNorm = zero_non_overlap_part(fluxNorm, minIndex, maxIndex)
         # Could  median filter here, but trying without it now
 
         return binnedWave, fluxNorm

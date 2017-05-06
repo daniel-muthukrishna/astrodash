@@ -7,6 +7,45 @@ from scipy.stats import chisquare, pearsonr
 # import matplotlib.pyplot as plt
 
 
+def combined_prob(bestMatchList):
+    host = ""
+    prevName = bestMatchList[0][0]
+    prevMinAge, prevMaxAge = bestMatchList[0][1].split(' to ')
+    probTotal = 0.
+    agesList = [int(prevMinAge), int(prevMaxAge)]
+    probPossible = 0.
+    agesListPossible = []
+    for name, age, prob in bestMatchList[0:10]:
+        minAge, maxAge = list(map(int, age.split(' to ')))
+        if name == prevName:
+            if probPossible == 0:
+                if (minAge in agesList) or (maxAge in agesList):
+                    probTotal += float(prob)
+                    prevName = name
+                    agesList = agesList + [minAge, maxAge]
+                else:
+                    probPossible = float(prob)
+                    agesListPossible = [minAge, maxAge]
+            else:
+                if ((minAge in agesListPossible) or (maxAge in agesListPossible)) and (
+                            (minAge in agesList) or (maxAge in agesList)):
+                    probTotal += probPossible + float(prob)
+                    agesList = agesList + agesListPossible + [minAge, maxAge]
+                    probPossible = 0
+                    agesListPossible = []
+                else:
+                    break
+        else:
+            break
+    bestAge = '%d to %d' % (min(agesList), max(agesList))
+
+    reliableFlag = not (min(agesList), max(agesList)) == (int(prevMinAge), int(prevMaxAge))
+
+    return host, prevName, bestAge, round(probTotal, 4), reliableFlag
+
+
+
+
 class FalsePositiveRejection(object):
     def __init__(self, inputFlux, templateFluxes):
         self.inputFlux = inputFlux

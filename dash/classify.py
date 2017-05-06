@@ -6,7 +6,7 @@ from dash.download_data_files import download_all_files
 scriptDirectory = os.path.dirname(os.path.abspath(__file__))
 
 from dash.restore_model import LoadInputSpectra, BestTypesListSingleRedshift, get_training_parameters
-from dash.false_positive_rejection import FalsePositiveRejection
+from dash.false_positive_rejection import FalsePositiveRejection, combined_prob
 
 try:
     from PyQt5 import QtGui
@@ -68,12 +68,17 @@ class Classify(object):
         reliableFlags = []
         for specNum in range(self.numSpectra):
             bestMatchList = []
-            for i in range(n):
-                name, age = bestTypes[specNum][i].split(': ')
+            for i in range(20):
+                classification = bestTypes[specNum][i].split(': ')
+                if len(classification) == 2:
+                    name, age = classification
+                    host = ""
+                else:
+                    host, name, age = classification
                 prob = softmaxes[specNum][i]
                 bestMatchList.append((name, age, prob))
             bestMatchList = np.array(bestMatchList)
-            bestMatchLists.append(bestMatchList)
+            bestMatchLists.append(bestMatchList[0:n])
             bestBroadType, reliableFlag = self.best_broad_type(bestMatchList)
             bestBroadTypes.append(bestBroadType)
             reliableFlags.append(reliableFlag)
@@ -86,30 +91,16 @@ class Classify(object):
         return bestMatchLists, bestBroadTypes, rejectionLabels, reliableFlags
 
     def best_broad_type(self, bestMatchList):
-        prevName = bestMatchList[0][0]
-        prevMinAge, prevMaxAge = bestMatchList[0][1].split(' to ')
-        probTotal = 0.
-        agesList = [int(prevMinAge), int(prevMaxAge)]
-        for name, age, prob in bestMatchList[0:10]:
-            minAge, maxAge = list(map(int, age.split(' to ')))
-            if name == prevName and ((minAge in agesList) or (maxAge in agesList)):
-                probTotal += float(prob)
-                prevName = name
-                agesList = agesList + [minAge, maxAge]
-            else:
-                break
-        bestAge = '%d to %d' % (min(agesList), max(agesList))
+        host, prevName, bestAge, probTotal, reliableFlag = combined_prob(bestMatchList[0:10])
 
-        reliableFlag = not (min(agesList), max(agesList)) == (int(prevMinAge), int(prevMaxAge))
-
-        return (prevName, bestAge, round(probTotal, 4)), reliableFlag
+        return (prevName, bestAge, probTotal), reliableFlag
 
     def false_positive_rejection(self, bestLabel, inputImage):
         c = bestLabel[0] # best Index
         templateImages = Classify.templateImages[c]
         if templateImages[0].any():
             falsePositiveRejection = FalsePositiveRejection(inputImage, templateImages)
-            rejectionLabel = "NONE"  # "(chi2=%s, rlap=%s)" % (falsePositiveRejection.rejection_label(), falsePositiveRejection.rejection_label2())
+            rejectionLabel = "(chi2=%s, rlap=%s)" % (falsePositiveRejection.rejection_label(), falsePositiveRejection.rejection_label2())
         else:
             rejectionLabel = "(NO_TEMPLATES)"
 

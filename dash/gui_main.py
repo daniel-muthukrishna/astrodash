@@ -7,6 +7,7 @@ from dash.design import Ui_MainWindow
 from dash.restore_model import *
 from dash.create_arrays import AgeBinning
 from dash.read_binned_templates import load_templates, ReadBinnedTemplates
+from dash.false_positive_rejection import combined_prob
 
 mainDirectory = os.path.dirname(os.path.abspath(__file__))
 
@@ -300,28 +301,8 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             QtGui.QMessageBox.information(self, "Done!", "Finished Fitting Input Spectrum")
 
     def best_broad_type(self):
-        prevClassification = self.bestTypes[0].split(': ')
-        prevName = prevClassification[0]
-        prevMinAge, prevMaxAge = prevClassification[1].split(' to ')
-        probTotal = 0.
-        agesList = [int(prevMinAge), int(prevMaxAge)]
-        for i in range(20):
-            classification = self.bestTypes[i].split(': ')
-            if len(classification) == 2:
-                name, age = classification
-                host = ""
-            else:
-                host, name, age = classification
-            prob = self.softmax[i]
-            minAge, maxAge = list(map(int, age.split(' to ')))
-            if name == prevName and ((minAge in agesList) or (maxAge in agesList)):
-                probTotal += float(prob)
-                prevName = name
-                agesList = agesList + [minAge, maxAge]
-            else:
-                break
-        bestAge = '%d to %d days' % (min(agesList), max(agesList))
-        reliableFlag = not (min(agesList), max(agesList)) == (int(prevMinAge), int(prevMaxAge))
+        bestMatchList = [self.bestTypes[i].split(': ') + [self.softmax[i]] for i in range(10)]
+        host, prevName, bestAge, probTotal, reliableFlag = combined_prob(bestMatchList)
         self.labelBestSnType.setText(prevName)
         self.labelBestAgeRange.setText(bestAge)
         self.labelBestHostType.setText(host)

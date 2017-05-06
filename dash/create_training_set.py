@@ -45,8 +45,8 @@ class CreateTrainingSet(object):
         return snTypeList, imagesShuf, labelsShuf, filenamesShuf, typeNamesShuf, typeAmounts
 
     def sort_data(self):
-        trainPercentage = 0.8
-        testPercentage = 0.2
+        trainPercentage = 1.
+        testPercentage = 0.
         validatePercentage = 0.
 
         typeList, images, labels, filenames, typeNames, typeAmounts = self.all_templates_to_arrays()
@@ -148,8 +148,8 @@ class SaveTrainingSet(object):
             os.remove(filename)
 
 
-def create_training_set_files(minZ=0, maxZ=0, redshiftPrecision=0.01, trainWithHost=True, classifyHost=False):
-    with open('data_files/training_params.pickle', 'rb') as f1:
+def create_training_set_files(dataDirName, minZ=0, maxZ=0, redshiftPrecision=0.01, trainWithHost=True, classifyHost=False):
+    with open(dataDirName + 'training_params.pickle', 'rb') as f1:
         pars = pickle.load(f1)
     nTypes, w0, w1, nw, minAge, maxAge, ageBinSize, typeList = pars['nTypes'], pars['w0'], pars['w1'], \
                                                                          pars['nw'], pars['minAge'], pars['maxAge'], \
@@ -172,11 +172,11 @@ def create_training_set_files(minZ=0, maxZ=0, redshiftPrecision=0.01, trainWithH
     saveTrainingSet = SaveTrainingSet(snidTemplateLocation, snidTempFileList, w0, w1, nw, nTypes, minAge, maxAge, ageBinSize, typeList, minZ, maxZ, redshiftPrecision, galTemplateLocation, galTempFileList, hostList, nHostTypes)
     typeNamesList, typeAmounts = saveTrainingSet.type_amounts()
 
-    saveFilename = 'data_files/training_set.zip'
+    saveFilename = dataDirName + 'training_set.zip'
     saveTrainingSet.save_arrays(saveFilename)
 
     return saveFilename
 
 
 if __name__ == '__main__':
-    trainingSetFilename = create_training_set_files(minZ=0, maxZ=0, redshiftPrecision=0.01, trainWithHost=True, classifyHost=False)
+    trainingSetFilename = create_training_set_files('data_files/', minZ=0, maxZ=0, redshiftPrecision=0.01, trainWithHost=True, classifyHost=False)
