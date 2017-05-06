@@ -55,7 +55,7 @@ class PreProcessing(object):
         self.wave, self.flux = self.spectrum
         self.flux = limit_wavelength_range(self.wave, self.flux, minWave, maxWave)
 
-        filterSize = int(len(self.wave)/self.nw) * smooth * 2 + 1
+        filterSize = int(len(self.wave)/self.nw * smooth) * 2 + 1
         preFiltered = medfilt(self.flux, kernel_size=filterSize)
         wave, flux = self.readSpectrumFile.two_col_input_spectrum(self.wave, preFiltered, z)
         binnedwave, binnedflux, minindex, maxindex = self.preProcess.log_wavelength(wave, flux)

@@ -63,7 +63,7 @@ class ReadSpectrumFile(object):
                         datapoint = line.rstrip('\n').strip().split()
                         wave.append(float(datapoint[0].replace('D', 'E')))
                         flux.append(float(datapoint[1].replace('D', 'E')))
-        except ValueError:
+        except (ValueError, IndexError):
             print("Invalid Superfit file: " + self.filename) #D-13 instead of E-13
 
         wave = np.array(wave)
