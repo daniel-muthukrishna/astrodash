@@ -8,6 +8,7 @@ from dash.restore_model import *
 from dash.create_arrays import AgeBinning
 from dash.read_binned_templates import load_templates, ReadBinnedTemplates
 from dash.false_positive_rejection import combined_prob
+from dash.calculate_redshift import get_median_redshift, get_redshift_axis
 
 mainDirectory = os.path.dirname(os.path.abspath(__file__))
 
@@ -19,13 +20,15 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
 
         self.templates()
         self.plotted = False
-        self.indexToPlot = 0
         self.plotZ = 0
         self.hostFraction = 0
         self.inputFluxes = np.zeros((2, int(self.nw)))
-        self.inputImageUnRedshifted = np.zeros((2, int(self.nw)))
+        self.inputImageUnRedshifted = np.zeros(int(self.nw))
         self.templatePlotFlux = np.zeros(int(self.nw))
         self.templateSubIndex = 0
+        self.snName = 'Ia-norm'
+        self.snAge = '-20 to -18'
+        self.hostName = 'No Host'
 
         self.mainDirectory = os.path.dirname(os.path.abspath(__file__))
 
@@ -76,17 +79,17 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.w0, self.w1, self.minAge, self.maxAge, self.ageBinSize, self.typeList, self.nTypes, self.nw, self.hostTypes \
             = pars['w0'], pars['w1'], pars['minAge'], pars['maxAge'], pars['ageBinSize'], pars['typeList'], pars['nTypes'], pars['nw'], pars['galTypeList']
 
-        dwlog = np.log(self.w1/self.w0)/self.nw
-        self.wave = self.w0 * np.exp(np.arange(0,self.nw) * dwlog)
+        self.dwlog = np.log(self.w1/self.w0)/self.nw
+        self.wave = self.w0 * np.exp(np.arange(0,self.nw) * self.dwlog)
 
         self.snTemplates, self.galTemplates = load_templates('sn_and_host_templates.npz')
 
-    def get_sn_and_host_templates(self): #
-        snInfos = np.copy(self.snTemplates[self.snName][self.snAge]['snInfo'])
-        snNames = np.copy(self.snTemplates[self.snName][self.snAge]['names'])
+    def get_sn_and_host_templates(self, snName, snAge, hostName):
+        snInfos = np.copy(self.snTemplates[snName][snAge]['snInfo'])
+        snNames = np.copy(self.snTemplates[snName][snAge]['names'])
         if self.hostName != "No Host":
-            hostInfos = np.copy(self.galTemplates[self.hostName]['galInfo'])
-            hostNames = np.copy(self.galTemplates[self.hostName]['names'])
+            hostInfos = np.copy(self.galTemplates[hostName]['galInfo'])
+            hostNames = np.copy(self.galTemplates[hostName]['names'])
         else:
             hostInfos = np.array([[self.wave, np.zeros(self.nw), 1, self.nw-1]])
             hostNames = np.array(["No Host"])
@@ -94,7 +97,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         return snInfos, snNames, hostInfos, hostNames
 
     def get_template_info(self): #
-        snInfos, snNames, hostInfos, hostNames = self.get_sn_and_host_templates()
+        snInfos, snNames, hostInfos, hostNames = self.get_sn_and_host_templates(self.snName, self.snAge, self.hostName)
         numOfSubTemplates = len(snNames)
         if self.templateSubIndex >= numOfSubTemplates:
             self.templateSubIndex = 0
@@ -130,17 +133,20 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.templatePlotName = name
         print(self.templatePlotName)
         self.plot_best_matches()
+        self.plot_cross_corr(self.snName, self.snAge)
 
     def combo_box_changed(self):
-        self.snName = str(self.comboBoxSNType.currentText()) #
-        self.snAge = str(self.comboBoxAge.currentText()) #
-        self.hostName = str(self.comboBoxHost.currentText()) #
+        self.snName = str(self.comboBoxSNType.currentText())
+        self.snAge = str(self.comboBoxAge.currentText())
+        self.hostName = str(self.comboBoxHost.currentText())
 
         flux, name = self.get_template_info()
         self.templatePlotFlux = flux
         self.templatePlotName = name
+        redshift, crossCorr = self.calc_redshift(self.snName, self.snAge)
+        self.set_plot_redshift(redshift)
+        self.plot_cross_corr(self.snName, self.snAge)
         print(self.templatePlotName)
-        self.plot_best_matches()
 
     def add_combo_box_entries(self):
         ageLabels = AgeBinning(self.minAge, self.maxAge, self.ageBinSize).age_labels()
@@ -180,6 +186,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             print("Redshift Value Error")
 
     def set_plot_redshift(self, plotZ):
+        plotZ = float(plotZ)
         self.plotZ = plotZ
         self.lineEditRedshift.setText(str(plotZ))
         self.horizontalSliderRedshift.setValue(int(plotZ*10000))
@@ -219,13 +226,20 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         except ValueError:
             QtGui.QMessageBox.critical(self, "Error", "Min and max waves must be integers between %d and %d" % (self.w0, self.w1))
             return
+        if self.checkBoxClassifyHost.isChecked():
+            self.classifyHost = True
+        else:
+            self.classifyHost = False
         if self.checkBoxKnownZ.isChecked():
+            self.knownRedshift = True
             try:
                 knownZ = float(self.lineEditKnownZ.text())
+                self.bestRedshift = knownZ
             except ValueError:
                 QtGui.QMessageBox.critical(self, "Error", "Enter Known Redshift")
                 return
         else:
+            self.knownRedshift = False
             knownZ = 0
             self.lineEditKnownZ.setText("")
 
@@ -255,7 +269,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         if not self.cancelledFitting:
             self.plotted = True
             self.list_best_matches_single_redshift()
-            self.plot_best_matches()
+            self.set_plot_redshift(self.bestRedshift)
             self.progressBar.setValue(100)
             QtGui.QMessageBox.information(self, "Done!", "Finished Fitting Input Spectrum")
 
@@ -265,6 +279,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.labelBestSnType.setText(prevName)
         self.labelBestAgeRange.setText(bestAge)
         self.labelBestHostType.setText(host)
+        self.labelBestRedshift.setText(str(self.bestRedshift))
         self.labelBestRelProb.setText("%s%%" % str(round(100*probTotal, 2)))
         if reliableFlag:
             self.labelReliableFlag.setText("Reliable")
@@ -275,18 +290,29 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
 
     def list_best_matches_single_redshift(self):
         print("listing best matches...")
+        redshifts = self.best_redshifts()
         self.listWidget.clear()
-        self.listWidget.addItem("".join(word.ljust(25) for word in ['No.', 'Type', 'Age', 'Softmax Prob.']))
+        if self.knownRedshift:
+            self.listWidget.addItem("".join(word.ljust(25) for word in ['No.', 'Type', 'Age', 'Softmax Prob.']))
+        else:
+            self.listWidget.addItem("".join(word.ljust(25) for word in ['No.', 'Type', 'Age', 'Redshift', 'Softmax Prob.']))
         for i in range(20):
             classification = self.bestTypes[i].split(': ')
             prob = self.softmax[i]
+            redshift = redshifts[i]
             if len(classification) == 2:
                 name, age = classification
-                self.listWidget.addItem("".join(word.ljust(25) for word in [str(i + 1), name, age, str(prob)]))
                 host = "No Host"
+                if self.knownRedshift:
+                    self.listWidget.addItem("".join(word.ljust(25) for word in [str(i + 1), name, age, str(prob)]))
+                else:
+                    self.listWidget.addItem("".join(word.ljust(25) for word in [str(i + 1), name, age, str(redshift), str(prob)]))
             else:
                 host, name, age = classification
-                self.listWidget.addItem("".join(word.ljust(25) for word in [str(i + 1), host, name, age, str(prob)]))
+                if self.knownRedshift:
+                    self.listWidget.addItem("".join(word.ljust(25) for word in [str(i + 1), host, name, age, str(prob)]))
+                else:
+                    self.listWidget.addItem("".join(word.ljust(25) for word in [str(i + 1), host, name, age, str(redshift), str(prob)]))
 
             if i == 0:
                 SNTypeComboBoxIndex = self.comboBoxSNType.findText(name)
@@ -295,6 +321,8 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
                 self.comboBoxAge.setCurrentIndex(AgeComboBoxIndex)
                 hostComboBoxIndex = self.comboBoxHost.findText(host)
                 self.comboBoxHost.setCurrentIndex(hostComboBoxIndex)
+            if not self.knownRedshift:
+                self.bestRedshift = redshifts[0]
         self.best_broad_type()
 
     def load_spectrum(self, spectrumInfo):
@@ -323,24 +351,31 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
                 host, name, age = classification
                 self.listWidget.addItem("".join(word.ljust(25) for word in [str(i + 1), host, name, age, str(self.bestForEachType[i][1]), str(self.bestForEachType[i][2])]))
 
-
     def list_item_clicked(self, item):
         if item.text()[0].isdigit():
             self.templateSubIndex = 0
-            index, self.snTypePlot, age1, age2, age3, softmax = str(item.text()).split()
-            self.agePlot = age1 + ' to ' + age3
-            host = "No Host" #
-            self.indexToPlot = int(index) - 1 #Two digit numbers
+            if self.knownRedshift:
+                if self.classifyHost:
+                    index, host, snTypePlot, age1, to, age3, softmax = str(item.text()).split()
+                else:
+                    index, snTypePlot, age1, to, age3, softmax = str(item.text()).split()
+            else:
+                if self.classifyHost:
+                    index, host, self.snTypePlot, age1, to, age3, redshift, softmax = str(item.text()).split()
+                else:
+                    index, snTypePlot, age1, to, age3, redshift, softmax = str(item.text()).split()
+            agePlot = age1 + ' to ' + age3
+            host = "No Host"
 
-            snTypeComboBoxIndex = self.comboBoxSNType.findText(self.snTypePlot)
+            snTypeComboBoxIndex = self.comboBoxSNType.findText(snTypePlot)
             self.comboBoxSNType.setCurrentIndex(snTypeComboBoxIndex)
-            AgeComboBoxIndex = self.comboBoxAge.findText(self.agePlot)
+            AgeComboBoxIndex = self.comboBoxAge.findText(agePlot)
             self.comboBoxAge.setCurrentIndex(AgeComboBoxIndex)
             hostComboBoxIndex = self.comboBoxHost.findText(host)
             self.comboBoxHost.setCurrentIndex(hostComboBoxIndex)
-
-            if self.redshiftFlag == False:
-                self.plot_redshift_graphs()
+            self.plot_cross_corr(self.snName, self.snAge)
+            if not self.knownRedshift:
+                self.set_plot_redshift(redshift)
 
     def plot_best_matches(self):
         if self.plotted:
@@ -348,17 +383,43 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             self.labelTemplateName.setText(self.templatePlotName)
 
             self.graphicsView.clear()
-            inputPlotFlux = self.inputImageUnRedshifted[0]
+            inputPlotFlux = self.inputImageUnRedshifted
             self.graphicsView.plot(self.wave, inputPlotFlux, name='Input Spectrum', pen={'color': (0, 255, 0)})
             self.graphicsView.plot(templateWave, self.templatePlotFlux, name=self.templatePlotName, pen={'color': (255,0,0)})
-            self.graphicsView.setRange(xRange=[2500, 10000])
+            self.graphicsView_2.setXRange(2500, 10000)
 
-    def plot_redshift_graphs(self):
-        print("listing Redshift Graphs...")
-        print(len(self.inputRedshifts), len(self.redshiftGraphs[self.indexToPlot]))
+    def best_redshifts(self):
+        redshifts = []
+        for i in range(20):
+            classification = self.bestTypes[i].split(': ')
+            if len(classification) == 2:
+                name, age = classification
+                host = "No Host"
+            else:
+                host, name, age = classification
+            redshift, crossCorr = self.calc_redshift(name, age)
+            redshifts.append(redshift)
+        return redshifts
+
+    def calc_redshift(self, snName, snAge):
+        host = "No Host"
+        snInfos, snNames, hostInfos, hostNames = self.get_sn_and_host_templates(snName, snAge, host)
+        numOfSubTemplates = len(snNames)
+        templateFluxes = []
+        for i in range(numOfSubTemplates):
+            templateFluxes.append(snInfos[i][1])
+
+        redshift, crossCorr = get_median_redshift(self.inputImageUnRedshifted, templateFluxes, self.nw, self.dwlog)
+        print(redshift)
+
+        return round(redshift, 4), crossCorr
+
+    def plot_cross_corr(self, snName, snAge):
+        zAxis = get_redshift_axis(self.nw, self.dwlog)
+        redshift, crossCorr = self.calc_redshift(snName, snAge)
         self.graphicsView_2.clear()
-        self.graphicsView_2.plot(self.inputRedshifts, self.redshiftGraphs[self.indexToPlot])
-        self.graphicsView_2.setLabels(left=("Rel. Prob."), bottom=("z"))
+        self.graphicsView_2.plot(zAxis, crossCorr)
+        self.graphicsView_2.setXRange(0, 1)
 
     def browse_folder(self):
         self.listWidget.clear()
@@ -398,7 +459,7 @@ class FitSpectrumThread(QThread):
         softmax = bestTypesList.softmaxOrdered[0]
         idx = bestTypesList.idx[0]
 
-        return bestTypes, softmax, idx, typeNamesList, inputImageUnRedshifted
+        return bestTypes, softmax, idx, typeNamesList, inputImageUnRedshifted[0]
 
     def run(self):
         spectrumInfo = self._input_spectrum_single_redshift()

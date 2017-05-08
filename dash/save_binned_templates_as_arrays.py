@@ -3,12 +3,7 @@ import pickle
 import os
 from dash.preprocessing import ReadSpectrumFile, ProcessingTools, PreProcessSpectrum
 from dash.create_arrays import TempList, AgeBinning
-
-
-def normalise_spectrum(flux):
-    fluxNorm = (flux - min(flux)) / (max(flux) - min(flux))
-
-    return fluxNorm
+from dash.combine_sn_and_host import zero_non_overlap_part, normalise_spectrum
 
 
 class BinTemplate(object):
@@ -46,6 +41,7 @@ class BinTemplate(object):
         wave, flux = self.readSpectrumFile.snid_template_undo_processing(self.wave, self.fluxes[ageIdx], self.splineInfo, ageIdx)
         binnedWave, binnedFlux, minIndex, maxIndex = self.preProcess.log_wavelength(wave, flux)
         binnedFluxNorm = normalise_spectrum(binnedFlux)
+        binnedFluxNorm = zero_non_overlap_part(binnedFluxNorm, minIndex, maxIndex)
 
         return binnedWave, binnedFluxNorm, minIndex, maxIndex
 
@@ -53,6 +49,7 @@ class BinTemplate(object):
         wave, flux = self.readSpectrumFile.two_col_input_spectrum(self.wave, self.flux, z=0)
         binnedWave, binnedFlux, minIndex, maxIndex = self.preProcess.log_wavelength(wave, flux)
         binnedFluxNorm = normalise_spectrum(binnedFlux)
+        binnedFluxNorm = zero_non_overlap_part(binnedFluxNorm, minIndex, maxIndex)
 
         return binnedWave, binnedFluxNorm, minIndex, maxIndex
 
