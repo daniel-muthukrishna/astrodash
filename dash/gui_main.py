@@ -38,16 +38,8 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.progressBar.setValue(100)
         self.add_combo_box_entries()
 
-        self.checkBoxZeroZTrained.stateChanged.connect(self.zero_redshift_model)
-        self.checkBoxKnownZ.stateChanged.connect(self.zero_redshift_model)
-        self.checkBoxAgnosticZTrained.stateChanged.connect(self.agnostic_redshift_model)
-
-        self.checkBoxZeroZTrained.setChecked(True)
-        self.checkBoxKnownZ.setChecked(True)
-        self.lineEditKnownZ.setText("0")
-        self.checkBoxAgnosticZTrained.setEnabled(False)
-        self.checkBoxGalTrained.setEnabled(False)
-        self.comboBoxHost.setEnabled(True)
+        self.checkBoxKnownZ.stateChanged.connect(self.select_tensorflow_model)
+        self.checkBoxClassifyHost.stateChanged.connect(self.select_tensorflow_model)
 
         self.horizontalSliderSmooth.valueChanged.connect(self.smooth_slider_changed)
         self.lineEditSmooth.textChanged.connect(self.smooth_text_changed)
@@ -62,6 +54,22 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.comboBoxAge.currentIndexChanged.connect(self.combo_box_changed)
         self.comboBoxHost.currentIndexChanged.connect(self.combo_box_changed)
 
+    def select_tensorflow_model(self):
+        if self.checkBoxKnownZ.isChecked():
+            self.lineEditKnownZ.setEnabled(True)
+            if self.checkBoxClassifyHost.isChecked():
+                self.modelFilename = os.path.join(self.mainDirectory, "models/zeroZ_classifyHost/tensorflow_model.ckpt")
+            else:
+                self.modelFilename = os.path.join(self.mainDirectory, "models/zeroZ/tensorflow_model.ckpt")
+        else:
+            self.lineEditKnownZ.setEnabled(False)
+            if self.checkBoxClassifyHost.isChecked():
+                self.modelFilename = os.path.join(self.mainDirectory, "models/agnosticZ_classifyHost/tensorflow_model.ckpt")
+            else:
+                self.modelFilename = os.path.join(self.mainDirectory, "models/agnosticZ/tensorflow_model.ckpt")
+        if not os.path.isfile(self.modelFilename + ".index"):
+            QtGui.QMessageBox.critical(self, "Error", "Model does not exist")
+
     def templates(self):
         with open(os.path.join(scriptDirectory, "data_files/training_params.pickle"), 'rb') as f:
             pars = pickle.load(f)
@@ -71,10 +79,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         dwlog = np.log(self.w1/self.w0)/self.nw
         self.wave = self.w0 * np.exp(np.arange(0,self.nw) * dwlog)
 
-        # loaded = np.load(os.path.join(mainDirectory, 'data_files/templates.npz'))
-        # self.templateFluxesAll = loaded['templateFluxesAll']
-        # self.templateFileNamesAll = loaded['templateFilenamesAll']
-        self.snTemplates, self.galTemplates = load_templates('sn_and_host_templates.npz')  #
+        self.snTemplates, self.galTemplates = load_templates('sn_and_host_templates.npz')
 
     def get_sn_and_host_templates(self): #
         snInfos = np.copy(self.snTemplates[self.snName][self.snAge]['snInfo'])
@@ -89,7 +94,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         return snInfos, snNames, hostInfos, hostNames
 
     def get_template_info(self): #
-        snInfos, snNames, hostInfos, hostNames = self.get_sn_and_host_templates() #
+        snInfos, snNames, hostInfos, hostNames = self.get_sn_and_host_templates()
         numOfSubTemplates = len(snNames)
         if self.templateSubIndex >= numOfSubTemplates:
             self.templateSubIndex = 0
@@ -97,10 +102,10 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             self.templateSubIndex = numOfSubTemplates - 1
 
         if snInfos != []:
-            readBinnedTemplates = ReadBinnedTemplates(snInfos[self.templateSubIndex], hostInfos[0], self.w0, self.w1, self.nw) #
+            readBinnedTemplates = ReadBinnedTemplates(snInfos[self.templateSubIndex], hostInfos[0], self.w0, self.w1, self.nw)
             name = "%s_%s" % (snNames[self.templateSubIndex], hostNames[0])
             if self.hostName != "No Host":
-                wave, flux = readBinnedTemplates.template_data(snCoeff=1 - self.hostFraction/100., galCoeff=self.hostFraction/100., z=0)  #
+                wave, flux = readBinnedTemplates.template_data(snCoeff=1 - self.hostFraction/100., galCoeff=self.hostFraction/100., z=0)
             else:
                 wave, flux = readBinnedTemplates.template_data(snCoeff=1, galCoeff=0, z=0)
             return flux, name
@@ -121,20 +126,19 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
     def plot_sub_templates(self):
         flux, name = self.get_template_info() #
 
-        self.templatePlotFlux = flux  # self.templateFluxesAll[self.templateIndex][self.templateSubIndex]
-        self.templatePlotName = name  # self.templateFileNamesAll[self.templateIndex][self.templateSubIndex]
+        self.templatePlotFlux = flux
+        self.templatePlotName = name
         print(self.templatePlotName)
         self.plot_best_matches()
 
     def combo_box_changed(self):
-        # self.templateIndex = self.comboBoxSNType.currentIndex() * (self.nTypes + 1) + self.comboBoxAge.currentIndex()
         self.snName = str(self.comboBoxSNType.currentText()) #
         self.snAge = str(self.comboBoxAge.currentText()) #
         self.hostName = str(self.comboBoxHost.currentText()) #
 
-        flux, name = self.get_template_info() #
-        self.templatePlotFlux = flux  # self.templateFluxesAll[self.templateIndex][0]
-        self.templatePlotName = name  # self.templateFileNamesAll[self.templateIndex][0]
+        flux, name = self.get_template_info()
+        self.templatePlotFlux = flux
+        self.templatePlotName = name
         print(self.templatePlotName)
         self.plot_best_matches()
 
@@ -153,7 +157,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
     def host_fraction_slider_changed(self):
         self.hostFraction = self.horizontalSliderHostFraction.value()
         self.lineEditHostFraction.setText("%s%%" % str(self.hostFraction))
-        self.templatePlotFlux, self.templatePlotName = self.get_template_info()  #
+        self.templatePlotFlux, self.templatePlotName = self.get_template_info()
         self.plot_best_matches()
 
     def host_fraction_text_changed(self):
@@ -190,42 +194,8 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         except ValueError:
             pass
 
-    def zero_redshift_model(self):
-        if self.checkBoxZeroZTrained.isChecked() == True:
-            self.modelFilename = os.path.join(self.mainDirectory, "data_files/model_trainedAtZeroZ.ckpt")
-            self.checkBoxKnownZ.setEnabled(True)
-            self.lineEditKnownZ.setEnabled(True)
-            self.checkBoxAgnosticZTrained.setEnabled(False)
-            self.checkBoxAgnosticZTrained.setChecked(False)
-
-            if self.checkBoxKnownZ.isChecked() == True:
-                self.lineEditMinZ.setEnabled(False)
-                self.lineEditMaxZ.setEnabled(False)
-            else:
-                self.lineEditMinZ.setEnabled(True)
-                self.lineEditMaxZ.setEnabled(True)
-
-        elif self.checkBoxZeroZTrained.isChecked() == False:
-            self.checkBoxKnownZ.setEnabled(False)
-            self.lineEditKnownZ.setEnabled(False)
-            self.checkBoxZeroZTrained.setEnabled(False)
-            self.checkBoxZeroZTrained.setChecked(False)
-            self.checkBoxAgnosticZTrained.setEnabled(True)
-            self.checkBoxAgnosticZTrained.setChecked(True)
-            self.agnostic_redshift_model()
-
-    def agnostic_redshift_model(self):
-        if self.checkBoxAgnosticZTrained.isChecked() == True:
-            self.checkBoxZeroZTrained.setEnabled(False)
-            self.checkBoxZeroZTrained.setChecked(False)
-            self.modelFilename = os.path.join(self.mainDirectory, "model_agnostic_redshift.ckpt")
-        elif self.checkBoxAgnosticZTrained.isChecked() == False:
-            self.checkBoxZeroZTrained.setEnabled(True)
-            self.checkBoxZeroZTrained.setChecked(True)
-            self.zero_redshift_model()
-
     def select_input_file(self):
-        inputFilename = QtGui.QFileDialog.getOpenFileName(self,"Select a spectrum file")[0]
+        inputFilename = QtGui.QFileDialog.getOpenFileName(self, "Select a spectrum file")[0]
         print(inputFilename)
         print(self.inputFilename)
         if (inputFilename == self.inputFilename) or (inputFilename == ""):
@@ -234,54 +204,43 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             self.inputFilename = inputFilename
             self.lblInputFilename.setText(inputFilename.split('/')[-1])
 
-            #Run InputSpectra
-
             self.fit_spectra()
 
     def fit_spectra(self, classifyHost=False):
         self.cancelledFitting = False
-        self.progressBar.setMaximum(100) #
-        self.progressBar.setValue(36)
         try:
             self.smooth = int(self.lineEditSmooth.text())
         except ValueError:
             QtGui.QMessageBox.critical(self, "Error", "Smooth must be positive integer")
+            return
         try:
             self.minWave = int(self.lineEditMinWave.text())
             self.maxWave = int(self.lineEditMaxWave.text())
         except ValueError:
             QtGui.QMessageBox.critical(self, "Error", "Min and max waves must be integers between %d and %d" % (self.w0, self.w1))
-
-
-        if self.checkBoxKnownZ.isChecked() == True:
-            self.redshiftFlag = True
+            return
+        if self.checkBoxKnownZ.isChecked():
             try:
-                self.knownZ = float(self.lineEditKnownZ.text())
+                knownZ = float(self.lineEditKnownZ.text())
             except ValueError:
                 QtGui.QMessageBox.critical(self, "Error", "Enter Known Redshift")
-            self.minZ = self.knownZ
-            self.maxZ = self.knownZ
-            self.set_plot_redshift(self.knownZ)
-
-            self.fitThread = FitSpectrumThread(self.inputFilename, self.minZ, self.maxZ, self.redshiftFlag, self.modelFilename, self.smooth, classifyHost, self.minWave, self.maxWave)
-            self.fitThread.trigger.connect(self.load_spectrum_single_redshift)
-
+                return
         else:
-            self.redshiftFlag = False
-            self.minZ = float(self.lineEditMinZ.text())
-            self.maxZ = float(self.lineEditMaxZ.text())
-            self.knownZ = self.minZ
-            print(self.minZ, self.maxZ)
-            self.fitThread = FitSpectrumThread(self.inputFilename, self.minZ, self.maxZ, self.redshiftFlag, self.modelFilename, self.smooth, classifyHost, self.minWave, self.maxWave)
-            self.connect(self.fitThread, SIGNAL("load_spectrum(PyQt_PyObject)"), self.load_spectrum)
-            self.connect(self.fitThread, SIGNAL("finished()"), self.done_fit_thread)
+            knownZ = 0
+            self.lineEditKnownZ.setText("")
+
+        self.progressBar.setValue(36)
+        self.set_plot_redshift(knownZ)
+
+        self.fitThread = FitSpectrumThread(self.inputFilename, knownZ, self.modelFilename, self.smooth, classifyHost, self.minWave, self.maxWave)
+        self.fitThread.trigger.connect(self.load_spectrum_single_redshift)
 
         self.fitThread.start()
 
         self.btnCancel.clicked.connect(self.cancel)
 
     def cancel(self):
-        if (self.cancelledFitting == False):
+        if not self.cancelledFitting:
             self.cancelledFitting = True
             self.fitThread.terminate()
             self.progressBar.setValue(100)
@@ -293,7 +252,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.done_fit_thread_single_redshift()
 
     def done_fit_thread_single_redshift(self):
-        if self.cancelledFitting == False:
+        if not self.cancelledFitting:
             self.plotted = True
             self.list_best_matches_single_redshift()
             self.plot_best_matches()
@@ -343,7 +302,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.progressBar.setValue(85)#self.progressBar.value()+)
 
     def done_fit_thread(self):
-        if self.cancelledFitting == False:
+        if not self.cancelledFitting:
             self.list_best_matches()
             self.plot_best_matches()
             self.plot_redshift_graphs()
@@ -384,20 +343,15 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
                 self.plot_redshift_graphs()
 
     def plot_best_matches(self):
-        if self.plotted == True:
+        if self.plotted:
             templateWave = self.wave * (1 + (self.plotZ))
             self.labelTemplateName.setText(self.templatePlotName)
 
             self.graphicsView.clear()
-
-            if self.redshiftFlag == True:
-                inputPlotFlux = self.inputImageUnRedshifted[0]
-            elif self.redshiftFlag == False:
-                inputPlotFlux = self.inputFluxes[self.indexToPlot]
-
+            inputPlotFlux = self.inputImageUnRedshifted[0]
             self.graphicsView.plot(self.wave, inputPlotFlux, name='Input Spectrum', pen={'color': (0, 255, 0)})
             self.graphicsView.plot(templateWave, self.templatePlotFlux, name=self.templatePlotName, pen={'color': (255,0,0)})
-            self.graphicsView.setRange(xRange=[2500,10000])
+            self.graphicsView.setRange(xRange=[2500, 10000])
 
     def plot_redshift_graphs(self):
         print("listing Redshift Graphs...")
@@ -408,7 +362,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
 
     def browse_folder(self):
         self.listWidget.clear()
-        directory = QtGui.QFileDialog.getExistingDirectory(self,"Pick a folder")
+        directory = QtGui.QFileDialog.getExistingDirectory(self, "Pick a folder")
 
         if directory:
             for file_name in os.listdir(directory):
@@ -419,12 +373,10 @@ class FitSpectrumThread(QThread):
 
     trigger = pyqtSignal('PyQt_PyObject')
 
-    def __init__(self, inputFilename, minZ, maxZ, redshiftFlag, modelFilename, smooth, classifyHost, minWave, maxWave):
+    def __init__(self, inputFilename, knownZ, modelFilename, smooth, classifyHost, minWave, maxWave):
         QThread.__init__(self)
         self.inputFilename = str(inputFilename)
-        self.minZ = minZ
-        self.maxZ = maxZ
-        self.redshiftFlag = redshiftFlag
+        self.knownZ = knownZ
         self.modelFilename = modelFilename
         self.smooth = smooth
         self.classifyHost = classifyHost
@@ -434,25 +386,12 @@ class FitSpectrumThread(QThread):
     def __del__(self):
         self.wait()
 
-    def _input_spectrum(self):
-        trainParams = get_training_parameters()
-        loadInputSpectra = LoadInputSpectra(self.inputFilename, self.minZ, self.maxZ, self.smooth, trainParams, self.minWave, self.maxWave, self.classifyHost)
-        inputImages, inputRedshifts, typeNamesList, nw, nTypes = loadInputSpectra.input_spectra()
-        bestTypesList = BestTypesList(self.modelFilename, inputImages, inputRedshifts, typeNamesList, nw, nTypes)
-        bestForEachType, redshiftIndex = bestTypesList.print_list()
-        templateFluxes, inputFluxes = bestTypesList.plot_best_types()
-        inputRedshifts, redshiftGraphs = bestTypesList.redshift_graph()
-
-        return (bestForEachType, templateFluxes, inputFluxes,
-                inputRedshifts, redshiftGraphs, typeNamesList)
-
     def _input_spectrum_single_redshift(self):
         trainParams = get_training_parameters()
         loadInputSpectraUnRedshifted = LoadInputSpectra(self.inputFilename, 0, 0, self.smooth, trainParams, self.minWave, self.maxWave, self.classifyHost)
         inputImageUnRedshifted, inputRedshift, typeNamesList, nw, nBins = loadInputSpectraUnRedshifted.input_spectra()
 
-        trainParams = get_training_parameters()
-        loadInputSpectra = LoadInputSpectra(self.inputFilename, self.minZ, self.maxZ, self.smooth, trainParams, self.minWave, self.maxWave, self.classifyHost)
+        loadInputSpectra = LoadInputSpectra(self.inputFilename, self.knownZ, self.knownZ, self.smooth, trainParams, self.minWave, self.maxWave, self.classifyHost)
         inputImage, inputRedshift, typeNamesList, nw, nBins = loadInputSpectra.input_spectra()
         bestTypesList = BestTypesListSingleRedshift(self.modelFilename, inputImage, typeNamesList, nw, nBins)
         bestTypes = bestTypesList.bestTypes[0]
@@ -462,12 +401,8 @@ class FitSpectrumThread(QThread):
         return bestTypes, softmax, idx, typeNamesList, inputImageUnRedshifted
 
     def run(self):
-        if self.redshiftFlag == True:
-            spectrumInfo = self._input_spectrum_single_redshift()
-            self.trigger.emit(spectrumInfo)
-        else:
-            spectrumInfo = self._input_spectrum()
-            self.emit(SIGNAL('load_spectrum(PyQt_PyObject)'), spectrumInfo)
+        spectrumInfo = self._input_spectrum_single_redshift()
+        self.trigger.emit(spectrumInfo)
 
 
 def main():

@@ -19,7 +19,7 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="9,32">
     <item>
-     <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0">
+     <layout class="QVBoxLayout" name="verticalLayout" stretch="1,4,0,2">
       <property name="sizeConstraint">
        <enum>QLayout::SetMaximumSize</enum>
       </property>
@@ -89,7 +89,7 @@
         <property name="title">
          <string>Priors</string>
         </property>
-        <layout class="QVBoxLayout" name="verticalLayout_6" stretch="1,0,0">
+        <layout class="QVBoxLayout" name="verticalLayout_6" stretch="0,0,0">
          <item>
           <widget class="QScrollArea" name="scrollArea">
            <property name="sizePolicy">
@@ -107,7 +107,7 @@
               <x>0</x>
               <y>0</y>
               <width>223</width>
-              <height>263</height>
+              <height>186</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_4" stretch="0">
@@ -118,171 +118,85 @@
               <number>0</number>
              </property>
              <item>
-              <layout class="QVBoxLayout" name="verticalLayout_5" stretch="1,1,2,2,3,1">
+              <layout class="QVBoxLayout" name="verticalLayout_5" stretch="1,1,2,1">
                <property name="bottomMargin">
                 <number>5</number>
                </property>
                <item>
-                <widget class="QCheckBox" name="checkBoxZeroZTrained">
-                 <property name="text">
-                  <string>Trained at z = 0</string>
+                <layout class="QHBoxLayout" name="horizontalLayout_13" stretch="2,1">
+                 <property name="spacing">
+                  <number>-1</number>
                  </property>
-                 <property name="checked">
-                  <bool>false</bool>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,1,1">
-                 <property name="bottomMargin">
+                 <property name="topMargin">
                   <number>0</number>
                  </property>
                  <item>
-                  <spacer name="horizontalSpacer">
-                   <property name="orientation">
-                    <enum>Qt::Horizontal</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>0</width>
-                     <height>0</height>
-                    </size>
-                   </property>
-                  </spacer>
-                 </item>
-                 <item>
-                  <spacer name="horizontalSpacer_2">
-                   <property name="orientation">
-                    <enum>Qt::Horizontal</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>40</width>
-                     <height>20</height>
-                    </size>
-                   </property>
-                  </spacer>
-                 </item>
-                 <item>
                   <widget class="QCheckBox" name="checkBoxKnownZ">
                    <property name="text">
-                    <string>Known z</string>
+                    <string>Known Redshift</string>
+                   </property>
+                   <property name="checked">
+                    <bool>true</bool>
                    </property>
                   </widget>
                  </item>
                  <item>
-                  <widget class="QLineEdit" name="lineEditKnownZ"/>
+                  <widget class="QLineEdit" name="lineEditKnownZ">
+                   <property name="text">
+                    <string>0</string>
+                   </property>
+                  </widget>
                  </item>
                 </layout>
                </item>
                <item>
-                <widget class="QCheckBox" name="checkBoxGalTrained">
-                 <property name="text">
-                  <string>SN + Gal Trained Model</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QCheckBox" name="checkBoxAgnosticZTrained">
-                 <property name="text">
-                  <string>Agnostic Redshift Model</string>
-                 </property>
-                 <property name="checkable">
-                  <bool>true</bool>
-                 </property>
-                 <property name="tristate">
-                  <bool>false</bool>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <layout class="QGridLayout" name="gridLayout" columnstretch="3,3,2" columnminimumwidth="0,0,0">
+                <layout class="QHBoxLayout" name="horizontalLayout">
                  <property name="topMargin">
                   <number>0</number>
                  </property>
-                 <item row="1" column="2">
-                  <spacer name="horizontalSpacer_5">
-                   <property name="orientation">
-                    <enum>Qt::Horizontal</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>40</width>
-                     <height>20</height>
-                    </size>
-                   </property>
-                  </spacer>
-                 </item>
-                 <item row="1" column="1">
-                  <widget class="QLineEdit" name="lineEditMaxZ">
+                 <item>
+                  <widget class="QCheckBox" name="checkBoxClassifyHost">
                    <property name="text">
-                    <string>0.5</string>
+                    <string>Classify Host</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="0" column="2">
-                  <spacer name="horizontalSpacer_4">
-                   <property name="orientation">
-                    <enum>Qt::Horizontal</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>40</width>
-                     <height>20</height>
-                    </size>
-                   </property>
-                  </spacer>
-                 </item>
-                 <item row="3" column="0">
+                </layout>
+               </item>
+               <item>
+                <layout class="QGridLayout" name="gridLayout" columnstretch="1,1,1">
+                 <property name="topMargin">
+                  <number>0</number>
+                 </property>
+                 <item row="1" column="0">
                   <widget class="QLabel" name="label_8">
                    <property name="text">
                     <string>Max wave</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="0" column="1">
-                  <widget class="QLineEdit" name="lineEditMinZ">
-                   <property name="text">
-                    <string>0</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="0">
-                  <widget class="QLabel" name="label_2">
-                   <property name="text">
-                    <string>Max redshift</string>
-                   </property>
-                  </widget>
-                 </item>
                  <item row="0" column="0">
-                  <widget class="QLabel" name="label">
-                   <property name="text">
-                    <string>Min redshift</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="0">
                   <widget class="QLabel" name="label_7">
                    <property name="text">
                     <string>Min wave</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="1">
+                 <item row="0" column="1">
                   <widget class="QLineEdit" name="lineEditMinWave">
                    <property name="text">
                     <string>2500</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="3" column="1">
+                 <item row="1" column="1">
                   <widget class="QLineEdit" name="lineEditMaxWave">
                    <property name="text">
                     <string>10000</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="2">
+                 <item row="0" column="2">
                   <spacer name="horizontalSpacer_6">
                    <property name="orientation">
                     <enum>Qt::Horizontal</enum>
@@ -295,7 +209,7 @@
                    </property>
                   </spacer>
                  </item>
-                 <item row="3" column="2">
+                 <item row="1" column="2">
                   <spacer name="horizontalSpacer_7">
                    <property name="orientation">
                     <enum>Qt::Horizontal</enum>
@@ -331,7 +245,7 @@
                     </size>
                    </property>
                    <property name="text">
-                    <string>15</string>
+                    <string>5</string>
                    </property>
                   </widget>
                  </item>
@@ -341,7 +255,7 @@
                     <number>20</number>
                    </property>
                    <property name="value">
-                    <number>15</number>
+                    <number>5</number>
                    </property>
                    <property name="orientation">
                     <enum>Qt::Horizontal</enum>

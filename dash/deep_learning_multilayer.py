@@ -69,7 +69,7 @@ def train_model(dataDirName):
 
         trainImagesCycle = itertools.cycle(trainImages)
         trainLabelsCycle = itertools.cycle(trainLabels)
-        for i in range(350000):
+        for i in range(200000):
             batch_xs = np.array(list(itertools.islice(trainImagesCycle, 50 * i, 50 * i + 50)))
             batch_ys = labels_indexes_to_arrays(list(itertools.islice(trainLabelsCycle, 50 * i, 50 * i + 50)), nLabels)
             train_step.run(feed_dict={x: batch_xs, y_: batch_ys, keep_prob: 0.5})
@@ -94,7 +94,7 @@ def train_model(dataDirName):
                 print(i, testTypeNames[i], typeNamesList[predictedIndex])
 
         # SAVE THE MODEL
-        saveFilename = dataDirName + "model_trainedAtZeroZ.ckpt"
+        saveFilename = dataDirName + "tensorflow_model.ckpt"
         saver = tf.train.Saver()
         save_path = saver.save(sess, saveFilename)
         print("Model saved in file: %s" % save_path)

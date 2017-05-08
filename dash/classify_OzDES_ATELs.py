@@ -81,16 +81,16 @@ atels = [
 filenames = [os.path.join(directoryPath, i[0]) for i in atels]
 knownRedshifts = [i[1] for i in atels]
 
-classification = dash.Classify(filenames, knownRedshifts)
-bestFits, bestTypes, rejectionLabels = classification.list_best_matches(n=3)
+classification = dash.Classify(filenames, knownRedshifts, classifyHost=False, smooth=5, knownZ=True)
+bestFits, bestTypes, rejectionLabels, reliableFlags = classification.list_best_matches(n=5)
 
 # SAVE BEST MATCHES
 print(bestFits)
-f = open('classification_results.csv', 'w')
-for i in range(len(atels)):
-    f.write("%s   %s     %s      %s\n %s\n\n" % (atels[i][0], atels[i][1], bestTypes[i], rejectionLabels[i], bestFits[i]))
+f = open('classification_results.txt', 'w')
+for i in range(len(filenames)):
+    f.write("%s   %s     %s      %s     %s\n %s\n\n" % (filenames[i], knownRedshifts[i], bestTypes[i], reliableFlags[i], rejectionLabels[i], bestFits[i]))
 f.close()
-print("Finished classifying %d spectra!" % len(atels))
+print("Finished classifying %d spectra!" % len(filenames))
 
 # PLOT SPECTRUM ON GUI
 classification.plot_with_gui(indexToPlot=18)

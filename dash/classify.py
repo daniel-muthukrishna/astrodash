@@ -21,7 +21,7 @@ class Classify(object):
     templateImages = loaded['templateFluxesAll']
     # templateLabelsIndexes = loaded['templateLabelsAll']
 
-    def __init__(self, filenames=[], redshifts=[], smooth=5, minWave=2500, maxWave=10000, classifyHost=False):
+    def __init__(self, filenames=[], redshifts=[], smooth=5, minWave=2500, maxWave=10000, classifyHost=False, knownZ=True):
         """ Takes a list of filenames and corresponding redshifts for supernovae.
         Files should contain a single spectrum, and redshifts should be a list of corresponding redshift floats
         """
@@ -33,10 +33,22 @@ class Classify(object):
         self.classifyHost = classifyHost
         self.numSpectra = len(filenames)
         self.mainDirectory = os.path.dirname(os.path.abspath(__file__))
+        if knownZ and redshifts != []:
+            self.knownZ = True
+        else:
+            self.knownZ = False
 
         # download_all_files('v01')
-
-        self.modelFilename = os.path.join(self.mainDirectory, "data_files/model_trainedAtZeroZ.ckpt")
+        if self.knownZ:
+            if classifyHost:
+                self.modelFilename = os.path.join(self.mainDirectory, "models/zeroZ_classifyHost/tensorflow_model.ckpt")
+            else:
+                self.modelFilename = os.path.join(self.mainDirectory, "models/zeroZ/tensorflow_model.ckpt")
+        else:
+            if self.classifyHost:
+                self.modelFilename = os.path.join(self.mainDirectory, "models/agnosticZ_classifyHost/tensorflow_model.ckpt")
+            else:
+                self.modelFilename = os.path.join(self.mainDirectory, "models/agnosticZ/tensorflow_model.ckpt")
 
     def _get_images(self, filename, redshift, trainParams):
         loadInputSpectra = LoadInputSpectra(filename, redshift, redshift, self.smooth, trainParams, self.minWave, self.maxWave, self.classifyHost)
@@ -122,8 +134,11 @@ class Classify(object):
         app = QtGui.QApplication(sys.argv)
         form = MainApp(inputFilename=self.filenames[indexToPlot])
         form.lblInputFilename.setText(self.filenames[indexToPlot])
+        form.checkBoxKnownZ.setChecked(self.knownZ)
+        form.checkBoxClassifyHost.setChecked(self.classifyHost)
         form.lineEditKnownZ.setText(str(self.redshifts[indexToPlot]))
         form.lineEditSmooth.setText(str(self.smooth))
+        form.select_tensorflow_model()
         form.fit_spectra(self.classifyHost)
         form.show()
         app.exec_()
