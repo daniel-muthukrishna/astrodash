@@ -270,6 +270,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             self.plotted = True
             self.list_best_matches_single_redshift()
             self.set_plot_redshift(self.bestRedshift)
+            self.plot_cross_corr(self.snName, self.snAge)
             self.progressBar.setValue(100)
             QtGui.QMessageBox.information(self, "Done!", "Finished Fitting Input Spectrum")
 
@@ -364,18 +365,17 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
                     index, host, self.snTypePlot, age1, to, age3, redshift, softmax = str(item.text()).split()
                 else:
                     index, snTypePlot, age1, to, age3, redshift, softmax = str(item.text()).split()
+                self.set_plot_redshift(redshift)
             agePlot = age1 + ' to ' + age3
             host = "No Host"
 
+            self.plot_cross_corr(self.snName, self.snAge)
             snTypeComboBoxIndex = self.comboBoxSNType.findText(snTypePlot)
             self.comboBoxSNType.setCurrentIndex(snTypeComboBoxIndex)
             AgeComboBoxIndex = self.comboBoxAge.findText(agePlot)
             self.comboBoxAge.setCurrentIndex(AgeComboBoxIndex)
             hostComboBoxIndex = self.comboBoxHost.findText(host)
             self.comboBoxHost.setCurrentIndex(hostComboBoxIndex)
-            self.plot_cross_corr(self.snName, self.snAge)
-            if not self.knownRedshift:
-                self.set_plot_redshift(redshift)
 
     def plot_best_matches(self):
         if self.plotted:
@@ -386,7 +386,8 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             inputPlotFlux = self.inputImageUnRedshifted
             self.graphicsView.plot(self.wave, inputPlotFlux, name='Input Spectrum', pen={'color': (0, 255, 0)})
             self.graphicsView.plot(templateWave, self.templatePlotFlux, name=self.templatePlotName, pen={'color': (255,0,0)})
-            self.graphicsView_2.setXRange(2500, 10000)
+            self.graphicsView.setXRange(2500, 10000)
+            self.graphicsView.setYRange(0, 1)
 
     def best_redshifts(self):
         redshifts = []
@@ -420,6 +421,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.graphicsView_2.clear()
         self.graphicsView_2.plot(zAxis, crossCorr)
         self.graphicsView_2.setXRange(0, 1)
+        self.graphicsView_2.setYRange(0, 1)
 
     def browse_folder(self):
         self.listWidget.clear()
