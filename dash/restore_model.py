@@ -1,19 +1,13 @@
 import os
 import pickle
-import zipfile
-import gzip
 import tensorflow as tf
 from dash.input_spectra import *
 from dash.multilayer_convnet import convnet_variables
 
-scriptDirectory = os.path.dirname(os.path.abspath(__file__))
-loaded = np.load(os.path.join(scriptDirectory, "data_files/templates.npz"))
-templateImages = loaded['templateFluxesAll']
-templateLabelsIndexes = loaded['templateLabelsAll']
-
 
 def get_training_parameters():
-    with open(os.path.join(scriptDirectory, "data_files/training_params.pickle"), 'rb') as f:
+    scriptDirectory = os.path.dirname(os.path.abspath(__file__))
+    with open(os.path.join(scriptDirectory, "models/zeroZ/training_params.pickle"), 'rb') as f:
         pars = pickle.load(f)
     return pars
 
@@ -93,135 +87,12 @@ class BestTypesListSingleRedshift(object):
         return bestTypes, idx, softmax[idx[::-1]]
 
 
-class BestTypesList(object):
-    def __init__(self, modelFilename, inputImages, inputRedshifts, typeNamesList, nw, nBins):
-        self.modelFilename = modelFilename
-        self.inputImages = inputImages
-        self.inputRedshifts = inputRedshifts
-        self.typeNamesList = typeNamesList
-        self.nBins = nBins
-        
-        self.restoreModel = RestoreModel(self.modelFilename, self.inputImages, nw, nBins)
-        self.yInputRedshift = self.restoreModel.restore_variables() #softmax at each redshift
+def classification_split(classificationString):
+    classification = classificationString.split(': ')
+    if len(classification) == 2:
+        snName, snAge = classification
+        host = ""
+    else:
+        host, snName, snAge = classification
 
-        self.bestForEachType, self.redshiftIndex = self.create_list()
-
-    def create_list(self):
-        bestForEachType = np.zeros((self.nBins,3))
-        redshiftIndex = np.zeros(self.nBins)        #best redshift index for each type
-        for i in range(len(self.inputRedshifts)): #for each redshift
-            z = self.inputRedshifts[i]       #redshift
-            softmax = self.yInputRedshift[i] #softmax probabilities at particular redshift
-            bestIndex = np.argmax(softmax) #index of the Best type at redshift
-            if softmax[bestIndex] > bestForEachType[bestIndex][2]: #if relProb of best type at this redshift is better than the relProb of this type at any redshift
-                bestForEachType[bestIndex][2] = softmax[bestIndex]
-                bestForEachType[bestIndex][1] = z
-                bestForEachType[bestIndex][0] = bestIndex
-                redshiftIndex[bestIndex] = i
-        idx = np.argsort(bestForEachType[:,2]) #list of the index of the highest probabiites
-        bestForEachType = bestForEachType[idx[::-1]] #reordered in terms of relProb columns
-        
-        return bestForEachType, redshiftIndex
-
-    def print_list(self):
-        return self.bestForEachType, self.redshiftIndex
-
-    def plot_best_types(self):
-        #bestForEachType, typeNamesList, redshiftIndex = self.create_list()
-        inputFluxes = []
-        templateFluxes = []
-        for j in range(len(self.bestForEachType)): #index of best Types in order
-            c = int(self.bestForEachType[:,0][j])
-            typeName = self.typeNamesList[c] #Name of best type
-            templateFlux = templateImages[c][0]  #plot template
-            inputFlux = self.inputImages[int(self.redshiftIndex[c])] #Pliot inputImage at red
-            #plt.title(typeName+ ": " + str(bestForEachType[c][1]))
-
-            if not templateFlux.any():
-                #print("No Template")
-                templateFlux = np.zeros(len(templateImages[0]))
-                inputFlux = self.inputImages[int(self.redshiftIndex[c])]
-
-            templateFluxes.append(templateFlux)
-            inputFluxes.append(inputFlux)
-            
-        templateFluxes = np.array(templateFluxes)
-        inputFluxes = np.array(inputFluxes)
-        return templateFluxes, inputFluxes
-
-    def redshift_graph(self):
-        #bestForEachType, typeNamesList, redshiftIndex = self.create_list()
-        self.redshiftGraphs = []#redshiftGraphs = [[[],[]] for i in range(ntypes)]
-        for j in range(len(self.bestForEachType)): #[0:2] takes top 2 entries
-            c = int(self.bestForEachType[:,0][j])
-            typeName = self.typeNamesList[c]
-            #redshiftGraphs[c][0] = self.inputRedshifts
-            self.redshiftGraphs.append(self.yInputRedshift[:,c])
-            
-
-        self.redshiftGraphs = np.array(self.redshiftGraphs)
-
-        return self.inputRedshifts, self.redshiftGraphs
-
-#bestTypesList = BestTypesList("/tmp/model.ckpt")
-#templateFluxes, inputFluxes = bestTypesList.plot_best_types()
-
-##restoreModel = RestoreModel("/tmp/model.ckpt")
-##yInputRedshift = restoreModel.restore_variables()
-##
-##
-###Create List of Best Types
-##bestForEachType = np.zeros((ntypes,3))
-##redshiftIndex = np.zeros(ntypes) #best redshift index for each type
-##for i in range(len(yInputRedshift)):
-##    prob = yInputRedshift[i]
-##    z = inputRedshifts[i]
-##    bestIndex = np.argmax(prob)
-##    if prob[bestIndex] > bestForEachType[bestIndex][2]:
-##        bestForEachType[bestIndex][2] = prob[bestIndex]
-##        bestForEachType[bestIndex][1] = z
-##        bestForEachType[bestIndex][0] = bestIndex #inputTypeNames
-##        redshiftIndex[bestIndex] = i
-##
-##idx = np.argsort(bestForEachType[:,2])
-##bestForEachType = bestForEachType[idx[::-1]]
-##
-##print("Type          Redshift      Rel. Prob.")
-##print(bestForEachType)
-##for i in range(10):#ntypes):
-##    bestIndex = bestForEachType[i][0]
-##    name, age = typeNamesList[bestIndex].split(': ')
-##    print("".join(word.ljust(15) for word in [name, age , str(bestForEachType[i][1]), str(bestForEachType[i][2])]))
-##    #print(typeNamesList[bestIndex] + '\t' + str(bestForEachType[i][1]) + '\t' + str(bestForEachType[i][2]))
-##
-##
-##
-###Plot Each Best Type at corresponding best redshift
-##for j in range(2):#len(bestForEachType)): #[0:2] takes top 2 entries
-##    c = int(bestForEachType[:,0][j])
-##    typeName = typeNamesList[c]
-##    for i in range(0,len(trainImages)):
-##        if (trainLabels[i][c] == 1):
-##            print(i)
-##            plt.plot(trainImages[i])
-##            plt.plot(inputImages[redshiftIndex[c]])
-##            plt.title(typeName+ ": " + str(bestForEachType[j][1]))
-##            plt.show()
-##            break
-##        
-##
-###Plot Probability vs redshift for each class
-##redshiftGraphs = [[[],[]] for i in range(ntypes)]
-##for j in range(2):#len(bestForEachType)): #[0:2] takes top 2 entries
-##    c = int(bestForEachType[:,0][j])
-##    typeName = typeNamesList[c]
-##    redshiftGraphs[c][0] = inputRedshifts
-##    redshiftGraphs[c][1] = yInputRedshift[:,c]
-##    plt.plot(redshiftGraphs[c][0],redshiftGraphs[c][1])
-##    plt.xlabel("z")
-##    plt.ylabel("Probability")
-##    bestIndex = bestForEachType[c][0]
-##    plt.title("Type: " + typeNamesList[bestIndex])
-##    plt.show()
-##
-##redshiftGraphs = np.array(redshiftGraphs)
+    return host, snName, snAge

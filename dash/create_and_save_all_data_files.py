@@ -26,17 +26,11 @@ if __name__ == '__main__':
     t3 = time.time()
     print("time spent: {0:.2f}".format(t3 - t2))
 
-    # CREATE TEMPLATE SET FILE
-    templateSetFilename = 'data_files_AgnosticZ_noHost/templates.npz'  # create_template_set_file(dataDirName)
-    dataFilenames.append(templateSetFilename)
-    t4 = time.time()
-    print("time spent: {0:.2f}".format(t4 - t3))
-
     # TRAIN TENSORFLOW MODEL
     modelFilenames = train_model(dataDirName)
     dataFilenames.extend(modelFilenames)
-    t5 = time.time()
-    print("time spent: {0:.2f}".format(t5 - t4))
+    t4 = time.time()
+    print("time spent: {0:.2f}".format(t4 - t3))
 
     # MAKE INFO TEXT FILE ABOUT MODEL
     modelInfoFilename = dataDirName + "model_info.txt"
@@ -49,7 +43,7 @@ if __name__ == '__main__':
         f.write("Redshift: Agnostic\n")
         f.write("Redshift Range: 0 to 0.8\n")
         f.write("Redshift Precision: 0.02\n")
-        f.write("Training Amount: 50 x 200000\n")
+        f.write("Training Amount: 50 x 400000\n")
         dataFilenames.append(modelInfoFilename)
 
     # SAVE ALL FILES TO ZIP FILE

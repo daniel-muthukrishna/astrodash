@@ -82,13 +82,13 @@ filenames = [os.path.join(directoryPath, i[0]) for i in atels]
 knownRedshifts = [i[1] for i in atels]
 
 classification = dash.Classify(filenames, knownRedshifts, classifyHost=False, smooth=5, knownZ=True)
-bestFits, bestTypes, rejectionLabels, reliableFlags = classification.list_best_matches(n=5)
+bestFits, redshifts, bestTypes, rejectionLabels, reliableFlags = classification.list_best_matches(n=5)
 
 # SAVE BEST MATCHES
 print(bestFits)
 f = open('classification_results.txt', 'w')
 for i in range(len(filenames)):
-    f.write("%s   %s     %s      %s     %s\n %s\n\n" % (filenames[i], knownRedshifts[i], bestTypes[i], reliableFlags[i], rejectionLabels[i], bestFits[i]))
+    f.write("%s   z=%s     %s      %s     %s\n %s\n\n" % (filenames[i], redshifts[i], bestTypes[i], reliableFlags[i], rejectionLabels[i], bestFits[i]))
 f.close()
 print("Finished classifying %d spectra!" % len(filenames))
 

@@ -131,7 +131,7 @@ filenames = [os.path.join(directory, i[0]) for i in atels]
 knownRedshifts = [i[1] for i in atels]
 
 classification = dash.Classify(filenames, knownRedshifts, classifyHost=False)
-bestFits, bestTypes, rejectionLabels, reliableFlags = classification.list_best_matches(n=5)
+bestFits, redshifts, bestTypes, rejectionLabels, reliableFlags = classification.list_best_matches(n=5)
 
 # SAVE BEST MATCHES
 print(bestFits)

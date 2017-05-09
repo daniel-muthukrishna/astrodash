@@ -124,7 +124,7 @@ def save_templates():
     snTempFileList = snTemplateDirectory + 'templist.txt'
     galTemplateDirectory = os.path.join(scriptDirectory, "../templates/superfit_templates/gal/")
     galTempFileList = galTemplateDirectory + 'gal.list'
-    saveFilename = 'sn_and_host_templates.npz'
+    saveFilename = 'models/sn_and_host_templates.npz'
 
     snTemplates, galTemplates = create_sn_and_host_arrays(snTemplateDirectory, snTempFileList, galTemplateDirectory, galTempFileList, parameterFile)
 

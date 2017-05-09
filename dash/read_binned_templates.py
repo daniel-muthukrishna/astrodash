@@ -5,6 +5,19 @@ from dash.combine_sn_and_host import zero_non_overlap_part, normalise_spectrum
 scriptDirectory = os.path.dirname(os.path.abspath(__file__))
 
 
+def get_templates(snName, snAge, hostName, snTemplates, galTemplates, nw):
+    snInfos = np.copy(snTemplates[snName][snAge]['snInfo'])
+    snNames = np.copy(snTemplates[snName][snAge]['names'])
+    if hostName != "No Host" and hostName != "":
+        hostInfos = np.copy(galTemplates[hostName]['galInfo'])
+        hostNames = np.copy(galTemplates[hostName]['names'])
+    else:
+        hostInfos = np.array([[np.zeros(nw), np.zeros(nw), 1, nw - 1]])
+        hostNames = np.array(["No Host"])
+
+    return snInfos, snNames, hostInfos, hostNames
+
+
 def load_templates(templateFilename):
     loaded = np.load(os.path.join(scriptDirectory, templateFilename))
     snTemplates = loaded['snTemplates'][()]
@@ -54,7 +67,7 @@ class ReadBinnedTemplates(object):
         return binnedWave, fluxNorm
 
 if __name__ == "__main__":
-    templateFilename1 = 'sn_and_host_templates.npz'
+    templateFilename1 = 'models/sn_and_host_templates.npz'
     snTemplates1, galTemplates1 = load_templates(templateFilename1)
     snInfoList = snTemplates1['Ia-norm']['-2 to 2']['snInfo']
     galInfoList = galTemplates1['S0']['galInfo']

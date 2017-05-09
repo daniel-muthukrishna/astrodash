@@ -1,16 +1,14 @@
 import os
 import sys
-import pickle
+import numpy as np
 from PyQt5 import QtGui
 from PyQt5.QtCore import QThread, pyqtSignal
 from dash.design import Ui_MainWindow
-from dash.restore_model import *
+from dash.restore_model import LoadInputSpectra, BestTypesListSingleRedshift, get_training_parameters, classification_split
 from dash.create_arrays import AgeBinning
-from dash.read_binned_templates import load_templates, ReadBinnedTemplates
+from dash.read_binned_templates import load_templates, get_templates, ReadBinnedTemplates
 from dash.false_positive_rejection import combined_prob
 from dash.calculate_redshift import get_median_redshift, get_redshift_axis
-
-mainDirectory = os.path.dirname(os.path.abspath(__file__))
 
 
 class MainApp(QtGui.QMainWindow, Ui_MainWindow):
@@ -74,25 +72,17 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             QtGui.QMessageBox.critical(self, "Error", "Model does not exist")
 
     def templates(self):
-        with open(os.path.join(scriptDirectory, "data_files/training_params.pickle"), 'rb') as f:
-            pars = pickle.load(f)
+        pars = get_training_parameters()
         self.w0, self.w1, self.minAge, self.maxAge, self.ageBinSize, self.typeList, self.nTypes, self.nw, self.hostTypes \
             = pars['w0'], pars['w1'], pars['minAge'], pars['maxAge'], pars['ageBinSize'], pars['typeList'], pars['nTypes'], pars['nw'], pars['galTypeList']
 
         self.dwlog = np.log(self.w1/self.w0)/self.nw
         self.wave = self.w0 * np.exp(np.arange(0,self.nw) * self.dwlog)
 
-        self.snTemplates, self.galTemplates = load_templates('sn_and_host_templates.npz')
+        self.snTemplates, self.galTemplates = load_templates('models/sn_and_host_templates.npz')
 
     def get_sn_and_host_templates(self, snName, snAge, hostName):
-        snInfos = np.copy(self.snTemplates[snName][snAge]['snInfo'])
-        snNames = np.copy(self.snTemplates[snName][snAge]['names'])
-        if hostName != "No Host":
-            hostInfos = np.copy(self.galTemplates[hostName]['galInfo'])
-            hostNames = np.copy(self.galTemplates[hostName]['names'])
-        else:
-            hostInfos = np.array([[self.wave, np.zeros(self.nw), 1, self.nw-1]])
-            hostNames = np.array(["No Host"])
+        snInfos, snNames, hostInfos, hostNames = get_templates(snName, snAge, hostName, self.snTemplates, self.galTemplates, self.nw)
 
         return snInfos, snNames, hostInfos, hostNames
 
@@ -278,7 +268,10 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             QtGui.QMessageBox.information(self, "Done!", "Finished Fitting Input Spectrum")
 
     def best_broad_type(self):
-        bestMatchList = [self.bestTypes[i].split(': ') + [self.softmax[i]] for i in range(10)]
+        bestMatchList = []
+        for i in range(10):
+            host, name, age = classification_split(self.bestTypes[i])
+            bestMatchList.append([host, name, age, self.softmax[i]])
         host, prevName, bestAge, probTotal, reliableFlag = combined_prob(bestMatchList)
         self.labelBestSnType.setText(prevName)
         self.labelBestAgeRange.setText(bestAge)
@@ -301,22 +294,20 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         else:
             self.listWidget.addItem("".join(word.ljust(25) for word in ['No.', 'Type', 'Age', 'Redshift', 'Softmax Prob.']))
         for i in range(20):
-            classification = self.bestTypes[i].split(': ')
+            host, name, age = classification_split(self.bestTypes[i])
             prob = self.softmax[i]
             redshift = redshifts[i]
-            if len(classification) == 2:
-                name, age = classification
-                host = "No Host"
-                if self.knownRedshift:
-                    self.listWidget.addItem("".join(word.ljust(25) for word in [str(i + 1), name, age, str(prob)]))
-                else:
-                    self.listWidget.addItem("".join(word.ljust(25) for word in [str(i + 1), name, age, str(redshift), str(prob)]))
-            else:
-                host, name, age = classification
+            if self.classifyHost:
                 if self.knownRedshift:
                     self.listWidget.addItem("".join(word.ljust(25) for word in [str(i + 1), host, name, age, str(prob)]))
                 else:
                     self.listWidget.addItem("".join(word.ljust(25) for word in [str(i + 1), host, name, age, str(redshift), str(prob)]))
+            else:
+                if self.knownRedshift:
+                    self.listWidget.addItem("".join(word.ljust(25) for word in [str(i + 1), name, age, str(prob)]))
+                else:
+                    self.listWidget.addItem("".join(word.ljust(25) for word in [str(i + 1), name, age, str(redshift), str(prob)]))
+
 
             if i == 0:
                 SNTypeComboBoxIndex = self.comboBoxSNType.findText(name)
@@ -328,32 +319,6 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             if not self.knownRedshift:
                 self.bestRedshift = redshifts[0]
         self.best_broad_type()
-
-    def load_spectrum(self, spectrumInfo):
-        self.bestForEachType, self.templateFluxes, self.inputFluxes, self.inputRedshifts, self.redshiftGraphs, self.typeNamesList = spectrumInfo
-        self.progressBar.setValue(85)#self.progressBar.value()+)
-
-    def done_fit_thread(self):
-        if not self.cancelledFitting:
-            self.list_best_matches()
-            self.plot_best_matches()
-            self.plot_redshift_graphs()
-            self.progressBar.setValue(100)
-            QtGui.QMessageBox.information(self, "Done!", "Finished Fitting Input Spectrum")
-
-    def list_best_matches(self):
-        print("listing best matches...")
-        self.listWidget.clear()
-        self.listWidget.addItem("".join(word.ljust(25) for word in ['No.', 'Type', 'Age', 'Redshift', 'Rel. Prob.']))
-        for i in range(20): #len(bestForEachType)
-            bestIndex = int(self.bestForEachType[i][0])
-            classification = self.bestTypes[i].split(': ')
-            if len(classification) == 2:
-                name, age = classification
-                self.listWidget.addItem("".join(word.ljust(25) for word in [str(i + 1), name, age, str(self.bestForEachType[i][1]), str(self.bestForEachType[i][2])]))
-            else:
-                host, name, age = classification
-                self.listWidget.addItem("".join(word.ljust(25) for word in [str(i + 1), host, name, age, str(self.bestForEachType[i][1]), str(self.bestForEachType[i][2])]))
 
     def list_item_clicked(self, item):
         if item.text()[0].isdigit():
@@ -396,12 +361,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
     def best_redshifts(self):
         redshifts = []
         for i in range(20):
-            classification = self.bestTypes[i].split(': ')
-            if len(classification) == 2:
-                name, age = classification
-                host = "No Host"
-            else:
-                host, name, age = classification
+            host, name, age = classification_split(self.bestTypes[i])
             redshift, crossCorr = self.calc_redshift(name, age)
             redshifts.append(redshift)
         return redshifts

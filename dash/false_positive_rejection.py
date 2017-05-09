@@ -8,14 +8,13 @@ from scipy.stats import chisquare, pearsonr
 
 
 def combined_prob(bestMatchList):
-    host = ""
-    prevName = bestMatchList[0][0]
-    prevMinAge, prevMaxAge = bestMatchList[0][1].split(' to ')
+    host, prevName, age, prob = bestMatchList[0]
+    prevMinAge, prevMaxAge = age.split(' to ')
     probTotal = 0.
     agesList = [int(prevMinAge), int(prevMaxAge)]
     probPossible = 0.
     agesListPossible = []
-    for name, age, prob in bestMatchList[0:10]:
+    for host, name, age, prob in bestMatchList[0:10]:
         minAge, maxAge = list(map(int, age.split(' to ')))
         if name == prevName:
             if probPossible == 0:
