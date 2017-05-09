@@ -21,7 +21,7 @@ class Classify(object):
     templateImages = loaded['templateFluxesAll']
     # templateLabelsIndexes = loaded['templateLabelsAll']
 
-    def __init__(self, filenames=[], redshifts=[], smooth=5, minWave=2500, maxWave=10000, classifyHost=False, knownZ=True):
+    def __init__(self, filenames=[], redshifts=[], smooth=6, minWave=2500, maxWave=10000, classifyHost=False, knownZ=True):
         """ Takes a list of filenames and corresponding redshifts for supernovae.
         Files should contain a single spectrum, and redshifts should be a list of corresponding redshift floats
         """

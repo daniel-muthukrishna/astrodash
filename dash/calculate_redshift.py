@@ -63,7 +63,10 @@ def get_median_redshift(inputFlux, tempFluxes, nw, dwlog):
         redshifts.append(redshift)
         crossCorrs.append(crossCorr)
 
-    medianIndex = np.argsort(redshifts)[len(redshifts)//2]
-    medianRedshift = redshifts[medianIndex]
+    if redshifts != []:
+        medianIndex = np.argsort(redshifts)[len(redshifts)//2]
+        medianRedshift = redshifts[medianIndex]
+    else:
+        return None, None
 
     return medianRedshift, np.abs(crossCorrs[medianIndex])

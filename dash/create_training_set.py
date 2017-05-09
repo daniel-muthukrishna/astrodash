@@ -45,8 +45,8 @@ class CreateTrainingSet(object):
         return snTypeList, imagesShuf, labelsShuf, filenamesShuf, typeNamesShuf, typeAmounts
 
     def sort_data(self):
-        trainPercentage = 1.
-        testPercentage = 0.
+        trainPercentage = 0.9
+        testPercentage = 0.1
         validatePercentage = 0.
 
         typeList, images, labels, filenames, typeNames, typeAmounts = self.all_templates_to_arrays()
@@ -179,4 +179,4 @@ def create_training_set_files(dataDirName, minZ=0, maxZ=0, redshiftPrecision=0.0
 
 
 if __name__ == '__main__':
-    trainingSetFilename = create_training_set_files('data_files/', minZ=0, maxZ=0, redshiftPrecision=0.01, trainWithHost=True, classifyHost=False)
+    trainingSetFilename = create_training_set_files('data_files/', minZ=0, maxZ=0, redshiftPrecision=0.01, trainWithHost=False, classifyHost=False)

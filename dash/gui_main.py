@@ -87,7 +87,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
     def get_sn_and_host_templates(self, snName, snAge, hostName):
         snInfos = np.copy(self.snTemplates[snName][snAge]['snInfo'])
         snNames = np.copy(self.snTemplates[snName][snAge]['names'])
-        if self.hostName != "No Host":
+        if hostName != "No Host":
             hostInfos = np.copy(self.galTemplates[hostName]['galInfo'])
             hostNames = np.copy(self.galTemplates[hostName]['names'])
         else:
@@ -143,9 +143,12 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         flux, name = self.get_template_info()
         self.templatePlotFlux = flux
         self.templatePlotName = name
-        redshift, crossCorr = self.calc_redshift(self.snName, self.snAge)
-        self.set_plot_redshift(redshift)
         self.plot_cross_corr(self.snName, self.snAge)
+        if self.knownRedshift:
+            self.plot_best_matches()
+        else:
+            redshift, crossCorr = self.calc_redshift(self.snName, self.snAge)
+            self.set_plot_redshift(redshift)
         print(self.templatePlotName)
 
     def add_combo_box_entries(self):
@@ -388,6 +391,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             self.graphicsView.plot(templateWave, self.templatePlotFlux, name=self.templatePlotName, pen={'color': (255,0,0)})
             self.graphicsView.setXRange(2500, 10000)
             self.graphicsView.setYRange(0, 1)
+            self.graphicsView.plotItem.showGrid(x=True, y=True, alpha=0.95)
 
     def best_redshifts(self):
         redshifts = []
@@ -412,6 +416,8 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
 
         redshift, crossCorr = get_median_redshift(self.inputImageUnRedshifted, templateFluxes, self.nw, self.dwlog)
         print(redshift)
+        if redshift is None:
+            return 0, np.zeros(1024)
 
         return round(redshift, 4), crossCorr
 
@@ -421,7 +427,9 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.graphicsView_2.clear()
         self.graphicsView_2.plot(zAxis, crossCorr)
         self.graphicsView_2.setXRange(0, 1)
-        self.graphicsView_2.setYRange(0, 1)
+        self.graphicsView_2.setYRange(min(crossCorr), max(crossCorr))
+        self.graphicsView_2.plotItem.showGrid(x=True, y=True, alpha=0.95)
+        # self.graphicsView_2.plotItem.setLabels(bottom="z")
 
     def browse_folder(self):
         self.listWidget.clear()
