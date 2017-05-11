@@ -81,7 +81,7 @@ Supernovae classifying and redshifting software: development stage
 
 ## 7. API Usage
 Notes:
-    Current version requires an input redshift (inaccurate results if redshift is unknown)
+    Sometimes inaccurate results if redshift is unknown
 
 
 

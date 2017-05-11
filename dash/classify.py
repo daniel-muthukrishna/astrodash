@@ -155,7 +155,8 @@ class Classify(object):
         form.lineEditKnownZ.setText(str(self.redshifts[indexToPlot]))
         form.lineEditSmooth.setText(str(self.smooth))
         form.select_tensorflow_model()
-        form.fit_spectra(self.classifyHost)
+        form.classifyHost = self.classifyHost
+        form.fit_spectra()
         form.show()
         app.exec_()
 

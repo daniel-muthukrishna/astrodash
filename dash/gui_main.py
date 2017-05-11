@@ -39,6 +39,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.progressBar.setValue(100)
         self.add_combo_box_entries()
 
+        self.select_tensorflow_model()
         self.checkBoxKnownZ.stateChanged.connect(self.select_tensorflow_model)
         self.checkBoxClassifyHost.stateChanged.connect(self.select_tensorflow_model)
 
@@ -206,7 +207,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
 
             self.fit_spectra()
 
-    def fit_spectra(self, classifyHost=False):
+    def fit_spectra(self):
         self.cancelledFitting = False
         try:
             self.smooth = int(self.lineEditSmooth.text())
@@ -239,7 +240,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.progressBar.setValue(36)
         self.set_plot_redshift(knownZ)
 
-        self.fitThread = FitSpectrumThread(self.inputFilename, knownZ, self.modelFilename, self.smooth, classifyHost, self.minWave, self.maxWave)
+        self.fitThread = FitSpectrumThread(self.inputFilename, knownZ, self.modelFilename, self.smooth, self.classifyHost, self.minWave, self.maxWave)
         self.fitThread.trigger.connect(self.load_spectrum_single_redshift)
 
         self.fitThread.start()
