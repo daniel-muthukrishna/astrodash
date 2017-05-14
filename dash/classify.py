@@ -60,7 +60,10 @@ class Classify(object):
         inputImages = np.empty((0, int(self.nw)), np.float16)
         for i in range(self.numSpectra):
             f = self.filenames[i]
-            z = self.redshifts[i]
+            if self.knownZ:
+                z = self.redshifts[i]
+            else:
+                z = 0
             inputImage, typeNamesList, nw, nBins = self._get_images(f, z)
             inputImages = np.append(inputImages, inputImage, axis=0)
         bestTypesList = BestTypesListSingleRedshift(self.modelFilename, inputImages, typeNamesList, self.nw, nBins)
@@ -154,8 +157,8 @@ class Classify(object):
         form.checkBoxClassifyHost.setChecked(self.classifyHost)
         form.lineEditKnownZ.setText(str(self.redshifts[indexToPlot]))
         form.lineEditSmooth.setText(str(self.smooth))
-        form.select_tensorflow_model()
         form.classifyHost = self.classifyHost
+        form.select_tensorflow_model()
         form.fit_spectra()
         form.show()
         app.exec_()

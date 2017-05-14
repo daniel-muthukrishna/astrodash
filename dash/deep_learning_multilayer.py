@@ -31,6 +31,7 @@ def train_model(dataDirName):
             # unCompressedFile.write(decoded)
             # gzFile.close()
             # unCompressedFile.close()
+            # os.system("gzip -dk %s" % f)
             npyFiles[filename.strip('.npy.gz')] = f.strip('.gz')
 
     trainImages = np.load(npyFiles['trainImages'], mmap_mode='r')
