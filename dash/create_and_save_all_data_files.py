@@ -8,20 +8,20 @@ import shutil
 import time
 
 if __name__ == '__main__':
-    dataDirName = 'data_files_AgnosticZ_noHost/'
+    dataDirName = 'data_files_zeroZ_classifyHost/'
     dataFilenames = []
     if not os.path.exists(dataDirName):
         os.makedirs(dataDirName)
 
     # CREATE PARAMETERS PICKLE FILE
     t1 = time.time()
-    trainingParamsFilename = 'data_files_AgnosticZ_noHost/training_params.pickle'  # create_training_params_file(dataDirName)
+    trainingParamsFilename = create_training_params_file(dataDirName)
     dataFilenames.append(trainingParamsFilename)
     t2 = time.time()
     print("time spent: {0:.2f}".format(t2 - t1))
 
     # CREATE TRAINING SET FILES
-    trainingSetFilename = 'data_files_AgnosticZ_noHost/training_set.zip'  # create_training_set_files(dataDirName, minZ=0, maxZ=0.8, redshiftPrecision=0.02, trainWithHost=False, classifyHost=False)
+    trainingSetFilename = create_training_set_files(dataDirName, minZ=0, maxZ=0., redshiftPrecision=0.02, trainWithHost=True, classifyHost=True)
     dataFilenames.append(trainingSetFilename)
     t3 = time.time()
     print("time spent: {0:.2f}".format(t3 - t2))
@@ -39,20 +39,21 @@ if __name__ == '__main__':
         f.write("Directory: %s\n" % dataDirName)
         f.write("Add Host: True\n")
         f.write("SN-Host fractions: [0.01, 0.02, 0.05, 0.07, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]\n")
-        f.write("Classify Host: False\n")
-        f.write("Redshift: Agnostic\n")
-        f.write("Redshift Range: 0 to 0.8\n")
+        f.write("Classify Host: True\n")
+        f.write("Redshift: Zero\n")
+        f.write("Redshift Range: 0 to 0.\n")
         f.write("Redshift Precision: 0.02\n")
+        f.write("Fraction of Training Set Used: 0.9")
         f.write("Training Amount: 50 x 400000\n")
         dataFilenames.append(modelInfoFilename)
 
     # SAVE ALL FILES TO ZIP FILE
-    dataFilesZip = 'data_files_agnosticZ_noHost_v01.zip'
+    dataFilesZip = 'data_files_zeroZ_classifyHost_v01.zip'
     with zipfile.ZipFile(dataFilesZip, 'w') as myzip:
         for f in dataFilenames:
             myzip.write(f)
 
-    modelZip = 'model_agnosticZ_noHost_v01.zip'
+    modelZip = 'model_zeroZ_classifyHost_v01.zip'
     with zipfile.ZipFile(modelZip, 'w') as myzip:
         for f in [dataFilenames[0]] + dataFilenames[2:]:
             myzip.write(f)

@@ -14,10 +14,11 @@ def train_model(dataDirName):
     # Open training data files
     scriptDirectory = os.path.dirname(os.path.abspath(__file__))
     trainingSet = dataDirName + 'training_set.zip'
-    extractedFolder = dataDirName + 'training_set'
+    extractedFolder = os.path.join(dataDirName, 'training_set')
     # zipRef = zipfile.ZipFile(trainingSet, 'r')
     # zipRef.extractall(extractedFolder)
     # zipRef.close()
+    os.system("unzip %s -d %s" % (trainingSet, extractedFolder))
 
     npyFiles = {}
     fileList = os.listdir(extractedFolder)
@@ -31,17 +32,17 @@ def train_model(dataDirName):
             # unCompressedFile.write(decoded)
             # gzFile.close()
             # unCompressedFile.close()
-            # os.system("gzip -dk %s" % f)
             npyFiles[filename.strip('.npy.gz')] = f.strip('.gz')
+            os.system("gzip -dk %s" % f)
 
     trainImages = np.load(npyFiles['trainImages'], mmap_mode='r')
     trainLabels = np.load(npyFiles['trainLabels'], mmap_mode='r')
-    testImagesWithGal = np.load(npyFiles['testImages'], mmap_mode='r')
-    testLabelsIndexesWithGal = np.load(npyFiles['testLabels'], mmap_mode='r')
+    testImages = np.load(npyFiles['testImages'], mmap_mode='r')
+    testLabelsIndexes = np.load(npyFiles['testLabels'], mmap_mode='r')
     typeNamesList = np.load(npyFiles['typeNamesList'])
-    testTypeNames = np.load(npyFiles['testTypeNamesNoGal'])
-    testImages = np.load(npyFiles['testImagesNoGal'], mmap_mode='r')
-    testLabelsIndexes = np.load(npyFiles['testLabelsNoGal'], mmap_mode='r')
+    testTypeNames = np.load(npyFiles['testTypeNames'])
+    # testImages = np.load(npyFiles['testImagesNoGal'], mmap_mode='r')
+    # testLabelsIndexes = np.load(npyFiles['testLabelsNoGal'], mmap_mode='r')
 
     print("Completed creatingArrays")
     print(len(trainImages))
@@ -64,9 +65,10 @@ def train_model(dataDirName):
 
         sess.run(tf.initialize_all_variables())
 
-        testLabels = labels_indexes_to_arrays(testLabelsIndexes, nLabels)
-        testLabelsWithGal = labels_indexes_to_arrays(testLabelsIndexesWithGal[0:200], nLabels)
-        testImagesWithGal = testImagesWithGal[0:200]
+        testLabels = labels_indexes_to_arrays(testLabelsIndexes[0:400], nLabels)
+        testImages = testImages[0:400]
+        # testLabelsWithGal = labels_indexes_to_arrays(testLabelsIndexesWithGal[0:200], nLabels)
+        # testImagesWithGal = testImagesWithGal[0:200]
 
         trainImagesCycle = itertools.cycle(trainImages)
         trainLabelsCycle = itertools.cycle(trainLabels)
@@ -80,9 +82,9 @@ def train_model(dataDirName):
                 testAcc = accuracy.eval(feed_dict={x: testImages, y_: testLabels, keep_prob: 1.0})
                 print("test accuracy %g" % testAcc)
                 a.append(testAcc)
-                if i % 1000 == 0:
-                    testWithGalAcc = accuracy.eval(feed_dict={x: testImagesWithGal, y_: testLabelsWithGal, keep_prob: 1.0})
-                    print("test With Gal accuracy %g" % testWithGalAcc)
+                # if i % 1000 == 0:
+                #     testWithGalAcc = accuracy.eval(feed_dict={x: testImagesWithGal, y_: testLabelsWithGal, keep_prob: 1.0})
+                #     print("test With Gal accuracy %g" % testWithGalAcc)
 
         print("test accuracy %g" % accuracy.eval(feed_dict={x: testImages, y_: testLabels, keep_prob: 1.0}))
 

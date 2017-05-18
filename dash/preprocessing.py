@@ -187,10 +187,10 @@ class PreProcessSpectrum(object):
 
         # Rebin wavelengths
         for i in range(0,len(wave)):
-            if (i == 0):
+            if i == 0:
                 s0 = 0.5*(3*wave[i] - wave[i+1])
                 s1 = 0.5*(wave[i] + wave[i+1])
-            elif (i == len(wave) - 1):
+            elif i == len(wave) - 1:
                 s0 = 0.5*(wave[i-1] + wave[i])
                 s1 = 0.5*(3*wave[i] - wave[i-1])
             else:
@@ -202,7 +202,7 @@ class PreProcessSpectrum(object):
             dnu = s1-s0
 
             for j in range(int(s0log), int(s1log)):
-                if (j < 1 or j >= self.nw):
+                if j < 1 or j >= self.nw:
                     continue
                 alen = 1#min(s1log, j+1) - max(s0log, j)
                 fluxval = flux[i] * alen/(s1log-s0log) * dnu
@@ -266,8 +266,12 @@ class PreProcessSpectrum(object):
         for i in range(0, nsquash):
             arg = np.pi * i/(nsquash-1)
             factor = 0.5*(1-np.cos(arg))
-            fluxout[minindex+i] = factor*fluxout[minindex+i]
-            fluxout[maxindex-i] = factor*fluxout[maxindex-i]
+            if (minindex + i < self.nw) and (maxindex - i >= 0):
+                fluxout[minindex+i] = factor*fluxout[minindex+i]
+                fluxout[maxindex-i] = factor*fluxout[maxindex-i]
+            else:
+                print("INVALID FLUX IN PREPROCESSING.PY APODIZE()")
+                print("MININDEX=%d, i=%d" % (minindex, i))
 
         return fluxout
 

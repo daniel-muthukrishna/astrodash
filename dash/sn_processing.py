@@ -54,8 +54,10 @@ class PreProcessing(object):
     def two_column_data(self, z, smooth, minWave, maxWave):
         self.wave, self.flux = self.spectrum
         self.flux = limit_wavelength_range(self.wave, self.flux, minWave, maxWave)
+        self.wDensity = (self.w1 - self.w0)/self.nw  # Average wavelength spacing
+        wavelengthDensity = (max(self.wave) - min(self.wave)) / len(self.wave)
 
-        filterSize = int(len(self.wave)/self.nw * smooth) * 2 + 1
+        filterSize = int(self.wDensity / wavelengthDensity * smooth / 2) * 2 + 1
         preFiltered = medfilt(self.flux, kernel_size=filterSize)
         wave, flux = self.readSpectrumFile.two_col_input_spectrum(self.wave, preFiltered, z)
         binnedwave, binnedflux, minindex, maxindex = self.preProcess.log_wavelength(wave, flux)
@@ -111,7 +113,7 @@ class PreProcessing(object):
         wave, fluxes, ncols, ages, ttype, splineInfo = self.spectrum
         wave, flux = self.processingTools.redshift_spectrum(wave, fluxes[ageIdx], z)
         binnedwave, binnedflux, minindex, maxindex = self.preProcess.log_wavelength(wave, flux)
-        medianFiltered = medfilt(binnedflux, kernel_size=5)
+        medianFiltered = medfilt(binnedflux, kernel_size=1)
 
         return binnedwave, medianFiltered, ncols, ages, ttype, minindex, maxindex
 

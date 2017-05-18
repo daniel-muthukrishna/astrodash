@@ -9,6 +9,7 @@ from scipy.stats import chisquare, pearsonr
 
 def combined_prob(bestMatchList):
     host, prevName, age, prob = bestMatchList[0]
+    prevBroadTypeName = prevName[0:2]
     prevMinAge, prevMaxAge = age.split(' to ')
     probTotal = 0.
     agesList = [int(prevMinAge), int(prevMaxAge)]
@@ -16,6 +17,7 @@ def combined_prob(bestMatchList):
     agesListPossible = []
     for host, name, age, prob in bestMatchList[0:10]:
         minAge, maxAge = list(map(int, age.split(' to ')))
+        broadTypeName = name[0:2]
         if name == prevName:
             if probPossible == 0:
                 if (minAge in agesList) or (maxAge in agesList):
@@ -34,8 +36,12 @@ def combined_prob(bestMatchList):
                     agesListPossible = []
                 else:
                     break
+        elif broadTypeName == prevBroadTypeName and ((minAge, maxAge) == (int(prevMinAge), int(prevMaxAge))):
+            probTotal += float(prob)
+            prevBroadTypeName = broadTypeName
         else:
             break
+
     bestAge = '%d to %d' % (min(agesList), max(agesList))
 
     reliableFlag = not (min(agesList), max(agesList)) == (int(prevMinAge), int(prevMaxAge))
