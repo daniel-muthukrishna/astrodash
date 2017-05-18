@@ -9,21 +9,29 @@ from scipy.stats import chisquare, pearsonr
 
 def combined_prob(bestMatchList):
     host, prevName, age, prob = bestMatchList[0]
+    probInitial = float(prob)
+    bestName = prevName
     prevBroadTypeName = prevName[0:2]
     prevMinAge, prevMaxAge = age.split(' to ')
     probTotal = 0.
     agesList = [int(prevMinAge), int(prevMaxAge)]
     probPossible = 0.
     agesListPossible = []
+    index = 0
     for host, name, age, prob in bestMatchList[0:10]:
+        index += 1
         minAge, maxAge = list(map(int, age.split(' to ')))
-        broadTypeName = name[0:2]
+        if "IIb" in name:
+            broadTypeName = "Ib"
+        else:
+            broadTypeName = name[0:2]
         if name == prevName:
             if probPossible == 0:
                 if (minAge in agesList) or (maxAge in agesList):
                     probTotal += float(prob)
                     prevName = name
                     agesList = agesList + [minAge, maxAge]
+
                 else:
                     probPossible = float(prob)
                     agesListPossible = [minAge, maxAge]
@@ -36,19 +44,30 @@ def combined_prob(bestMatchList):
                     agesListPossible = []
                 else:
                     break
-        elif broadTypeName == prevBroadTypeName and ((minAge, maxAge) == (int(prevMinAge), int(prevMaxAge))):
-            probTotal += float(prob)
-            prevBroadTypeName = broadTypeName
+        elif broadTypeName == prevBroadTypeName:
+            if (minAge in agesList) or (maxAge in agesList):
+                if index <= 2:
+                    probTotal += float(prob)
+                    agesList = agesList + [minAge, maxAge]
+                    bestName = broadTypeName
+                elif bestName == broadTypeName:
+                    probTotal += float(prob)
+                    agesList = agesList + [minAge, maxAge]
+                else:
+                    break
+            else:
+                break
         else:
             break
 
     bestAge = '%d to %d' % (min(agesList), max(agesList))
 
-    reliableFlag = not (min(agesList), max(agesList)) == (int(prevMinAge), int(prevMaxAge))
+    if probTotal > probInitial:
+        reliableFlag = True
+    else:
+        reliableFlag = False
 
-    return host, prevName, bestAge, round(probTotal, 4), reliableFlag
-
-
+    return host, bestName, bestAge, round(probTotal, 4), reliableFlag
 
 
 class FalsePositiveRejection(object):
