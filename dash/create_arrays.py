@@ -169,7 +169,7 @@ class ArrayTools(object):
     def shuffle_arrays(self, images, labels, filenames, typeNames):
         arraySize = len(labels)
         imagesShuf = np.empty((arraySize, int(self.nw)), np.float16)
-        labelsShuf = np.empty(arraySize, np.uint8)
+        labelsShuf = np.empty(arraySize, np.uint16)
         filenamesShuf = np.empty(arraySize, dtype=object)
         typeNamesShuf = np.empty(arraySize, dtype=object)
         idx = 0
@@ -218,7 +218,7 @@ class ArrayTools(object):
         print(np.array(overSampleAmount, int))
         print(overSampleArraySize, len(labels))
         imagesOverSampled = np.zeros((overSampleArraySize, int(self.nw)), np.float16)
-        labelsOverSampled = np.zeros(overSampleArraySize, np.uint8)
+        labelsOverSampled = np.zeros(overSampleArraySize, np.uint16)
         filenamesOverSampled = np.empty(overSampleArraySize, dtype=object)
         typeNamesOverSampled = np.empty(overSampleArraySize, dtype=object)
 
@@ -387,7 +387,7 @@ class CreateArrays(object):
         galTempList = TempList().temp_list(galTempFileList)
 
         images = np.empty((0, int(self.nw)), np.float16)
-        labelsIndexes = np.empty(0, np.uint8)
+        labelsIndexes = np.empty(0, np.uint16)
         filenames = np.empty(0)
         typeNames = np.empty(0)
 

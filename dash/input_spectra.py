@@ -29,7 +29,7 @@ class InputSpectra(object):
 
     def redshifting(self):
         images = np.empty((0, int(self.nw)), np.float16)  # Number of pixels
-        labels = np.empty((0, self.nLabels), np.uint8)  # Number of labels (SN types)
+        labels = np.empty((0, self.nLabels), np.uint16)  # Number of labels (SN types)
         filenames = []
         typeNames = []
         redshifts = []
