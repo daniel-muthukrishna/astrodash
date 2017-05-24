@@ -17,6 +17,8 @@ def combined_prob(bestMatchList):
     agesList = [int(prevMinAge), int(prevMaxAge)]
     probPossible = 0.
     agesListPossible = []
+    probPossible2 = 0.
+    agesListPossible2 = []
     index = 0
     for host, name, age, prob in bestMatchList[0:10]:
         index += 1
@@ -36,6 +38,40 @@ def combined_prob(bestMatchList):
                     probPossible = float(prob)
                     agesListPossible = [minAge, maxAge]
             else:
+                if probPossible2 == 0:
+                    if ((minAge in agesListPossible) or (maxAge in agesListPossible)) and (
+                                (minAge in agesList) or (maxAge in agesList)):
+                        probTotal += probPossible + float(prob)
+                        agesList = agesList + agesListPossible + [minAge, maxAge]
+                        probPossible = 0
+                        agesListPossible = []
+                    else:
+                        probPossible2 = probPossible + float(prob)
+                        agesListPossible2 = agesListPossible + [minAge, maxAge]
+                else:
+                    if ((minAge in agesListPossible2) or (maxAge in agesListPossible2)) and (
+                                (minAge in (agesList + agesListPossible)) or (maxAge in (agesList + agesListPossible))):
+                        probTotal += probPossible2 + float(prob)
+                        agesList = agesList + agesListPossible2 + [minAge, maxAge]
+                        probPossible, probPossible2 = 0, 0
+                        agesListPossible, agesListPossible2 = [], []
+
+        elif broadTypeName == prevBroadTypeName:
+            if probPossible == 0:
+                if (minAge in agesList) or (maxAge in agesList):
+                    if index <= 2:
+                        probTotal += float(prob)
+                        agesList = agesList + [minAge, maxAge]
+                        bestName = broadTypeName
+                    elif bestName == broadTypeName:
+                        probTotal += float(prob)
+                        agesList = agesList + [minAge, maxAge]
+                    else:
+                        print("Something strange going on...")
+                else:
+                    probPossible = float(prob)
+                    agesListPossible = [minAge, maxAge]
+            else:
                 if ((minAge in agesListPossible) or (maxAge in agesListPossible)) and (
                             (minAge in agesList) or (maxAge in agesList)):
                     probTotal += probPossible + float(prob)
@@ -44,19 +80,6 @@ def combined_prob(bestMatchList):
                     agesListPossible = []
                 else:
                     break
-        elif broadTypeName == prevBroadTypeName:
-            if (minAge in agesList) or (maxAge in agesList):
-                if index <= 2:
-                    probTotal += float(prob)
-                    agesList = agesList + [minAge, maxAge]
-                    bestName = broadTypeName
-                elif bestName == broadTypeName:
-                    probTotal += float(prob)
-                    agesList = agesList + [minAge, maxAge]
-                else:
-                    break
-            else:
-                break
         else:
             break
 

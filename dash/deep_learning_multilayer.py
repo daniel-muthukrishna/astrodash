@@ -152,6 +152,16 @@ def train_model(dataDirName):
     print("typeAndNearAgeAccuracy : " + str(typeAndNearAgeAccuracy))
     print("broadTypeAndNearAgeAccuracy : " + str(broadTypeAndNearAgeAccuracy))
 
+    try:
+        import matplotlib.pyplot as plt
+        plt.plot(a)
+        plt.xlabel("Number of Epochs")
+        plt.ylabel("Testing accuracy")
+        plt.savefig(os.path.join(dataDirName, "testing_accuracy.png"))
+        np.savetxt(os.path.join(dataDirName, "testing_accuracy.txt"), np.array(a))
+    except Exception as e:
+        print(e)
+
     return modelFilenames
 
 
