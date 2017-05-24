@@ -8,7 +8,7 @@ import shutil
 import time
 
 if __name__ == '__main__':
-    dataDirName = 'data_files_zeroZ_classifyHost/'
+    dataDirName = 'data_files_test/'
     dataFilenames = []
     if not os.path.exists(dataDirName):
         os.makedirs(dataDirName)
@@ -21,7 +21,7 @@ if __name__ == '__main__':
     print("time spent: {0:.2f}".format(t2 - t1))
 
     # CREATE TRAINING SET FILES
-    trainingSetFilename = create_training_set_files(dataDirName, minZ=0, maxZ=0., redshiftPrecision=0.02, trainWithHost=True, classifyHost=True)
+    trainingSetFilename = create_training_set_files(dataDirName, minZ=0, maxZ=0., redshiftPrecision=0.01, trainWithHost=False, classifyHost=False)
     dataFilenames.append(trainingSetFilename)
     t3 = time.time()
     print("time spent: {0:.2f}".format(t3 - t2))

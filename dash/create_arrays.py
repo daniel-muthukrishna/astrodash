@@ -2,6 +2,8 @@ import numpy as np
 from random import shuffle
 from dash.sn_processing import PreProcessing
 from dash.combine_sn_and_host import CombineSnAndHost
+from dash.preprocessing import ProcessingTools
+from dash.array_tools import zero_non_overlap_part, normalise_spectrum
 import multiprocessing as mp
 import random
 import time
@@ -206,6 +208,17 @@ class ArrayTools(object):
             c[~ np.isfinite(c)] = 0  # -inf inf NaN
         return c
 
+    def augment_data(self, flux, stdDevMean=0.05, stdDevStdDev=0.05):
+        minIndex, maxIndex = ProcessingTools().min_max_index(flux)
+        noise = np.zeros(self.nw)
+        stdDev = abs(np.random.normal(stdDevMean, stdDevStdDev)) # randomised standard deviation
+        noise[minIndex:maxIndex] = np.random.normal(0, stdDev, maxIndex - minIndex)
+        augmentedFlux = flux + noise
+        augmentedFlux = normalise_spectrum(augmentedFlux)
+        augmentedFlux = zero_non_overlap_part(augmentedFlux, minIndex, maxIndex)
+
+        return augmentedFlux
+
     def over_sample_arrays(self, images, labels, filenames, typeNames):
         counts = self.count_labels(labels)
         idx = 0
@@ -235,11 +248,15 @@ class ArrayTools(object):
             labelIndex = label # np.argmax(label)
             
             print(idx, i, int(overSampleAmount[labelIndex]))
+            if overSampleAmount[labelIndex] < 10:
+                std = 0.03
+            else:
+                std = 0.05
             for r in range(int(overSampleAmount[labelIndex])):
-                imagesOverSampled[idx] = image #np.concatenate(imagesOverSampled, np.array([image]), axis=0)
-                labelsOverSampled[idx] = label #np.concatenate(labelsOverSampled, np.array([label]), axis=0)
-                filenamesOverSampled[idx] = filename #filenamesOverSampled = np.append(filenamesOverSampled, filename)
-                typeNamesOverSampled[idx] = typeName #typeNamesOverSampled = np.append(typeNamesOverSampled, typeName)
+                imagesOverSampled[idx] = self.augment_data(image, stdDevMean=0.05, stdDevStdDev=std)  # image
+                labelsOverSampled[idx] = label
+                filenamesOverSampled[idx] = filename
+                typeNamesOverSampled[idx] = typeName
                 counts1[labelIndex] += 1
                 idx += 1
 
