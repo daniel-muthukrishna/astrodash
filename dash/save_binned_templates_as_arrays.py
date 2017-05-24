@@ -3,7 +3,7 @@ import pickle
 import os
 from dash.preprocessing import ReadSpectrumFile, ProcessingTools, PreProcessSpectrum
 from dash.create_arrays import TempList, AgeBinning
-from dash.combine_sn_and_host import zero_non_overlap_part, normalise_spectrum
+from dash.array_tools import zero_non_overlap_part, normalise_spectrum
 
 
 class BinTemplate(object):

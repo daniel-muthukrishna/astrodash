@@ -1,7 +1,7 @@
 import numpy as np
 import os
 from dash.preprocessing import ProcessingTools, PreProcessSpectrum
-from dash.combine_sn_and_host import zero_non_overlap_part, normalise_spectrum
+from dash.array_tools import zero_non_overlap_part, normalise_spectrum
 scriptDirectory = os.path.dirname(os.path.abspath(__file__))
 
 

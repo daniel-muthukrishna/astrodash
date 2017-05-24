@@ -1,19 +1,23 @@
 # DASH
-Supernovae classifying and redshifting software: development stage
+Software to classify the type, age, redshift and host for any supernova spectra. Two platforms exists: a python library 
+that enables a user to classify several spectra (can classify thousands of spectra in seconds), and also a graphical
+interface that enables a user to view and classify a spectrum.
 
 
-## 1. How to install:
+## 1. Installation:
 
     1.1 pip install astrodash
 
-        or download from github (https://github.com/daniel-muthukrishna/DASH)
+        (or download from github: https://github.com/daniel-muthukrishna/DASH)
 
-## 2. Get started with the Python Library interface:
+## 2. Usage
     2.1 Use the following example code:
+        ```
         import dash
-        classification = dash.Classify([filenames], [knownRedshifts])
-        print(classification.list_best_matches(n=1))  # Shows top 'n' matches for each spectrum
-
+        classification = dash.Classify(filenames, knownRedshifts, classifyHost=False, smooth=6, knownZ=True)
+        bestFits, redshifts, bestTypes, rejectionLabels, reliableFlags = classification.list_best_matches(n=5)
+        ```
+        
     2.2 To open the gui from a script use:
         import dash
         dash.run_gui()

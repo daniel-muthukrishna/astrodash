@@ -1,20 +1,7 @@
 from dash.preprocessing import ReadSpectrumFile, ProcessingTools, PreProcessSpectrum
+from dash.array_tools import zero_non_overlap_part, normalise_spectrum
 import matplotlib.pyplot as plt
 import numpy as np
-
-
-def zero_non_overlap_part(array, minIndex, maxIndex):
-    slicedArray = np.copy(array)
-    slicedArray[0:minIndex] = np.zeros(minIndex)
-    slicedArray[maxIndex:] = np.zeros(len(array)-maxIndex)
-
-    return slicedArray
-
-
-def normalise_spectrum(flux):
-    fluxNorm = (flux - min(flux)) / (max(flux) - min(flux))
-
-    return fluxNorm
 
 
 class CombineSnAndHost(object):
