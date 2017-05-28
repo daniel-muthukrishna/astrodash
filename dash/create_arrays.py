@@ -432,6 +432,7 @@ class CreateArrays(object):
             print(typeNames.nbytes)
         except:
             print("Exception Raised")
+        print("Completed Creating Arrays!")
 
         return typeList, images, labelsIndexes, filenames, typeNames
 
