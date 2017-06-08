@@ -1,6 +1,7 @@
 from setuptools import setup, find_packages
 from codecs import open
 from os import path
+from dash.download_data_files import download_all_files
 
 here = path.abspath(path.dirname(__file__))
 
@@ -9,7 +10,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(name='astrodash',
-    version='0.3.05',
+    version='0.4.0',
     description='Deep Learning for Automated Spectral Classification of Supernovae',
     long_description=long_description,
     url='https://github.com/daniel-muthukrishna/DASH',
@@ -82,3 +83,5 @@ setup(name='astrodash',
         ],
     },
 )
+
+download_all_files('v01')

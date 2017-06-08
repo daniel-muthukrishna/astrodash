@@ -26,7 +26,6 @@ def delete_previous_versions(oldFilenames, scriptDirectory):
         if os.path.isfile(dataFilename):
             print("Deleting previous version of data file: %s" % oldFilename)
             os.remove(dataFilename)
-            shutil.rmtree(os.path.join(scriptDirectory, 'data_files'))
 
 
 def download_all_files(zipVersion):

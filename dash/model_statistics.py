@@ -27,16 +27,24 @@ def calc_model_statistics(modelFilename, testImages, testTypeNames, typeNamesLis
     broadTypeAndNearAgeCorrect = 0
     for i in range(len(testTypeNames)):
         predictedIndex = np.argmax(yy[i])
-        testBroadType = testTypeNames[i][0:2]
-        actualBroadType = typeNamesList[predictedIndex][0:2]
-        if testTypeNames[i][0:3] == 'IIb':
+
+        classification = testTypeNames[i].split(': ')
+        if len(classification) == 2:
+            testType, testAge = classification
+        else:
+            testGalType, testType, testAge = classification
+        actual = typeNamesList[predictedIndex].split(': ')
+        if len(actual) == 2:
+            actualType, actualAge = actual
+        else:
+            actualGalType, actualType, actualAge = actual
+
+        testBroadType = testType[0:2]
+        actualBroadType = actualType[0:2]
+        if testType[0:3] == 'IIb':
             testBroadType = 'Ib'
-        if typeNamesList[predictedIndex][0:3] == 'IIb':
+        if actualType[0:3] == 'IIb':
             actualBroadType = 'Ib'
-        testType = testTypeNames[i].split(': ')[0]
-        actualType = typeNamesList[predictedIndex].split(': ')[0]
-        testAge = testTypeNames[i].split(': ')[1]
-        actualAge = typeNamesList[predictedIndex].split(': ')[1]
         nearTestAge = testAge.split(' to ')
 
         if testTypeNames[i] == typeNamesList[predictedIndex]:
@@ -68,13 +76,13 @@ def calc_model_statistics(modelFilename, testImages, testTypeNames, typeNamesLis
 
 
 if __name__ == '__main__':
-    dirModel = "/Users/danmuth/PycharmProjects/DASH/dash/models/zeroZ/data_files_zeroZ_withHost_withNoise/"
+    dirModel = "/Users/danmuth/PycharmProjects/DASH/dash/models/agnosticZ/data_files_agnosticZ_noHost/"
     modelFilename = dirModel + "tensorflow_model.ckpt"
 
-    dirTestSet = "/Users/danmuth/PycharmProjects/DASH/dash/models/zeroZ/data_files_zeroZ_withHost_withNoise/training_set/"
+    dirTestSet = "/Users/danmuth/PycharmProjects/DASH/dash/models/agnosticZ/data_files_agnosticZ_noHost/training_set/"
     testImages = np.load(dirTestSet + 'testImages.npy', mmap_mode='r')
     # testLabelsIndexes = np.load(dir1 + 'testLabels.npy', mmap_mode='r')
     typeNamesList = np.load(dirTestSet + 'typeNamesList.npy')
     testTypeNames = np.load(dirTestSet + 'testTypeNames.npy')
 
-    calc_model_statistics(modelFilename, testImages, testTypeNames, typeNamesList)
+    calc_model_statistics(modelFilename, testImages[:1000], testTypeNames[:1000], typeNamesList)

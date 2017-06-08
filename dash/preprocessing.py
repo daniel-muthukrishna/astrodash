@@ -226,14 +226,17 @@ class PreProcessSpectrum(object):
     def spline_fit(self, wave, flux, numSplinePoints, minindex, maxindex):
         continuum = np.zeros(int(self.nw))
         minindex, maxindex = int(minindex), int(maxindex)
-        spline = UnivariateSpline(wave[minindex:maxindex+1], flux[minindex:maxindex+1], k=3)
-        splineWave = np.linspace(wave[minindex], wave[maxindex], num=numSplinePoints, endpoint=True)
-        splinePoints = spline(splineWave)
+        if (maxindex - minindex) > 5:
+            spline = UnivariateSpline(wave[minindex:maxindex+1], flux[minindex:maxindex+1], k=3)
+            splineWave = np.linspace(wave[minindex], wave[maxindex], num=numSplinePoints, endpoint=True)
+            splinePoints = spline(splineWave)
 
-        splineMore = UnivariateSpline(splineWave, splinePoints, k=3)
-        splinePointsMore = splineMore(wave[minindex:maxindex])
+            splineMore = UnivariateSpline(splineWave, splinePoints, k=3)
+            splinePointsMore = splineMore(wave[minindex:maxindex])
 
-        continuum[minindex:maxindex] = splinePointsMore
+            continuum[minindex:maxindex] = splinePointsMore
+        else:
+            print("WARNING: LESS THAN 6 POINTS IN SPECTRUM")
 
         return continuum
 
@@ -272,8 +275,6 @@ class PreProcessSpectrum(object):
             else:
                 print("INVALID FLUX IN PREPROCESSING.PY APODIZE()")
                 print("MININDEX=%d, i=%d" % (minindex, i))
+                break
 
         return fluxout
-
-
-

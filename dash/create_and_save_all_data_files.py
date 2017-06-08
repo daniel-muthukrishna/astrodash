@@ -13,6 +13,21 @@ if __name__ == '__main__':
     if not os.path.exists(dataDirName):
         os.makedirs(dataDirName)
 
+    # MAKE INFO TEXT FILE ABOUT MODEL
+    modelInfoFilename = dataDirName + "model_info.txt"
+    with open(modelInfoFilename, "w") as f:
+        f.write("Date Time: %s\n" % time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()))
+        f.write("Directory: %s\n" % dataDirName)
+        f.write("Add Host: True\n")
+        f.write("SN-Host fractions: [0.01, 0.02, 0.05, 0.07, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]\n")
+        f.write("Classify Host: True\n")
+        f.write("Redshift: Zero\n")
+        f.write("Redshift Range: 0 to 0.\n")
+        f.write("Redshift Precision: 0.02\n")
+        f.write("Fraction of Training Set Used: 0.9")
+        f.write("Training Amount: 50 x 400000\n")
+        dataFilenames.append(modelInfoFilename)
+
     # CREATE PARAMETERS PICKLE FILE
     t1 = time.time()
     trainingParamsFilename = create_training_params_file(dataDirName)
@@ -31,21 +46,6 @@ if __name__ == '__main__':
     dataFilenames.extend(modelFilenames)
     t4 = time.time()
     print("time spent: {0:.2f}".format(t4 - t3))
-
-    # MAKE INFO TEXT FILE ABOUT MODEL
-    modelInfoFilename = dataDirName + "model_info.txt"
-    with open(modelInfoFilename, "w") as f:
-        f.write("Date Time: %s\n" % time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()))
-        f.write("Directory: %s\n" % dataDirName)
-        f.write("Add Host: True\n")
-        f.write("SN-Host fractions: [0.01, 0.02, 0.05, 0.07, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]\n")
-        f.write("Classify Host: True\n")
-        f.write("Redshift: Zero\n")
-        f.write("Redshift Range: 0 to 0.\n")
-        f.write("Redshift Precision: 0.02\n")
-        f.write("Fraction of Training Set Used: 0.9")
-        f.write("Training Amount: 50 x 400000\n")
-        dataFilenames.append(modelInfoFilename)
 
     # SAVE ALL FILES TO ZIP FILE
     dataFilesZip = 'data_files_zeroZ_classifyHost_v01.zip'

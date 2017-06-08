@@ -2,16 +2,9 @@
 include LICENCE
 
 # Include the data files
-include dash/templates_v02.npz
-include dash/training_params_v02.pickle
-include dash/data_files/model_trainedAtZeroZ.ckpt
-include dash/type_age_atRedshiftZero_v02.npz
+include *.zip
+# recursive-include dash/models *.pickle *.npz *.ckpt*
 
 # Include Python files
-include *.py
+include *.py *.ui
 include README.md
-recursive-include dash *.py *.ui *.pickle *.npz *.ckpt
-
-prune type_age_atRedshiftZero_v02.npz
-prune data_files/model_trainedAtZeroZ.ckpt
-

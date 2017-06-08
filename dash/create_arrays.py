@@ -411,6 +411,8 @@ class CreateArrays(object):
         t1 = time.time()
         pool = mp.Pool(processes=11)
         results = [pool.apply_async(self.combined_sn_gal_templates_to_arrays, args=(snTemplateLocation, snTempFileList, galTemplateLocation, [gList],)) for gList in galTempList]
+        pool.close()
+        pool.join()
 
         outputs = [p.get() for p in results]
 
@@ -435,7 +437,3 @@ class CreateArrays(object):
         print("Completed Creating Arrays!")
 
         return typeList, images, labelsIndexes, filenames, typeNames
-
-
-
-

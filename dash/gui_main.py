@@ -236,6 +236,9 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             self.knownRedshift = False
             knownZ = 0
             self.lineEditKnownZ.setText("")
+        if not os.path.isfile(self.modelFilename + ".index"):
+            QtGui.QMessageBox.critical(self, "Error", "Model does not exist")
+            return
 
         self.progressBar.setValue(36)
         self.set_plot_redshift(knownZ)
