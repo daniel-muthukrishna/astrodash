@@ -2,7 +2,7 @@
 include LICENCE
 
 # Include the data files
-include *.zip
+# include *.zip
 # recursive-include dash/models *.pickle *.npz *.ckpt*
 
 # Include Python files

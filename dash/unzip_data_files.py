@@ -10,4 +10,4 @@ def unzip_data_files(dataZipFilename):
 
 
 if __name__ == '__main__':
-    unzip_data_files('model_v01.zip')
+    unzip_data_files('models_v01.zip')
