@@ -37,7 +37,7 @@ class Classify(object):
         self.pars = get_training_parameters()
         self.nw, w0, w1 = self.pars['nw'], self.pars['w0'], self.pars['w1']
         self.dwlog = np.log(w1/w0)/self.nw
-        self.snTemplates, self.galTemplates = load_templates('models/sn_and_host_templates.npz')
+        self.snTemplates, self.galTemplates = load_templates(os.path.join(self.scriptDirectory, data_files, 'models/sn_and_host_templates.npz'))
 
         if self.knownZ:
             if classifyHost:

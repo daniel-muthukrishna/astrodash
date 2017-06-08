@@ -16,6 +16,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         super(MainApp, self).__init__(parent)
         self.setupUi(self)
 
+        self.mainDirectory = os.path.dirname(os.path.abspath(__file__))
         self.data_files = data_files
         self.templates()
         self.plotted = False
@@ -28,8 +29,6 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.snName = 'Ia-norm'
         self.snAge = '-20 to -18'
         self.hostName = 'No Host'
-
-        self.mainDirectory = os.path.dirname(os.path.abspath(__file__))
 
         self.pushButtonLeftTemplate.clicked.connect(self.select_sub_template_left)
         self.pushButtonRightTemplate.clicked.connect(self.select_sub_template_right)
@@ -81,7 +80,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.dwlog = np.log(self.w1/self.w0)/self.nw
         self.wave = self.w0 * np.exp(np.arange(0,self.nw) * self.dwlog)
 
-        self.snTemplates, self.galTemplates = load_templates('models/sn_and_host_templates.npz')
+        self.snTemplates, self.galTemplates = load_templates(os.path.join(self.mainDirectory, self.data_files, 'models/sn_and_host_templates.npz'))
 
     def get_sn_and_host_templates(self, snName, snAge, hostName):
         snInfos, snNames, hostInfos, hostNames = get_templates(snName, snAge, hostName, self.snTemplates, self.galTemplates, self.nw)
