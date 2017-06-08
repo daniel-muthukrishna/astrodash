@@ -17,7 +17,7 @@ except ImportError:
 
 
 class Classify(object):
-    def __init__(self, filenames=[], redshifts=[], smooth=6, minWave=2500, maxWave=10000, classifyHost=False, knownZ=True):
+    def __init__(self, filenames=[], redshifts=[], smooth=6, minWave=2500, maxWave=10000, classifyHost=False, knownZ=True, data_files='models_v01'):
         """ Takes a list of filenames and corresponding redshifts for supernovae.
         Files should contain a single spectrum, and redshifts should be a list of corresponding redshift floats
         """
@@ -41,14 +41,14 @@ class Classify(object):
 
         if self.knownZ:
             if classifyHost:
-                self.modelFilename = os.path.join(self.scriptDirectory, "models/zeroZ_classifyHost/tensorflow_model.ckpt")
+                self.modelFilename = os.path.join(self.scriptDirectory, data_files, "models/zeroZ_classifyHost/tensorflow_model.ckpt")
             else:
-                self.modelFilename = os.path.join(self.scriptDirectory, "models/zeroZ/tensorflow_model.ckpt")
+                self.modelFilename = os.path.join(self.scriptDirectory, data_files, "models/zeroZ/tensorflow_model.ckpt")
         else:
             if self.classifyHost:
-                self.modelFilename = os.path.join(self.scriptDirectory, "models/agnosticZ_classifyHost/tensorflow_model.ckpt")
+                self.modelFilename = os.path.join(self.scriptDirectory, data_files, "models/agnosticZ_classifyHost/tensorflow_model.ckpt")
             else:
-                self.modelFilename = os.path.join(self.scriptDirectory, "models/agnosticZ/tensorflow_model.ckpt")
+                self.modelFilename = os.path.join(self.scriptDirectory, data_files, "models/agnosticZ/tensorflow_model.ckpt")
 
     def _get_images(self, filename, redshift):
         loadInputSpectra = LoadInputSpectra(filename, redshift, redshift, self.smooth, self.pars, self.minWave, self.maxWave, self.classifyHost)

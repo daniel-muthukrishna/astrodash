@@ -116,4 +116,4 @@ ozdesList2 = np.insert(ozdesList2, 0, np.array([['SNID', 'TRANSIENT_NAME', 'FIEL
 #np.savetxt('DES3Y_SNIa_include_DASH_without_ranking.csv', ozdesList1, delimiter=",", fmt='%s')
 np.savetxt('../templates/DES3Y_SNIa_include_DASH_withHost_withNoise.csv', ozdesList2, delimiter=",", fmt='%s')
 
-# classification.plot_with_gui(indexToPlot=20)
+classification.plot_with_gui(indexToPlot=20)

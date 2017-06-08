@@ -12,10 +12,11 @@ from dash.calculate_redshift import get_median_redshift, get_redshift_axis
 
 
 class MainApp(QtGui.QMainWindow, Ui_MainWindow):
-    def __init__(self, parent=None, inputFilename="DefaultFilename"):
+    def __init__(self, parent=None, inputFilename="DefaultFilename", data_files='models_v01'):
         super(MainApp, self).__init__(parent)
         self.setupUi(self)
 
+        self.data_files = data_files
         self.templates()
         self.plotted = False
         self.plotZ = 0
@@ -60,15 +61,15 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         if self.checkBoxKnownZ.isChecked():
             self.lineEditKnownZ.setEnabled(True)
             if self.checkBoxClassifyHost.isChecked():
-                self.modelFilename = os.path.join(self.mainDirectory, "models/zeroZ_classifyHost/tensorflow_model.ckpt")
+                self.modelFilename = os.path.join(self.mainDirectory, self.data_files, "models/zeroZ_classifyHost/tensorflow_model.ckpt")
             else:
-                self.modelFilename = os.path.join(self.mainDirectory, "models/zeroZ/tensorflow_model.ckpt")
+                self.modelFilename = os.path.join(self.mainDirectory, self.data_files, "models/zeroZ/tensorflow_model.ckpt")
         else:
             self.lineEditKnownZ.setEnabled(False)
             if self.checkBoxClassifyHost.isChecked():
-                self.modelFilename = os.path.join(self.mainDirectory, "models/agnosticZ_classifyHost/tensorflow_model.ckpt")
+                self.modelFilename = os.path.join(self.mainDirectory, self.data_files, "models/agnosticZ_classifyHost/tensorflow_model.ckpt")
             else:
-                self.modelFilename = os.path.join(self.mainDirectory, "models/agnosticZ/tensorflow_model.ckpt")
+                self.modelFilename = os.path.join(self.mainDirectory, self.data_files, "models/agnosticZ/tensorflow_model.ckpt")
         if not os.path.isfile(self.modelFilename + ".index"):
             QtGui.QMessageBox.critical(self, "Error", "Model does not exist")
 

@@ -7,6 +7,7 @@ def unzip_data_files(dataZipFilename):
     zipRef = zipfile.ZipFile(dataZipFilename, 'r')
     zipRef.extractall(os.path.join(scriptDirectory, dataZipFilename.strip(".zip")))  # #
     zipRef.close()
+    os.remove(dataZipFilename)
 
 
 if __name__ == '__main__':

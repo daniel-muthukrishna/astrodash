@@ -4,9 +4,9 @@ import shutil
 from dash.unzip_data_files import unzip_data_files
 
 
-def download_file(filename, urlpath, printStatus, scriptDirectory, zipVersion):
+def download_file(filename, urlpath, printStatus, scriptDirectory):
     dataFilename = os.path.join(scriptDirectory, filename)
-    if not os.path.isfile(dataFilename):
+    if (not os.path.isfile(dataFilename)) and (not os.path.isdir(dataFilename.strip(".zip"))):
         print(printStatus)
         if sys.version_info[0] < 3:
             import urllib
@@ -17,7 +17,8 @@ def download_file(filename, urlpath, printStatus, scriptDirectory, zipVersion):
             urllib.request.urlretrieve(urlpath, dataFilename)
 
         print(dataFilename)
-        unzip_data_files('models_{0}.zip'.format(zipVersion))
+        if filename.endswith(".zip"):
+            unzip_data_files(filename)
 
 
 def delete_previous_versions(oldFilenames, scriptDirectory):
@@ -44,7 +45,7 @@ def download_all_files(zipVersion):
     printStatuses = ["Downloading data files..."]
 
     for i in range(len(urlpaths)):
-        download_file(saveFilenames[i], urlpaths[i], printStatuses[i], scriptDirectory, zipVersion)
+        download_file(saveFilenames[i], urlpaths[i], printStatuses[i], scriptDirectory)
 
 
 if __name__ == '__main__':
