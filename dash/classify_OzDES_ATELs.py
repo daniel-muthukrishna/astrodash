@@ -1,12 +1,12 @@
 import os
 import dash
 
-directoryPath = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../templates/OzDES_data')
+directoryPath = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../templates/OzDES_data/')
 
 atels = [
     ('ATEL_9504_Run24/DES16E1de_E1_combined_160825_v10_b00.dat', 0.292),
     ('ATEL_9504_Run24/DES16E2dd_E2_combined_160826_v10_b00.dat', 0.0746),
-    ('ATEL_9504_Run24/DES16X3km_X3_combined_160827_v10_b00.dat', 0.0542),
+    ('ATEL_9504_Run24/DES16X3km_X3_combined_160827_v10_b00.dat', 0.06),
     ('ATEL_9504_Run24/DES16X3er_X3_combined_160827_v10_b00.dat', 0.167),
     ('ATEL_9504_Run24/DES16X3hj_X3_combined_160827_v10_b00.dat', 0.308),
     ('ATEL_9504_Run24/DES16X3es_X3_combined_160827_v10_b00.dat', 0.554),
@@ -88,7 +88,7 @@ bestFits, redshifts, bestTypes, rejectionLabels, reliableFlags = classification.
 print(bestFits)
 f = open('classification_results.txt', 'w')
 for i in range(len(filenames)):
-    f.write("%s   z=%s     %s      %s     %s\n %s\n\n" % (filenames[i], redshifts[i], bestTypes[i], reliableFlags[i], rejectionLabels[i], bestFits[i]))
+    f.write("%s   z=%s     %s      %s     %s\n %s\n\n" % (filenames[i].strip(directoryPath), redshifts[i], bestTypes[i], reliableFlags[i], rejectionLabels[i], bestFits[i]))
 f.close()
 print("Finished classifying %d spectra!" % len(filenames))
 

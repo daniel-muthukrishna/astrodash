@@ -8,7 +8,7 @@ from scipy.stats import chisquare, pearsonr
 
 
 def combined_prob(bestMatchList):
-    host, prevName, age, prob = bestMatchList[0]
+    hostName, prevName, age, prob = bestMatchList[0]
     probInitial = float(prob)
     bestName = prevName
     prevBroadTypeName = prevName[0:2]
@@ -33,7 +33,6 @@ def combined_prob(bestMatchList):
                     probTotal += float(prob)
                     prevName = name
                     agesList = agesList + [minAge, maxAge]
-
                 else:
                     probPossible = float(prob)
                     agesListPossible = [minAge, maxAge]
@@ -60,14 +59,9 @@ def combined_prob(bestMatchList):
             if probPossible == 0:
                 if (minAge in agesList) or (maxAge in agesList):
                     if index <= 2:
-                        probTotal += float(prob)
-                        agesList = agesList + [minAge, maxAge]
                         bestName = broadTypeName
-                    elif bestName == broadTypeName:
-                        probTotal += float(prob)
-                        agesList = agesList + [minAge, maxAge]
-                    else:
-                        print("Something strange going on...")
+                    probTotal += float(prob)
+                    agesList = agesList + [minAge, maxAge]
                 else:
                     probPossible = float(prob)
                     agesListPossible = [minAge, maxAge]
@@ -90,7 +84,7 @@ def combined_prob(bestMatchList):
     else:
         reliableFlag = False
 
-    return host, bestName, bestAge, round(probTotal, 4), reliableFlag
+    return hostName, bestName, bestAge, round(probTotal, 4), reliableFlag
 
 
 class FalsePositiveRejection(object):

@@ -327,6 +327,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
     def list_item_clicked(self, item):
         if item.text()[0].isdigit():
             self.templateSubIndex = 0
+            host = "No Host"
             if self.knownRedshift:
                 if self.classifyHost:
                     index, host, snTypePlot, age1, to, age3, softmax = str(item.text()).split()
@@ -339,7 +340,6 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
                     index, snTypePlot, age1, to, age3, redshift, softmax = str(item.text()).split()
                 self.set_plot_redshift(redshift)
             agePlot = age1 + ' to ' + age3
-            host = "No Host"
 
             self.plot_cross_corr(self.snName, self.snAge)
             snTypeComboBoxIndex = self.comboBoxSNType.findText(snTypePlot)

@@ -1,9 +1,13 @@
+import time
+t0 = time.time()
 import os
 import dash
 import pandas as pd
 import numpy as np
 import scipy
 import shutil
+
+
 
 dfNewList = pd.read_csv('../templates/typeIa_withcuts_Moller090517.csv', sep=',', header=1)
 newList = dfNewList.values
@@ -70,12 +74,12 @@ for (snid, name, field, z, specType, filename) in ozdesList:
         knownRedshifts.append(z)
         names.append(name)
         # shutil.copy2(directory+filename, './copiedFiles')
-import time
 t1 = time.time()
+print("Time spent reading files: {0:.2f}".format(t1 - t0))
 classification = dash.Classify(filenames, knownRedshifts, classifyHost=False, smooth=7, knownZ=True)
 bestFits, redshifts, bestTypes, rejectionLabels, reliableFlags = classification.list_best_matches(n=5)
 t2 = time.time()
-print(t2-t1)
+print("Time spent classifying: {0:.2f}".format(t2 - t1))
 # SAVE BEST MATCHES
 print(bestFits)
 f = open('classification_results.txt', 'w')
@@ -114,6 +118,11 @@ print(ozdesList[1])
 ozdesList2 = np.insert(ozdesList2, 0, np.array([['SNID', 'TRANSIENT_NAME', 'FIELD', 'Z_SPEC', 'SPEC_TYPE', 'FILENAME', 'Z_NEW_LIST', 'DASH_TYPE', 'DASH_AGE', 'DASH_PROB', 'RELIABLE?', 'RANK_1', 'RANK_2', 'RANK_3', 'RANK_4', 'RANK_5', 'REJECTION_SCORES']]), axis=0)
 
 #np.savetxt('DES3Y_SNIa_include_DASH_without_ranking.csv', ozdesList1, delimiter=",", fmt='%s')
-np.savetxt('../templates/DES3Y_SNIa_include_DASH_withHost_withNoise.csv', ozdesList2, delimiter=",", fmt='%s')
+np.savetxt('DES3Y_SNIa_include_DASH_withHost_withNoise.csv', ozdesList2, delimiter=",", fmt='%s')
 
-classification.plot_with_gui(indexToPlot=20)
+t3 = time.time()
+print("Time spent saving output to files: {0:.2f}".format(t3 - t2))
+print("Time spent total for {0} spectra (setup + classify + save): {1:.2f}s ... ({2:.2f} + {3:.2f} + {4:.2f})".format(len(filenames), (t3 - t0), (t1 - t0), (t2 - t1), (t3 - t2)))
+
+os.system("open DES3Y_SNIa_include_DASH_withHost_withNoise.csv")
+classification.plot_with_gui(indexToPlot=15)
