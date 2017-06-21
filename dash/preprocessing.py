@@ -47,7 +47,13 @@ class ReadSpectrumFile(object):
     def read_fits_file(self):
         #filename = unicode(self.filename.toUtf8(), encoding="UTF-8")
         spectrum = read_fits.read_fits_spectrum1d(self.filename)
-        wave = np.array(spectrum.wavelength)
+        if len(spectrum) > 1:
+            spectrum = spectrum[0]
+        try:
+            wave = np.array(spectrum.wavelength)
+        except AttributeError:
+            wave = np.array(spectrum.dispersion)
+            print("No wavelength attribute in FITS File. Using 'dispersion' attribute instead")
         flux = np.array(spectrum.flux)
         flux[np.isnan(flux)] = 0 #convert nan's to zeros
 
