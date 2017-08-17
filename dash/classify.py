@@ -17,7 +17,7 @@ except ImportError:
 
 
 class Classify(object):
-    def __init__(self, filenames=[], redshifts=[], smooth=6, minWave=2500, maxWave=10000, classifyHost=False, knownZ=True, data_files='models_v01'):
+    def __init__(self, filenames=[], redshifts=[], smooth=6, minWave=2500, maxWave=10000, classifyHost=False, knownZ=True, rlapScores=False, data_files='models_v01'):
         """ Takes a list of filenames and corresponding redshifts for supernovae.
         Files should contain a single spectrum, and redshifts should be a list of corresponding redshift floats
         """
@@ -34,6 +34,7 @@ class Classify(object):
             self.knownZ = True
         else:
             self.knownZ = False
+        self.rlapScores = rlapScores
         self.pars = get_training_parameters()
         self.nw, w0, w1 = self.pars['nw'], self.pars['w0'], self.pars['w1']
         self.dwlog = np.log(w1/w0)/self.nw
@@ -74,7 +75,7 @@ class Classify(object):
 
         return bestTypes, softmaxes, bestLabels, inputImages
 
-    def list_best_matches(self, n=5):
+    def list_best_matches(self, n=5, saveFilename='DASH_matches'):
         """Returns a list of lists of the the top n best matches for each spectrum"""
         bestTypes, softmaxes, bestLabels, inputImages = self._input_spectra_info()
         bestMatchLists = []
@@ -104,6 +105,9 @@ class Classify(object):
         else:
             redshifts = np.array(redshifts)
 
+        if saveFilename:
+            self.save_best_matches(bestMatchLists, redshifts, bestBroadTypes, rejectionLabels, reliableFlags, saveFilename)
+
         return bestMatchLists, redshifts, bestBroadTypes, rejectionLabels, reliableFlags
 
     def best_broad_type(self, bestMatchList):
@@ -115,9 +119,12 @@ class Classify(object):
         host, name, age = classification_split(bestType)
         snInfos, snNames, hostInfos, hostNames = get_templates(name, age, host, self.snTemplates, self.galTemplates, self.nw)
         if snInfos != []:
-            templateImages = snInfos[:, 1]
-            falsePositiveRejection = FalsePositiveRejection(inputImage, templateImages, snNames, self.wave)
-            rejectionLabel = "rlap=%s" % (falsePositiveRejection.rejection_label2())
+            if self.rlapScores:
+                templateImages = snInfos[:, 1]
+                falsePositiveRejection = FalsePositiveRejection(inputImage, templateImages, snNames, self.wave)
+                rejectionLabel = "rlap=%s" % (falsePositiveRejection.rejection_label2())
+            else:
+                rejectionLabel = "No rlap"
         else:
             rejectionLabel = "(NO_TEMPLATES)"
 
@@ -145,10 +152,13 @@ class Classify(object):
 
         return round(redshift, 4), crossCorr
 
-    # def save_best_matches(self, n=1, filename='DASH_matches.txt'):
-    #     if ('self.bestMatchLists' not in locals()) or self.n != n:
-    #         self.bestMatchLists = self.list_best_matches(n)
-    #     np.savetxt(filename, self.bestMatchLists)
+    def save_best_matches(self, bestFits, redshifts, bestTypes, rejectionLabels, reliableFlags, saveFilename='DASH_matches.txt'):
+        with open(saveFilename, 'w') as f:
+            for i in range(len(self.filenames)):
+                f.write("%s   z=%s     %s      %s     %s\n %s\n\n" % (
+                    self.filenames[i].split('/')[-1], redshifts[i], bestTypes[i], reliableFlags[i], rejectionLabels[i],
+                    bestFits[i]))
+        print("Finished classifying %d spectra!" % len(self.filenames))
 
     def plot_with_gui(self, indexToPlot=0):
         app = QtGui.QApplication(sys.argv)

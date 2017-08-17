@@ -29,6 +29,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.snName = 'Ia-norm'
         self.snAge = '-20 to -18'
         self.hostName = 'No Host'
+        self.lineEditKnownZ.setText('')
 
         self.pushButtonLeftTemplate.clicked.connect(self.select_sub_template_left)
         self.pushButtonRightTemplate.clicked.connect(self.select_sub_template_right)
@@ -38,7 +39,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.inputFilename = inputFilename
         self.progressBar.setValue(100)
         self.add_combo_box_entries()
-        self.labelRlapScore.setText("")
+        self.labelRlapScore.setText('')
 
         self.select_tensorflow_model()
         self.checkBoxKnownZ.stateChanged.connect(self.select_tensorflow_model)
@@ -397,9 +398,10 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             self.graphicsView.setYRange(0, 1)
             self.graphicsView.plotItem.showGrid(x=True, y=True, alpha=0.95)
 
-            falsePositive = FalsePositiveRejection(self.inputImageUnRedshifted, [self.templatePlotFlux], self.templatePlotName, self.wave)
-            rlap = falsePositive.rejection_label2()
-            self.labelRlapScore.setText("rlap: {0}".format(rlap))
+            if np.any(self.templatePlotFlux):
+                falsePositive = FalsePositiveRejection(self.inputImageUnRedshifted, [self.templatePlotFlux], [self.templatePlotName], self.wave)
+                rlap = falsePositive.rejection_label2()
+                self.labelRlapScore.setText("rlap: {0}".format(rlap))
 
     def best_redshifts(self):
         redshifts = []

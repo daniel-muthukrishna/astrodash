@@ -2,6 +2,7 @@ from scipy.fftpack import fft
 from scipy.signal import argrelmax
 import numpy as np
 from scipy.stats import chisquare, pearsonr
+from dash.restore_model import get_training_parameters
 # import matplotlib
 # matplotlib.use('TkAgg')
 # import matplotlib.pyplot as plt
@@ -94,6 +95,7 @@ class FalsePositiveRejection(object):
         self.templateNames = templateNames
         self.nw = len(self.inputFlux)
         self.wave = wave
+        pars = get_training_parameters()
         w0, w1, self.nw, = pars['w0'], pars['w1'], pars['nw']
         self.dwlog = np.log(w1 / w0) / self.nw
 
