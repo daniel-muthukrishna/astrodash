@@ -158,7 +158,7 @@ def create_training_set_files(dataDirName, minZ=0, maxZ=0, redshiftPrecision=0.0
 
     scriptDirectory = os.path.dirname(os.path.abspath(__file__))
 
-    snidTemplateLocation = os.path.join(scriptDirectory, "../templates/snid_templates_Modjaz_BSNIP/")
+    snidTemplateLocation = os.path.join(scriptDirectory, "../templates/training_set/")
     snidTempFileList = snidTemplateLocation + 'templist.txt'
     if trainWithHost:
         galTemplateLocation = os.path.join(scriptDirectory, "../templates/superfit_templates/gal/")

@@ -37,6 +37,7 @@ class Classify(object):
         self.pars = get_training_parameters()
         self.nw, w0, w1 = self.pars['nw'], self.pars['w0'], self.pars['w1']
         self.dwlog = np.log(w1/w0)/self.nw
+        self.wave = w0 * np.exp(np.arange(0, self.nw) * self.dwlog)
         self.snTemplates, self.galTemplates = load_templates(os.path.join(self.scriptDirectory, data_files, 'models/sn_and_host_templates.npz'))
 
         if self.knownZ:
@@ -115,8 +116,8 @@ class Classify(object):
         snInfos, snNames, hostInfos, hostNames = get_templates(name, age, host, self.snTemplates, self.galTemplates, self.nw)
         if snInfos != []:
             templateImages = snInfos[:, 1]
-            falsePositiveRejection = FalsePositiveRejection(inputImage, templateImages)
-            rejectionLabel = "NONE"  # "(chi2=%s, rlap=%s)" % (falsePositiveRejection.rejection_label(), falsePositiveRejection.rejection_label2())
+            falsePositiveRejection = FalsePositiveRejection(inputImage, templateImages, snNames, self.wave)
+            rejectionLabel = "rlap=%s" % (falsePositiveRejection.rejection_label2())
         else:
             rejectionLabel = "(NO_TEMPLATES)"
 

@@ -7,7 +7,7 @@ from dash.design import Ui_MainWindow
 from dash.restore_model import LoadInputSpectra, BestTypesListSingleRedshift, get_training_parameters, classification_split
 from dash.create_arrays import AgeBinning
 from dash.read_binned_templates import load_templates, get_templates, ReadBinnedTemplates
-from dash.false_positive_rejection import combined_prob
+from dash.false_positive_rejection import combined_prob, FalsePositiveRejection
 from dash.calculate_redshift import get_median_redshift, get_redshift_axis
 
 
@@ -38,6 +38,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.inputFilename = inputFilename
         self.progressBar.setValue(100)
         self.add_combo_box_entries()
+        self.labelRlapScore.setText("")
 
         self.select_tensorflow_model()
         self.checkBoxKnownZ.stateChanged.connect(self.select_tensorflow_model)
@@ -239,6 +240,10 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         if not os.path.isfile(self.modelFilename + ".index"):
             QtGui.QMessageBox.critical(self, "Error", "Model does not exist")
             return
+        if self.checkBoxRlap.isChecked():
+            self.getRlapScores = True
+        else:
+            self.getRlapScores = False
 
         self.progressBar.setValue(36)
         self.set_plot_redshift(knownZ)
@@ -289,29 +294,46 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             self.labelReliableFlag.setText("Unreliable")
             self.labelReliableFlag.setStyleSheet('color: red')
 
+    def get_smoothed_templates(self, snName, snAge, hostName):
+        snInfos, snNames, hostInfos, hostNames = self.get_sn_and_host_templates(snName, snAge, hostName)
+        fluxes = []
+        for i in range(len(snNames)):
+            readBinnedTemplates = ReadBinnedTemplates(snInfos[i], hostInfos[0], self.w0, self.w1, self.nw)
+            wave, flux = readBinnedTemplates.template_data(snCoeff=1, galCoeff=0, z=0)
+            fluxes.append(flux)
+
+        return fluxes, snNames
+
     def list_best_matches_single_redshift(self):
         print("listing best matches...")
         redshifts = self.best_redshifts()
         self.listWidget.clear()
-        if self.knownRedshift:
-            self.listWidget.addItem("".join(word.ljust(25) for word in ['No.', 'Type', 'Age', 'Softmax Prob.']))
-        else:
-            self.listWidget.addItem("".join(word.ljust(25) for word in ['No.', 'Type', 'Age', 'Redshift', 'Softmax Prob.']))
+
+        header = ['No.', 'Type', 'Age', 'Softmax Prob.']
+        if self.classifyHost:
+            header.insert(1, 'Host')
+        if not self.knownRedshift:
+            header.insert(3, 'Redshift')
+        if self.getRlapScores:
+            header.insert(5, 'rlap')
+        self.listWidget.addItem("".join(word.ljust(25) for word in header))
+
         for i in range(20):
             host, name, age = classification_split(self.bestTypes[i])
             prob = self.softmax[i]
             redshift = redshifts[i]
-            if self.classifyHost:
-                if self.knownRedshift:
-                    self.listWidget.addItem("".join(word.ljust(25) for word in [str(i + 1), host, name, age, str(prob)]))
-                else:
-                    self.listWidget.addItem("".join(word.ljust(25) for word in [str(i + 1), host, name, age, str(redshift), str(prob)]))
-            else:
-                if self.knownRedshift:
-                    self.listWidget.addItem("".join(word.ljust(25) for word in [str(i + 1), name, age, str(prob)]))
-                else:
-                    self.listWidget.addItem("".join(word.ljust(25) for word in [str(i + 1), name, age, str(redshift), str(prob)]))
 
+            line = [str(i + 1), name, age, str(prob)]
+            if self.classifyHost:
+                line.insert(1, host)
+            if not self.knownRedshift:
+                line.insert(3, str(redshift))
+            if self.getRlapScores:
+                fluxes, snNames = self.get_smoothed_templates(name, age, host)
+                falsePositive = FalsePositiveRejection(self.inputImageUnRedshifted, fluxes, snNames, self.wave)
+                rlap = falsePositive.rejection_label2()
+                line.insert(5, str(rlap))
+            self.listWidget.addItem("".join(word.ljust(25) for word in line))
 
             if i == 0:
                 SNTypeComboBoxIndex = self.comboBoxSNType.findText(name)
@@ -328,16 +350,29 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         if item.text()[0].isdigit():
             self.templateSubIndex = 0
             host = "No Host"
+
             if self.knownRedshift:
                 if self.classifyHost:
-                    index, host, snTypePlot, age1, to, age3, softmax = str(item.text()).split()
+                    if self.getRlapScores:
+                        index, host, snTypePlot, age1, to, age3, softmax, rlap = str(item.text()).split()
+                    else:
+                        index, host, snTypePlot, age1, to, age3, softmax = str(item.text()).split()
                 else:
-                    index, snTypePlot, age1, to, age3, softmax = str(item.text()).split()
+                    if self.getRlapScores:
+                        index, snTypePlot, age1, to, age3, softmax, rlap = str(item.text()).split()
+                    else:
+                        index, snTypePlot, age1, to, age3, softmax = str(item.text()).split()
             else:
                 if self.classifyHost:
-                    index, host, self.snTypePlot, age1, to, age3, redshift, softmax = str(item.text()).split()
+                    if self.getRlapScores:
+                        index, host, snTypePlot, age1, to, age3, redshift, softmax, rlap = str(item.text()).split()
+                    else:
+                        index, host, snTypePlot, age1, to, age3, redshift, softmax = str(item.text()).split()
                 else:
-                    index, snTypePlot, age1, to, age3, redshift, softmax = str(item.text()).split()
+                    if self.getRlapScores:
+                        index, snTypePlot, age1, to, age3, redshift, softmax, rlap = str(item.text()).split()
+                    else:
+                        index, snTypePlot, age1, to, age3, redshift, softmax = str(item.text()).split()
                 self.set_plot_redshift(redshift)
             agePlot = age1 + ' to ' + age3
 
@@ -361,6 +396,10 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             self.graphicsView.setXRange(2500, 10000)
             self.graphicsView.setYRange(0, 1)
             self.graphicsView.plotItem.showGrid(x=True, y=True, alpha=0.95)
+
+            falsePositive = FalsePositiveRejection(self.inputImageUnRedshifted, [self.templatePlotFlux], self.templatePlotName, self.wave)
+            rlap = falsePositive.rejection_label2()
+            self.labelRlapScore.setText("rlap: {0}".format(rlap))
 
     def best_redshifts(self):
         redshifts = []

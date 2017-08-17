@@ -19,7 +19,7 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="9,32">
     <item>
-     <layout class="QVBoxLayout" name="verticalLayout" stretch="1,4,0,2">
+     <layout class="QVBoxLayout" name="verticalLayout" stretch="1,5,0,2">
       <property name="sizeConstraint">
        <enum>QLayout::SetMaximumSize</enum>
       </property>
@@ -107,7 +107,7 @@
               <x>0</x>
               <y>0</y>
               <width>223</width>
-              <height>186</height>
+              <height>207</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_4" stretch="0">
@@ -118,7 +118,7 @@
               <number>0</number>
              </property>
              <item>
-              <layout class="QVBoxLayout" name="verticalLayout_5" stretch="1,1,2,1">
+              <layout class="QVBoxLayout" name="verticalLayout_5" stretch="1,1,2,1,0">
                <property name="bottomMargin">
                 <number>5</number>
                </property>
@@ -259,6 +259,20 @@
                    </property>
                    <property name="orientation">
                     <enum>Qt::Horizontal</enum>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <layout class="QVBoxLayout" name="verticalLayout_3">
+                 <property name="bottomMargin">
+                  <number>10</number>
+                 </property>
+                 <item>
+                  <widget class="QCheckBox" name="checkBoxRlap">
+                   <property name="text">
+                    <string>Calculate rlap scores</string>
                    </property>
                   </widget>
                  </item>
@@ -573,7 +587,7 @@
           </layout>
          </item>
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,0,0,0,0,1,6">
+          <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,0,0,0,0,0,1,6">
            <property name="topMargin">
             <number>3</number>
            </property>
@@ -593,6 +607,13 @@
              </property>
              <property name="text">
               <string>Template Name</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="labelRlapScore">
+             <property name="text">
+              <string>rlap: </string>
              </property>
             </widget>
            </item>

@@ -88,26 +88,30 @@ def combined_prob(bestMatchList):
 
 
 class FalsePositiveRejection(object):
-    def __init__(self, inputFlux, templateFluxes):
+    def __init__(self, inputFlux, templateFluxes, templateNames, wave):
         self.inputFlux = inputFlux
         self.templateFluxes = templateFluxes
+        self.templateNames = templateNames
         self.nw = len(self.inputFlux)
+        self.wave = wave
+        w0, w1, self.nw, = pars['w0'], pars['w1'], pars['nw']
+        self.dwlog = np.log(w1 / w0) / self.nw
 
     def _cross_correlation(self, templateFlux):
-        inputfourier = fft(self.inputFlux, self.nw)
-        tempfourier = fft(templateFlux, self.nw)
+        inputfourier = fft(self.inputFlux)
+        tempfourier = fft(templateFlux)
 
         product = inputfourier * np.conj(tempfourier)
-        xcorr = fft(product)
+        xCorr = fft(product)
 
-        rmsinput = np.std(inputfourier)
-        rmstemp = np.std(tempfourier)
+        rmsInput = np.std(inputfourier)
+        rmsTemp = np.std(tempfourier)
 
-        xcorrnorm = (1. / (self.nw * rmsinput * rmstemp)) * xcorr
+        xCorrNorm = (1. / (self.nw * rmsInput * rmsTemp)) * xCorr
 
-        rmsxcorr = np.std(product)
+        rmsXCorr = np.std(product)
 
-        xcorrnormRearranged = np.concatenate((xcorrnorm[int(len(xcorrnorm) / 2):], xcorrnorm[0:int(len(xcorrnorm) / 2)]))
+        xCorrNormRearranged = np.concatenate((xCorrNorm[int(len(xCorrNorm) / 2):], xCorrNorm[0:int(len(xCorrNorm) / 2)]))
 
         #
         # w0 = 2500.  # wavelength range in Angstroms
@@ -118,10 +122,20 @@ class FalsePositiveRejection(object):
         # zaxis1 = np.zeros(self.nw)
         # zaxis1[0:(self.nw/2 -1)] = (np.exp(abs(zaxisindex1[0:(self.nw/2-1)]) * dwlog) - 1)
         # zaxis1[self.nw/2:] = -(np.exp(abs(zaxisindex1[(self.nw/2):]) * dwlog) - 1)
-        # plt.plot(zaxis1, xcorrnormRearranged)
+        # plt.plot(zaxis1, xCorrNormRearranged)
         # plt.show()
+        # plt.plot(self.zAxis, np.correlate(self.inputFlux, templateFlux, mode='Full')[::-1][512:1536]/max(np.correlate(self.inputFlux, templateFlux, mode='Full')))
+        # plt.plot(self.zAxis, np.correlate(templateFlux, templateFlux, mode='Full')[::-1][512-shift:1536-shift]/max(np.correlate(templateFlux, templateFlux, mode='Full')))
 
-        return xcorr, rmsinput, rmstemp, xcorrnorm, rmsxcorr, xcorrnormRearranged
+        crossCorr = np.correlate(self.inputFlux, templateFlux, mode='Full')[::-1][int(self.nw/2):int(self.nw + self.nw/2)]/max(np.correlate(self.inputFlux, templateFlux, mode='Full'))
+        deltapeak, h = self._get_peaks(crossCorr)[0]
+        shift = int(deltapeak - self.nw / 2)
+        autoCorr = np.correlate(templateFlux, templateFlux, mode='Full')[::-1][int(self.nw/2)-shift:int(self.nw + self.nw/2)-shift]/max(np.correlate(templateFlux, templateFlux, mode='Full'))
+
+        aRandomFunction = crossCorr - autoCorr
+        rmsA = np.std(aRandomFunction)
+
+        return xCorr, rmsInput, rmsTemp, xCorrNorm, rmsXCorr, xCorrNormRearranged, rmsA
 
     def _get_peaks(self, crosscorr):
         peakindexes = argrelmax(crosscorr)[0]
@@ -137,11 +151,11 @@ class FalsePositiveRejection(object):
         return sortedPeaks
 
 
-    def _calculate_r(self, crosscorr):
+    def _calculate_r(self, crosscorr, rmsA):
         deltapeak1, h1 = self._get_peaks(crosscorr)[0]  # deltapeak = np.argmax(abs(crosscorr))
         deltapeak2, h2 = self._get_peaks(crosscorr)[1]
         # h = crosscorr[deltapeak]
-        rmsxcorr = np.std(crosscorr)
+
         ##    shift = deltapeak
         ##    arms = 0
         ##    srms = 0
@@ -159,23 +173,37 @@ class FalsePositiveRejection(object):
         ##        srms = srms + (phase*crosscorr[k+1]).real*(phase*crosscorr[k+1]).real
         ##
         ##    arms = np.sqrt(arms)/nw
-        r = abs(h1 / (np.sqrt(2) * rmsxcorr))
+        r = abs((h1 -rmsA) / (np.sqrt(2) * rmsA))
         fom = (h1 - 0.05) ** 0.75 * (h1 / h2)
 
         return r, deltapeak1, fom
 
-    def calculate_rlap(self, crosscorr, templateFlux):
-        r, deltapeak, fom = self._calculate_r(crosscorr)
-        shift = deltapeak - self.nw / 2  # shift from redshift
+    def get_redshift_axis(self, nw, dwlog):
+        zAxisIndex = np.concatenate((np.arange(-nw / 2, 0), np.arange(0, nw / 2)))
+        zAxis = np.zeros(nw)
+        zAxis[0:int(nw / 2 - 1)] = -(np.exp(abs(zAxisIndex[0:int(nw / 2 - 1)]) * dwlog) - 1)
+        zAxis[int(nw / 2):] = (np.exp(abs(zAxisIndex[int(nw / 2):]) * dwlog) - 1)
+        zAxis = zAxis[::-1]
+
+        return zAxis
+
+    def calculate_rlap(self, crosscorr, rmsAntisymmetric, templateFlux):
+        r, deltapeak, fom = self._calculate_r(crosscorr, rmsAntisymmetric)
+        shift = int(deltapeak - self.nw / 2)  # shift from redshift
+
+        print(self.zAxis[deltapeak])
 
         # lap value
         iminindex, imaxindex = self.min_max_index(self.inputFlux)
         tminindex, tmaxindex = self.min_max_index(templateFlux)
 
-        overlapminindex = max(iminindex + shift, tminindex)
-        overlapmaxindex = min(imaxindex - 1 + shift, tmaxindex - 1)
+        overlapminindex = int(max(iminindex + shift, tminindex))
+        overlapmaxindex = int(min(imaxindex - 1 + shift, tmaxindex - 1))
 
-        lap = np.log(overlapmaxindex / overlapminindex)
+        minWaveOverlap = self.wave[overlapminindex]
+        maxWaveOverlap = self.wave[overlapmaxindex]
+
+        lap = np.log(maxWaveOverlap / minWaveOverlap)
         rlap = r * lap
 
 
@@ -235,15 +263,19 @@ class FalsePositiveRejection(object):
         return "%s, Pearson=%s" % (str(chi2Mean), str(pearsonMean))
 
     def rejection_label2(self):
+        self.zAxis = self.get_redshift_axis(self.nw, self.dwlog)
         rlapList = []
-        for templateFlux in self.templateFluxes:
-            xcorr, rmsinput, rmstemp, xcorrnorm, rmsxcorr, xcorrnormRearranged = self._cross_correlation(templateFlux.astype('float'))
+        for i in range(len(self.templateNames)):
+            xcorr, rmsinput, rmstemp, xcorrnorm, rmsxcorr, xcorrnormRearranged, rmsA = self._cross_correlation(self.templateFluxes[i].astype('float'))
             crosscorr = xcorrnormRearranged
-            r, lap, rlap, fom = self.calculate_rlap(crosscorr, templateFlux)
+            r, lap, rlap, fom = self.calculate_rlap(crosscorr, rmsA, self.templateFluxes[i])
             rlapList.append(rlap)
+            if i > 20:
+                break
 
+        print("r={0}, lap={1}, rlap={2}, rmsA={3} - last value".format(r, lap, rlap, rmsA))
         rlapMean = round(np.mean(rlapList),2)
         print(rlapMean, np.median(rlapList), min(rlapList), max(rlapList))
 
-        return str(rlapMean)
+        return "{0}_max={1}".format(str(rlapMean), round(max(rlapList),2))  # return str(rlapMean)
 

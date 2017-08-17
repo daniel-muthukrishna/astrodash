@@ -18,13 +18,14 @@ def train_model(dataDirName):
     # zipRef = zipfile.ZipFile(trainingSet, 'r')
     # zipRef.extractall(extractedFolder)
     # zipRef.close()
-    os.system("unzip %s -d %s" % (trainingSet, extractedFolder))
+    if not os.path.exists(extractedFolder):
+        os.system("unzip %s -d %s" % (trainingSet, extractedFolder))
 
     npyFiles = {}
     fileList = os.listdir(extractedFolder)
     for filename in fileList:
+        f = os.path.join(scriptDirectory, extractedFolder, filename)
         if filename.endswith('.gz'):
-            f = os.path.join(scriptDirectory, extractedFolder, filename)
             # # npyFiles[filename.strip('.npy.gz')] = gzip.GzipFile(f, 'r')
             # gzFile = gzip.open(f, "rb")
             # unCompressedFile = open(f.strip('.gz'), "wb")
@@ -33,7 +34,9 @@ def train_model(dataDirName):
             # gzFile.close()
             # unCompressedFile.close()
             npyFiles[filename.strip('.npy.gz')] = f.strip('.gz')
-            os.system("gzip -dk %s" % f)
+            os.system("gzip -d %s" % f)  # "gzip -dk %s" % f
+        elif filename.endswith('.npy'):
+            npyFiles[filename.strip('.npy')] = f
 
     trainImages = np.load(npyFiles['trainImages'], mmap_mode='r')
     trainLabels = np.load(npyFiles['trainLabels'], mmap_mode='r')
@@ -72,7 +75,7 @@ def train_model(dataDirName):
 
         trainImagesCycle = itertools.cycle(trainImages)
         trainLabelsCycle = itertools.cycle(trainLabels)
-        for i in range(400000):
+        for i in range(1000):
             batch_xs = np.array(list(itertools.islice(trainImagesCycle, 50 * i, 50 * i + 50)))
             batch_ys = labels_indexes_to_arrays(list(itertools.islice(trainLabelsCycle, 50 * i, 50 * i + 50)), nLabels)
             train_step.run(feed_dict={x: batch_xs, y_: batch_ys, keep_prob: 0.5})
@@ -115,7 +118,7 @@ def train_model(dataDirName):
             print(e)
 
         try:
-            calc_model_statistics(saveFilename, testImages, testLabels, testTypeNames, typeNamesList)
+            calc_model_statistics(saveFilename, testImages, testTypeNames, typeNamesList)
         except Exception as e:
             print(e)
 
