@@ -1,0 +1,66 @@
+#
+# SNID templates-2.0
+#
+
+
+######################
+# GENERAL INFORMATION
+######################
+
+This new set of SNID templates includes the original template set
+(corrected for minor bugs!) distributed with snid-5.0, augmented with
+(most) SN Ia spectra with phase information from the CfA SN Program
+published by Blondin et al. (2012), and including literature data when
+publicly available. 
+
+Note that the new templates are named snYYYYxx.lnw and lbvYYYYxx.lnw
+for SN and LBV(-like) objects (as opposed to snYYxx.lnw and
+lbvYYxx.lnw in the original template set). The template for the
+peculiar SN Ia SNLS-03D3bb (Howell et al. 2006; IAU name SN 2003fg)
+has been renamed from sn03fg.lnw to snls03D3bb.lnw.
+
+The templates-2.0 set also includes the following new templates:
+
+#name		subtype		Ref.
+sn1984A 	Ia-norm		Wegner87,Barbon89
+sn2003bg 	IIb		Hamuy09
+sn2003hv 	Ia-norm		Leloudas10
+sn2005cg 	Ia-norm		Quimby06
+sn2007Y 	Ib-norm		Stritzinger09
+sn2008D 	Ib-pec		Modjaz08
+
+This new set consists of 3754 spectra of 349 templates (compared to
+1515 spectra of 111 templates for the original set).
+
+
+############################
+# INSTALLATION INSTRUCTIONS
+############################
+
+To use this new template set with snid-5.0, follow these steps:
+
+1. unpack the templates-2.0.tgz tarball in your snid-5.0 installation
+directory. This will create directory named templates-2.0/ . You can
+then safely remove the .tgz file.
+
+2. edit line 52 of the snidmore.f file in the source/ directory to
+point to this new template directory:
+
+      tempdir='INSTALL_DIR/snid-5.0/templates-2.0/'
+
+(alternatively you can use the tempdir= option when running SNID)
+
+3. edit lines 47 and 52 of the snid.inc file in the source/ directory
+to allow for more template files:
+
+      parameter (MAXPPT = 50000)
+      parameter (MAXTEMP = 10000)
+
+4. recompile SNID. Execute the following commands in your snid-5.0
+installation directory:
+
+	make realclean
+	make
+	make install
+
+That's it!

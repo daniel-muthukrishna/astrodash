@@ -120,7 +120,7 @@ def create_sn_and_host_arrays(snTemplateDirectory, snTempFileList, galTemplateDi
 def save_templates():
     scriptDirectory = os.path.dirname(os.path.abspath(__file__))
     parameterFile = 'data_files/training_params.pickle'
-    snTemplateDirectory = os.path.join(scriptDirectory, "../templates/snid_templates_Modjaz_BSNIP/")
+    snTemplateDirectory = os.path.join(scriptDirectory, "../templates/training_set/")
     snTempFileList = snTemplateDirectory + 'templist.txt'
     galTemplateDirectory = os.path.join(scriptDirectory, "../templates/superfit_templates/gal/")
     galTempFileList = galTemplateDirectory + 'gal.list'

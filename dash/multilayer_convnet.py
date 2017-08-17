@@ -1,5 +1,6 @@
 import tensorflow as tf
 
+
 class ConvNetLayer(object):
     def __init__(self, N, ntypes, imWidth, imWidthReduc):
         self.N = N
