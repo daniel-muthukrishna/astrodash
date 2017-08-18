@@ -20,10 +20,13 @@ To update run:
 Using pip to install DASH will automatically install the mandatory dependencies: numpy, scipy, specutils, pyqtgraph, and tensorflow.
 
 PyQt5 is the final dependency, and is optional. It is only required if you would like to use the graphical interface.
-
-If you have an anaconda installation, this should already be preinstalled, but can otherwise be simply installed by running the following in the terminal:
+In python 3 it can be installed by running the following in the terminal:
 ```bash
-conda install astrodash
+pip install pyqt5
+```
+Or, if you have an anaconda installation, this should already be preinstalled, but can otherwise be simply installed by running the following in the terminal:
+```bash
+conda install pyqt
 ```
 
 ## 3. Usage
