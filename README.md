@@ -23,7 +23,7 @@ PyQt5 is the final dependency, and is optional. It is only required if you would
 
 If you have an anaconda installation, this should already be preinstalled, but can otherwise be simply installed by running the following in the terminal:
 ```bash
-conda install astrodash
+conda install PyQt5
 ```
 
 ## 3. Usage
