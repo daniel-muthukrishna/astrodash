@@ -54,30 +54,32 @@ class Classify(object):
 
     def _get_images(self, filename, redshift):
         loadInputSpectra = LoadInputSpectra(filename, redshift, redshift, self.smooth, self.pars, self.minWave, self.maxWave, self.classifyHost)
-        inputImage, inputRedshift, typeNamesList, nw, nBins = loadInputSpectra.input_spectra()
+        inputImage, inputRedshift, typeNamesList, nw, nBins, inputMinMaxIndex = loadInputSpectra.input_spectra()
 
-        return inputImage, typeNamesList, nw, nBins
+        return inputImage, typeNamesList, nw, nBins, inputMinMaxIndex
 
     def _input_spectra_info(self):
         inputImages = np.empty((0, int(self.nw)), np.float16)
+        inputMinMaxIndexes = []
         for i in range(self.numSpectra):
             f = self.filenames[i]
             if self.knownZ:
                 z = self.redshifts[i]
             else:
                 z = 0
-            inputImage, typeNamesList, nw, nBins = self._get_images(f, z)
+            inputImage, typeNamesList, nw, nBins, inputMinMaxIndex = self._get_images(f, z)
             inputImages = np.append(inputImages, inputImage, axis=0)
+            inputMinMaxIndex.append(inputMinMaxIndex)
         bestTypesList = BestTypesListSingleRedshift(self.modelFilename, inputImages, typeNamesList, self.nw, nBins)
         bestTypes = bestTypesList.bestTypes
         softmaxes = bestTypesList.softmaxOrdered
         bestLabels = bestTypesList.idx
 
-        return bestTypes, softmaxes, bestLabels, inputImages
+        return bestTypes, softmaxes, bestLabels, inputImages, inputMinMaxIndexes
 
     def list_best_matches(self, n=5, saveFilename='DASH_matches'):
         """Returns a list of lists of the the top n best matches for each spectrum"""
-        bestTypes, softmaxes, bestLabels, inputImages = self._input_spectra_info()
+        bestTypes, softmaxes, bestLabels, inputImages, inputMinMaxIndexes = self._input_spectra_info()
         bestMatchLists = []
         bestBroadTypes = []
         rejectionLabels = []
@@ -88,7 +90,7 @@ class Classify(object):
             for i in range(20):
                 host, name, age = classification_split(bestTypes[specNum][i])
                 if not self.knownZ:
-                    redshifts.append(self.calc_redshift(inputImages[i], name, age)[0])
+                    redshifts.append(self.calc_redshift(inputImages[i], name, age)[0], inputMinMaxIndexes[i])
                 prob = softmaxes[specNum][i]
                 bestMatchList.append((host, name, age, prob))
             bestMatchList = np.array(bestMatchList)
@@ -96,7 +98,7 @@ class Classify(object):
             bestBroadType, reliableFlag = self.best_broad_type(bestMatchList)
             bestBroadTypes.append(bestBroadType)
             reliableFlags.append(reliableFlag)
-            rejectionLabels.append(self.false_positive_rejection(bestTypes[specNum][0], inputImages[specNum]))
+            rejectionLabels.append(self.false_positive_rejection(bestTypes[specNum][0], inputImages[specNum]), inputMinMaxIndexes[specNum])
 
         bestMatchLists = np.array(bestMatchLists)
 
@@ -115,13 +117,14 @@ class Classify(object):
 
         return (prevName, bestAge, probTotal), reliableFlag
 
-    def false_positive_rejection(self, bestType, inputImage):
+    def false_positive_rejection(self, bestType, inputImage, inputMinMaxIndex):
         host, name, age = classification_split(bestType)
         snInfos, snNames, hostInfos, hostNames = get_templates(name, age, host, self.snTemplates, self.galTemplates, self.nw)
         if snInfos != []:
             if self.rlapScores:
                 templateImages = snInfos[:, 1]
-                falsePositiveRejection = FalsePositiveRejection(inputImage, templateImages, snNames, self.wave)
+                templateMinMaxIndexes = zip(snInfos[:, 2], snInfos[:, 3])
+                falsePositiveRejection = FalsePositiveRejection(inputImage, templateImages, snNames, self.wave, inputMinMaxIndex, templateMinMaxIndexes)
                 rejectionLabel = "rlap=%s" % (falsePositiveRejection.rejection_label2())
             else:
                 rejectionLabel = "No rlap"
@@ -137,15 +140,17 @@ class Classify(object):
 
         return rejectionLabel
 
-    def calc_redshift(self, inputFlux, snName, snAge):
+    def calc_redshift(self, inputFlux, snName, snAge, inputMinMaxIndex):
         host = "No Host"
         snInfos, snNames, hostInfos, hostNames = get_templates(snName, snAge, host, self.snTemplates, self.galTemplates, self.nw)
         numOfSubTemplates = len(snNames)
         templateFluxes = []
+        templateMinMaxIndexes = []
         for i in range(numOfSubTemplates):
             templateFluxes.append(snInfos[i][1])
+            templateMinMaxIndexes.append((snInfos[i][2], snInfos[i][3]))
 
-        redshift, crossCorr = get_median_redshift(inputFlux, templateFluxes, self.nw, self.dwlog)
+        redshift, crossCorr = get_median_redshift(inputFlux, templateFluxes, self.nw, self.dwlog, inputMinMaxIndex, templateMinMaxIndexes)
         print(redshift)
         if redshift is None:
             return 0, np.zeros(1024)

@@ -22,3 +22,12 @@ def normalise_spectrum(flux):
     fluxNorm = (flux - min(flux)) / (max(flux) - min(flux))
 
     return fluxNorm
+
+
+def mean_zero_spectra(flux, minIndex, maxIndex, nw):
+    fluxOut = np.copy(flux)
+    fluxOut[0:minIndex] = np.full(minIndex, fluxOut[minIndex])
+    fluxOut[maxIndex:] = np.full(nw - maxIndex, fluxOut[minIndex])
+    fluxOut = fluxOut - fluxOut[minIndex]
+
+    return fluxOut

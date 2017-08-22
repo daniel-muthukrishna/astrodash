@@ -33,27 +33,29 @@ class InputSpectra(object):
         filenames = []
         typeNames = []
         redshifts = []
+        minMaxIndexes = []
         readSpectra = ReadSpectra(self.w0, self.w1, self.nw, self.filename)
 
         #Undo it's previous redshift)
         for z in np.linspace(self.minZ, self.maxZ, self.numOfRedshifts + 1):
-            tempwave, tempflux, tminindex, tmaxindex = readSpectra.input_spectrum(z, self.smooth, self.minWave, self.maxWave)
-            nonzeroflux = tempflux[tminindex:tmaxindex + 1]
+            wave, flux, minIndex, maxIndex = readSpectra.input_spectrum(z, self.smooth, self.minWave, self.maxWave)
+            nonzeroflux = flux[minIndex:maxIndex + 1]
             newflux = (nonzeroflux - min(nonzeroflux)) / (max(nonzeroflux) - min(nonzeroflux))
-            newflux2 = np.concatenate((tempflux[0:tminindex], newflux, tempflux[tmaxindex + 1:]))
+            newflux2 = np.concatenate((flux[0:minIndex], newflux, flux[maxIndex + 1:]))
             images = np.append(images, np.array([newflux2]), axis=0)  # images.append(newflux2)
             filenames.append(self.filename + "_" + str(-z))
             redshifts.append(-z)
+            minMaxIndexes.append((minIndex, maxIndex))
 
         inputImages = np.array(images)
         inputFilenames = np.array(filenames)
         inputRedshifts = np.array(redshifts)
 
-        return inputImages, inputFilenames, inputRedshifts, self.typeNamesList
+        return inputImages, inputFilenames, inputRedshifts, self.typeNamesList, minMaxIndexes
 
 
     def saveArrays(self):
-        inputImages, inputFilenames, inputRedshifts = self.redshifting()
+        inputImages, inputFilenames, inputRedshifts, minMaxIndex = self.redshifting()
         np.savez_compressed('input_data.npz', inputImages=inputImages, inputFilenames=inputFilenames,
                             inputRedshifts=inputRedshifts, typeNamesList = self.typeNamesList)
 ##

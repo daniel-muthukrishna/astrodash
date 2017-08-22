@@ -101,15 +101,16 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             readBinnedTemplates = ReadBinnedTemplates(snInfos[self.templateSubIndex], hostInfos[0], self.w0, self.w1, self.nw)
             name = "%s_%s" % (snNames[self.templateSubIndex], hostNames[0])
             if self.hostName != "No Host":
-                wave, flux = readBinnedTemplates.template_data(snCoeff=1 - self.hostFraction/100., galCoeff=self.hostFraction/100., z=0)
+                wave, flux, minMaxIndex = readBinnedTemplates.template_data(snCoeff=1 - self.hostFraction/100., galCoeff=self.hostFraction/100., z=0)
             else:
-                wave, flux = readBinnedTemplates.template_data(snCoeff=1, galCoeff=0, z=0)
-            return flux, name
+                wave, flux, minMaxIndex = readBinnedTemplates.template_data(snCoeff=1, galCoeff=0, z=0)
+            return flux, name, minMaxIndex
         else:
             flux = np.zeros(self.nw)
             name = "NO_TEMPLATES!"
+            minMaxIndex = (0, 0)
 
-        return flux, name
+        return flux, name, minMaxIndex
 
     def select_sub_template_right(self):
         self.templateSubIndex += 1
@@ -120,10 +121,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.plot_sub_templates()
 
     def plot_sub_templates(self):
-        flux, name = self.get_template_info() #
-
-        self.templatePlotFlux = flux
-        self.templatePlotName = name
+        self.templatePlotFlux, self.templatePlotName, self.templateMinMaxIndex = self.get_template_info()
         print(self.templatePlotName)
         self.plot_best_matches()
         self.plot_cross_corr(self.snName, self.snAge)
@@ -133,9 +131,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.snAge = str(self.comboBoxAge.currentText())
         self.hostName = str(self.comboBoxHost.currentText())
 
-        flux, name = self.get_template_info()
-        self.templatePlotFlux = flux
-        self.templatePlotName = name
+        self.templatePlotFlux, self.templatePlotName, self.templateMinMaxIndex = self.get_template_info()
         self.plot_cross_corr(self.snName, self.snAge)
         if self.knownRedshift:
             self.plot_best_matches()
@@ -159,7 +155,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
     def host_fraction_slider_changed(self):
         self.hostFraction = self.horizontalSliderHostFraction.value()
         self.lineEditHostFraction.setText("%s%%" % str(self.hostFraction))
-        self.templatePlotFlux, self.templatePlotName = self.get_template_info()
+        self.templatePlotFlux, self.templatePlotName, self.templateMinMaxIndex = self.get_template_info()
         self.plot_best_matches()
 
     def host_fraction_text_changed(self):
@@ -264,7 +260,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             QtGui.QMessageBox.information(self, "Cancelled!", "Stopped Fitting Input Spectrum")
 
     def load_spectrum_single_redshift(self, spectrumInfo):
-        self.bestTypes, self.softmax, self.idx, self.typeNamesList, self.inputImageUnRedshifted = spectrumInfo
+        self.bestTypes, self.softmax, self.idx, self.typeNamesList, self.inputImageUnRedshifted, self.inputMinMaxIndex = spectrumInfo
         self.progressBar.setValue(85)#self.progressBar.value()+)
         self.done_fit_thread_single_redshift()
 
@@ -298,12 +294,14 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
     def get_smoothed_templates(self, snName, snAge, hostName):
         snInfos, snNames, hostInfos, hostNames = self.get_sn_and_host_templates(snName, snAge, hostName)
         fluxes = []
+        minMaxIndexes = []
         for i in range(len(snNames)):
             readBinnedTemplates = ReadBinnedTemplates(snInfos[i], hostInfos[0], self.w0, self.w1, self.nw)
-            wave, flux = readBinnedTemplates.template_data(snCoeff=1, galCoeff=0, z=0)
+            wave, flux, minMaxIndex = readBinnedTemplates.template_data(snCoeff=1, galCoeff=0, z=0)
             fluxes.append(flux)
+            minMaxIndexes.append(minMaxIndex)
 
-        return fluxes, snNames
+        return fluxes, snNames, minMaxIndexes
 
     def list_best_matches_single_redshift(self):
         print("listing best matches...")
@@ -330,8 +328,8 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             if not self.knownRedshift:
                 line.insert(3, str(redshift))
             if self.getRlapScores:
-                fluxes, snNames = self.get_smoothed_templates(name, age, host)
-                falsePositive = FalsePositiveRejection(self.inputImageUnRedshifted, fluxes, snNames, self.wave)
+                fluxes, snNames, templateMinMaxIndexes = self.get_smoothed_templates(name, age, host)
+                falsePositive = FalsePositiveRejection(self.inputImageUnRedshifted, fluxes, snNames, self.wave, self.inputMinMaxIndex, templateMinMaxIndexes)
                 rlap = falsePositive.rejection_label2()
                 line.insert(5, str(rlap))
             self.listWidget.addItem("".join(word.ljust(25) for word in line))
@@ -399,7 +397,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             self.graphicsView.plotItem.showGrid(x=True, y=True, alpha=0.95)
 
             if np.any(self.templatePlotFlux):
-                falsePositive = FalsePositiveRejection(self.inputImageUnRedshifted, [self.templatePlotFlux], [self.templatePlotName], self.wave)
+                falsePositive = FalsePositiveRejection(self.inputImageUnRedshifted, [self.templatePlotFlux], [self.templatePlotName], self.wave, self.inputMinMaxIndex, [self.templateMinMaxIndex])
                 rlap = falsePositive.rejection_label2()
                 self.labelRlapScore.setText("rlap: {0}".format(rlap))
 
@@ -416,11 +414,12 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         snInfos, snNames, hostInfos, hostNames = self.get_sn_and_host_templates(snName, snAge, host)
         numOfSubTemplates = len(snNames)
         templateFluxes = []
+        templateMinMaxIndexes = []
         for i in range(numOfSubTemplates):
             templateFluxes.append(snInfos[i][1])
+            templateMinMaxIndexes.append((snInfos[i][2], snInfos[i][3]))
 
-        redshift, crossCorr = get_median_redshift(self.inputImageUnRedshifted, templateFluxes, self.nw, self.dwlog)
-        print(redshift)
+        redshift, crossCorr = get_median_redshift(self.inputImageUnRedshifted, templateFluxes, self.nw, self.dwlog, self.inputMinMaxIndex, templateMinMaxIndexes)
         if redshift is None:
             return 0, np.zeros(1024)
 
@@ -465,16 +464,16 @@ class FitSpectrumThread(QThread):
     def _input_spectrum_single_redshift(self):
         trainParams = get_training_parameters()
         loadInputSpectraUnRedshifted = LoadInputSpectra(self.inputFilename, 0, 0, self.smooth, trainParams, self.minWave, self.maxWave, self.classifyHost)
-        inputImageUnRedshifted, inputRedshift, typeNamesList, nw, nBins = loadInputSpectraUnRedshifted.input_spectra()
+        inputImageUnRedshifted, inputRedshift, typeNamesList, nw, nBins, minMaxIndexUnRedshifted = loadInputSpectraUnRedshifted.input_spectra()
 
         loadInputSpectra = LoadInputSpectra(self.inputFilename, self.knownZ, self.knownZ, self.smooth, trainParams, self.minWave, self.maxWave, self.classifyHost)
-        inputImage, inputRedshift, typeNamesList, nw, nBins = loadInputSpectra.input_spectra()
+        inputImage, inputRedshift, typeNamesList, nw, nBins, minMaxIndex = loadInputSpectra.input_spectra()
         bestTypesList = BestTypesListSingleRedshift(self.modelFilename, inputImage, typeNamesList, nw, nBins)
         bestTypes = bestTypesList.bestTypes[0]
         softmax = bestTypesList.softmaxOrdered[0]
         idx = bestTypesList.idx[0]
 
-        return bestTypes, softmax, idx, typeNamesList, inputImageUnRedshifted[0]
+        return bestTypes, softmax, idx, typeNamesList, inputImageUnRedshifted[0], minMaxIndexUnRedshifted[0]
 
     def run(self):
         spectrumInfo = self._input_spectrum_single_redshift()

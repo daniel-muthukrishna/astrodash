@@ -26,11 +26,11 @@ class LoadInputSpectra(object):
 
         self.inputSpectra = InputSpectra(inputFilename, minZ, maxZ, nTypes, minAge, maxAge, ageBinSize, w0, w1, self.nw, typeList, smooth, minWave, maxWave, hostList, nHostTypes)
 
-        self.inputImages, self.inputFilenames, self.inputRedshifts, self.typeNamesList = self.inputSpectra.redshifting()
+        self.inputImages, self.inputFilenames, self.inputRedshifts, self.typeNamesList, self.inputMinMaxIndexes = self.inputSpectra.redshifting()
         self.nBins = len(self.typeNamesList)
 
     def input_spectra(self):
-        return self.inputImages, self.inputRedshifts, self.typeNamesList, int(self.nw), self.nBins
+        return self.inputImages, self.inputRedshifts, self.typeNamesList, int(self.nw), self.nBins, self.inputMinMaxIndexes
 
 
 class RestoreModel(object):

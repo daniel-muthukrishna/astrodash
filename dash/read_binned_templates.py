@@ -64,7 +64,7 @@ class ReadBinnedTemplates(object):
         fluxNorm = zero_non_overlap_part(fluxNorm, minIndex, maxIndex)
         # Could  median filter here, but trying without it now
 
-        return binnedWave, fluxNorm
+        return binnedWave, fluxNorm, (minIndex, maxIndex)
 
 if __name__ == "__main__":
     templateFilename1 = 'models/sn_and_host_templates.npz'
@@ -73,5 +73,5 @@ if __name__ == "__main__":
     galInfoList = galTemplates1['S0']['galInfo']
     for i in range(len(snInfoList)):
         readBinnedTemplates = ReadBinnedTemplates(snInfoList[i], galInfoList[0], 2500, 10000, 1024)
-        wave, flux = readBinnedTemplates.template_data(snCoeff=0.5, galCoeff=0.5, z=0)
+        wave, flux, minMaxIndex = readBinnedTemplates.template_data(snCoeff=0.5, galCoeff=0.5, z=0)
         print(i)

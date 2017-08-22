@@ -1,9 +1,11 @@
 import numpy as np
 from scipy.fftpack import fft
+from dash.array_tools import mean_zero_spectra
 import matplotlib.pyplot as plt
 
 
-def cross_correlation(inputFlux, tempFlux, nw):
+def cross_correlation(inputFlux, tempFlux, nw, tempMinMaxIndex):
+    tempFlux = mean_zero_spectra(tempFlux, tempMinMaxIndex[0], tempMinMaxIndex[1], nw)
     inputFourier = fft(inputFlux)
     tempFourier = fft(tempFlux)
     # kinput = 2 * np.pi / inputwave
@@ -48,18 +50,21 @@ def get_redshift_axis(nw, dwlog):
     return zAxis
 
 
-def get_redshift(inputFlux, tempFlux, nw, dwlog):
-    crossCorr = cross_correlation(inputFlux, tempFlux, nw)
+def get_redshift(inputFlux, tempFlux, nw, dwlog, tempMinMaxIndex):
+    crossCorr = cross_correlation(inputFlux, tempFlux, nw, tempMinMaxIndex)
     redshift, crossCorr = calc_redshift_from_crosscorr(crossCorr, nw, dwlog)
 
     return redshift, crossCorr
 
 
-def get_median_redshift(inputFlux, tempFluxes, nw, dwlog):
+def get_median_redshift(inputFlux, tempFluxes, nw, dwlog, inputMinMaxIndex, tempMinMaxIndexes):
+    inputFlux = mean_zero_spectra(inputFlux, inputMinMaxIndex[0], inputMinMaxIndex[1], nw)
+
     redshifts = []
     crossCorrs = []
-    for tempFlux in tempFluxes:
-        redshift, crossCorr = get_redshift(inputFlux, tempFlux, nw, dwlog)
+
+    for i in range(len(tempFluxes)):
+        redshift, crossCorr = get_redshift(inputFlux, tempFluxes[i], nw, dwlog, tempMinMaxIndexes[i])
         redshifts.append(redshift)
         crossCorrs.append(crossCorr)
 
@@ -69,4 +74,4 @@ def get_median_redshift(inputFlux, tempFluxes, nw, dwlog):
     else:
         return None, None
 
-    return medianRedshift, np.abs(crossCorrs[medianIndex])
+    return medianRedshift, np.real(crossCorrs[medianIndex])

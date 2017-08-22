@@ -3,6 +3,7 @@ from scipy.signal import argrelmax
 import numpy as np
 from scipy.stats import chisquare, pearsonr
 from dash.restore_model import get_training_parameters
+from dash.array_tools import mean_zero_spectra
 # import matplotlib
 # matplotlib.use('TkAgg')
 # import matplotlib.pyplot as plt
@@ -89,17 +90,19 @@ def combined_prob(bestMatchList):
 
 
 class FalsePositiveRejection(object):
-    def __init__(self, inputFlux, templateFluxes, templateNames, wave):
-        self.inputFlux = inputFlux
+    def __init__(self, inputFlux, templateFluxes, templateNames, wave, inputMinMaxIndex, templateMinMaxIndexes):
         self.templateFluxes = templateFluxes
         self.templateNames = templateNames
-        self.nw = len(self.inputFlux)
         self.wave = wave
         pars = get_training_parameters()
         w0, w1, self.nw, = pars['w0'], pars['w1'], pars['nw']
+        self.inputFlux = mean_zero_spectra(inputFlux, inputMinMaxIndex[0], inputMinMaxIndex[1], self.nw)
+        self.templateMinMaxIndexes = templateMinMaxIndexes
+
         self.dwlog = np.log(w1 / w0) / self.nw
 
-    def _cross_correlation(self, templateFlux):
+    def _cross_correlation(self, templateFlux, templateMinMaxIndex):
+        templateFlux = mean_zero_spectra(templateFlux, templateMinMaxIndex[0], templateMinMaxIndex[1], self.nw)
         inputfourier = fft(self.inputFlux)
         tempfourier = fft(templateFlux)
 
@@ -206,7 +209,7 @@ class FalsePositiveRejection(object):
         maxWaveOverlap = self.wave[overlapmaxindex]
 
         lap = np.log(maxWaveOverlap / minWaveOverlap)
-        rlap = r * lap
+        rlap = 5 * r * lap
 
 
         fom = fom * lap
@@ -268,7 +271,7 @@ class FalsePositiveRejection(object):
         self.zAxis = self.get_redshift_axis(self.nw, self.dwlog)
         rlapList = []
         for i in range(len(self.templateNames)):
-            xcorr, rmsinput, rmstemp, xcorrnorm, rmsxcorr, xcorrnormRearranged, rmsA = self._cross_correlation(self.templateFluxes[i].astype('float'))
+            xcorr, rmsinput, rmstemp, xcorrnorm, rmsxcorr, xcorrnormRearranged, rmsA = self._cross_correlation(self.templateFluxes[i].astype('float'), self.templateMinMaxIndexes[i])
             crosscorr = xcorrnormRearranged
             r, lap, rlap, fom = self.calculate_rlap(crosscorr, rmsA, self.templateFluxes[i])
             rlapList.append(rlap)
@@ -279,5 +282,5 @@ class FalsePositiveRejection(object):
         rlapMean = round(np.mean(rlapList),2)
         print(rlapMean, np.median(rlapList), min(rlapList), max(rlapList))
 
-        return "{0}_max={1}".format(str(rlapMean), round(max(rlapList),2))  # return str(rlapMean)
+        return "avg={0}_max={1}".format(str(rlapMean), round(max(rlapList),2))  # return str(rlapMean)
 
