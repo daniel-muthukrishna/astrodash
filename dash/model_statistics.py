@@ -76,7 +76,7 @@ def calc_model_statistics(modelFilename, testImages, testTypeNames, typeNamesLis
 
 
 if __name__ == '__main__':
-    dirModel = "/Users/danmuth/PycharmProjects/DASH/dash/models_other/zeroZ/data_files_zeroZ_withHost_withNoise/"
+    dirModel = "/Users/danmuth/PycharmProjects/DASH/dash/models_other/data_files_zeroZ_withHost/"
     modelFilename = dirModel + "tensorflow_model.ckpt"
 
     dirTestSet = "/Users/danmuth/PycharmProjects/DASH/dash/models_other/zeroZ/data_files_zeroZ_withHost_withNoise/training_set/"

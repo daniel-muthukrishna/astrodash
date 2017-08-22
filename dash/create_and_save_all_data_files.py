@@ -8,7 +8,7 @@ import shutil
 import time
 
 if __name__ == '__main__':
-    dataDirName = 'data_files_test/'
+    dataDirName = 'data_files_zeroZ_withHost/'
     dataFilenames = []
     if not os.path.exists(dataDirName):
         os.makedirs(dataDirName)
@@ -20,11 +20,11 @@ if __name__ == '__main__':
         f.write("Directory: %s\n" % dataDirName)
         f.write("Add Host: True\n")
         f.write("SN-Host fractions: [0.01, 0.02, 0.05, 0.07, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]\n")
-        f.write("Classify Host: True\n")
+        f.write("Classify Host: False\n")
         f.write("Redshift: Zero\n")
         f.write("Redshift Range: 0 to 0.\n")
-        f.write("Redshift Precision: 0.02\n")
-        f.write("Fraction of Training Set Used: 0.9")
+        f.write("Redshift Precision: 0.01\n")
+        f.write("Fraction of Training Set Used: 0.9\n")
         f.write("Training Amount: 50 x 400000\n")
         dataFilenames.append(modelInfoFilename)
 
@@ -36,7 +36,7 @@ if __name__ == '__main__':
     print("time spent: {0:.2f}".format(t2 - t1))
 
     # CREATE TRAINING SET FILES
-    trainingSetFilename = create_training_set_files(dataDirName, minZ=0, maxZ=0., redshiftPrecision=0.01, trainWithHost=False, classifyHost=False)
+    trainingSetFilename = create_training_set_files(dataDirName, minZ=0, maxZ=0., redshiftPrecision=0.01, trainWithHost=True, classifyHost=False)
     dataFilenames.append(trainingSetFilename)
     t3 = time.time()
     print("time spent: {0:.2f}".format(t3 - t2))
@@ -48,12 +48,12 @@ if __name__ == '__main__':
     print("time spent: {0:.2f}".format(t4 - t3))
 
     # SAVE ALL FILES TO ZIP FILE
-    dataFilesZip = 'data_files_zeroZ_classifyHost_v01.zip'
+    dataFilesZip = 'data_files_zeroZ_withHost_v01.zip'
     with zipfile.ZipFile(dataFilesZip, 'w') as myzip:
         for f in dataFilenames:
             myzip.write(f)
 
-    modelZip = 'model_zeroZ_classifyHost_v01.zip'
+    modelZip = 'model_zeroZ_withHost_v01.zip'
     with zipfile.ZipFile(modelZip, 'w') as myzip:
         for f in [dataFilenames[0]] + dataFilenames[2:]:
             myzip.write(f)
