@@ -69,7 +69,7 @@ class Classify(object):
                 z = 0
             inputImage, typeNamesList, nw, nBins, inputMinMaxIndex = self._get_images(f, z)
             inputImages = np.append(inputImages, inputImage, axis=0)
-            inputMinMaxIndex.append(inputMinMaxIndex)
+            inputMinMaxIndexes.append(inputMinMaxIndex[0])
         bestTypesList = BestTypesListSingleRedshift(self.modelFilename, inputImages, typeNamesList, self.nw, nBins)
         bestTypes = bestTypesList.bestTypes
         softmaxes = bestTypesList.softmaxOrdered
@@ -98,7 +98,7 @@ class Classify(object):
             bestBroadType, reliableFlag = self.best_broad_type(bestMatchList)
             bestBroadTypes.append(bestBroadType)
             reliableFlags.append(reliableFlag)
-            rejectionLabels.append(self.false_positive_rejection(bestTypes[specNum][0], inputImages[specNum]), inputMinMaxIndexes[specNum])
+            rejectionLabels.append(self.false_positive_rejection(bestTypes[specNum][0], inputImages[specNum], inputMinMaxIndexes[specNum]))
 
         bestMatchLists = np.array(bestMatchLists)
 
@@ -123,7 +123,7 @@ class Classify(object):
         if snInfos != []:
             if self.rlapScores:
                 templateImages = snInfos[:, 1]
-                templateMinMaxIndexes = zip(snInfos[:, 2], snInfos[:, 3])
+                templateMinMaxIndexes = list(zip(snInfos[:, 2], snInfos[:, 3]))
                 falsePositiveRejection = FalsePositiveRejection(inputImage, templateImages, snNames, self.wave, inputMinMaxIndex, templateMinMaxIndexes)
                 rejectionLabel = "rlap=%s" % (falsePositiveRejection.rejection_label2())
             else:

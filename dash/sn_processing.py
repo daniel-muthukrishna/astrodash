@@ -70,40 +70,57 @@ class PreProcessing(object):
         medianFiltered = medfilt(apodized, kernel_size=1)#filterSize)
 
 
-        # from scipy.interpolate import interp1d
+        # # PAPER PLOTS
+        # import matplotlib.pyplot as plt
         #
-        # plt.plot(self.flux)
+        # plt.figure(num=1, figsize=(10, 6))
+        # plt.plot(self.wave, self.flux, label='Raw', linewidth=1.3)
+        # plt.plot(self.wave, preFiltered, label='Filtered', linewidth=1.3)
+        # plt.ylim(-8, 8)
+        # plt.xlabel('Wavelength ($\mathrm{\AA}$)', fontsize=13)
+        # plt.ylabel('Relative Flux', fontsize=13)
+        # plt.legend(fontsize=11, loc=1)
+        # plt.xlim(2500, 9000)
+        # plt.tight_layout()
+        # plt.axhline(0, color='black', linewidth=0.5)
+        # plt.savefig('/Users/danmuth/OneDrive/Documents/DASH/Paper/Figures/Filtering.png')
         #
-        # spline = interp1d(binnedwave[minindex:maxindex], binnedflux[minindex:maxindex], kind='cubic')
-        # waveSpline = np.linspace(binnedwave[minindex],binnedwave[maxindex-1],num=self.numSplinePoints)
-        # print(spline)
-        # print('###')
-        # print(spline(binnedwave[minindex:maxindex]))
-        # plt.figure('1')
-        # plt.plot(waveSpline, spline(waveSpline), '--', label='spline')
+        # plt.figure(num=2, figsize=(10, 6))
+        # plt.plot(self.wave, preFiltered, label='Filtered', linewidth=1.3)
+        # plt.plot(binnedwave, binnedflux, label='De-redshifted and log-wavelength binned', linewidth=1.3)
+        # plt.xlabel('Wavelength ($\mathrm{\AA}$)', fontsize=13)
+        # plt.ylabel('Relative Flux', fontsize=13)
+        # plt.legend(fontsize=11, loc=1)
+        # plt.xlim(2500, 9000)
+        # plt.tight_layout()
+        # plt.axhline(0, color='black', linewidth=0.5)
+        # plt.savefig('/Users/danmuth/OneDrive/Documents/DASH/Paper/Figures/Deredshifting.png')
         #
-        # print(wave)
-        # print(binnedwave)
-        # print(binnedflux)
-        # print(len(binnedwave))
-        # plt.plot(wave,flux)
-        # plt.figure('2')
-        # plt.plot(binnedwave, binnedflux, label='binned')
-        # plt.plot(binnedwave, newflux, label='continuumSubtract1')
-        # plt.plot(binnedwave, continuum, label='polyfit1')
-        # print(len(binnedwave))
-        # print((min(binnedwave), max(binnedwave)))
-        # print(len(newflux))
+        # plt.figure(num=3, figsize=(10, 6))
+        # plt.plot(binnedwave, binnedflux, label='Log-wavelength binned', linewidth=1.3)
+        # plt.plot(binnedwave, continuum, label='Continuum', linewidth=1.3)
+        # plt.plot(binnedwave, newflux, label='Continuum subtracted', linewidth=1.3)
+        # plt.xlabel('Wavelength ($\mathrm{\AA}$)', fontsize=13)
+        # plt.ylabel('Relative Flux', fontsize=13)
+        # plt.legend(fontsize=11, loc=1)
+        # plt.xlim(2500, 9000)
+        # plt.tight_layout()
+        # plt.axhline(0, color='black', linewidth=0.5)
+        # plt.savefig('/Users/danmuth/OneDrive/Documents/DASH/Paper/Figures/Continuum.png')
         #
-        # #newflux2, poly2 = self.preProcess.continuum_removal(binnedwave, binnedflux, 6, minindex, maxindex)
-        # #plt.plot(binnedwave, newflux2, label='continuumSubtract2')
-        # #plt.plot(binnedwave, poly2, label='polyfit2')
-        # plt.plot(binnedwave, apodized, label='taper')
-        # plt.legend()
-        # plt.figure('filtered')
-        # plt.plot(medianFiltered)
-        # plt.figure('3')
-        # plt.plot(medfilt(apodized,kernel_size=3))
+        # plt.figure(num=4, figsize=(10, 6))
+        # plt.plot(binnedwave, newflux, label='Continuum subtracted', linewidth=1.3)
+        # plt.plot(binnedwave, apodized, label='Apodized', linewidth=1.3)
+        # fluxNorm = (apodized - min(apodized)) / (max(apodized) - min(apodized))
+        # plt.plot(binnedwave, fluxNorm, label='Normalised', linewidth=1.3)
+        # plt.xlabel('Wavelength ($\mathrm{\AA}$)', fontsize=13)
+        # plt.ylabel('Relative Flux', fontsize=13)
+        # plt.legend(fontsize=11, loc=1)
+        # plt.xlim(2500, 9000)
+        # plt.tight_layout()
+        # plt.axhline(0, color='black', linewidth=0.5)
+        # plt.savefig('/Users/danmuth/OneDrive/Documents/DASH/Paper/Figures/Apodize.png')
+        #
         # plt.show()
 
         return binnedwave, medianFiltered, minindex, maxindex
@@ -117,34 +134,8 @@ class PreProcessing(object):
 
         return binnedwave, medianFiltered, ncols, ages, ttype, minindex, maxindex
 
-# if __name__ == '__main__':
-#     # fData = '/home/dan/Desktop/SNClassifying_Pre-alpha/templates/superfit_templates/sne/Ia/sn2002bo.m01.dat'
-#     # preData = PreProcessing(fGal, 2500, 10000, 1024)
-#     # waveData,fluxData,minIData,maxIData = preData.two_column_data(0, 0)
-#
-#     fGal = '/home/dan/Desktop/SNClassifying_Pre-alpha/templates/galaxy_templates/GalaxyTemplates/Sa'
-#     preGal = PreProcessing(fGal, 2500, 10000, 1024)
-#     waveGal,fluxGal,minIGal,maxIGal = preGal.galaxy_template(0)
-#
-#     fSN = '/home/dan/Desktop/SNClassifying_Pre-alpha/templates/snid_templates_Modjaz_BSNIP/sn2001br.lnw'
-#     preSN = PreProcessing(fSN, 2500, 10000, 1024)
-#     waveSN, fluxSN, ncols, ages, ttype, minISN, maxISN = preSN.snid_template_data(0, 0)
-#
-#     plt.figure('SN and Galaxy Template')
-#     minI = max(minIGal, minISN)
-#     maxI = min(maxIGal, maxISN)
-#     plt.axvline(x=waveSN[minI], color='k', linestyle='--')
-#     plt.axvline(x=waveSN[maxI], color='k', linestyle='--')
-#
-#
-#
-#     plt.plot(waveGal,fluxGal, label='galaxy')
-#     plt.plot(waveSN,fluxSN, label='SN')
-#
-#     waveSN = waveSN[minI:maxI]
-#     fluxSN = fluxSN[minI:maxI]
-#     fluxGal = fluxGal[minI:maxI]
-#
-#     plt.plot(waveSN,fluxGal+fluxSN, label='Added-50%')
-#     plt.legend()
-#     plt.show()
+
+
+# fData = '/Users/danmuth/PycharmProjects/DASH/templates/OzDES_data/ATEL_9570_Run25/DES16C2ma_C2_combined_160926_v10_b00.dat'
+# preData = PreProcessing(fData, 2500, 10000, 1024)
+# waveData,fluxData,minIData,maxIData = preData.two_column_data(0.24, 5, 2500, 10000)

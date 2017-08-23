@@ -74,4 +74,10 @@ def get_median_redshift(inputFlux, tempFluxes, nw, dwlog, inputMinMaxIndex, temp
     else:
         return None, None
 
+    if len(redshifts) >= 10:
+        redshiftError = np.std(redshifts)
+    else:
+        pass # redshiftError = 1/rlap * kz
+
+
     return medianRedshift, np.real(crossCorrs[medianIndex])

@@ -196,8 +196,6 @@ class FalsePositiveRejection(object):
         r, deltapeak, fom = self._calculate_r(crosscorr, rmsAntisymmetric)
         shift = int(deltapeak - self.nw / 2)  # shift from redshift
 
-        print(self.zAxis[deltapeak])
-
         # lap value
         iminindex, imaxindex = self.min_max_index(self.inputFlux)
         tminindex, tmaxindex = self.min_max_index(templateFlux)
@@ -280,7 +278,7 @@ class FalsePositiveRejection(object):
 
         print("r={0}, lap={1}, rlap={2}, rmsA={3} - last value".format(r, lap, rlap, rmsA))
         rlapMean = round(np.mean(rlapList),2)
-        print(rlapMean, np.median(rlapList), min(rlapList), max(rlapList))
+        print("mean={0}, median={1}, min={2}, max={3}".format(rlapMean, np.median(rlapList), min(rlapList), max(rlapList)))
 
         return "avg={0}_max={1}".format(str(rlapMean), round(max(rlapList),2))  # return str(rlapMean)
 
