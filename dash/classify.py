@@ -4,7 +4,7 @@ import pickle
 import numpy as np
 from dash.download_data_files import download_all_files
 from dash.restore_model import LoadInputSpectra, BestTypesListSingleRedshift, get_training_parameters, classification_split
-from dash.false_positive_rejection import FalsePositiveRejection, combined_prob
+from dash.false_positive_rejection import RlapCalc, combined_prob
 from dash.read_binned_templates import load_templates, get_templates, ReadBinnedTemplates
 from dash.calculate_redshift import get_median_redshift
 
@@ -77,12 +77,13 @@ class Classify(object):
 
         return bestTypes, softmaxes, bestLabels, inputImages, inputMinMaxIndexes
 
-    def list_best_matches(self, n=5, saveFilename='DASH_matches'):
+    def list_best_matches(self, n=5, saveFilename='DASH_matches.txt'):
         """Returns a list of lists of the the top n best matches for each spectrum"""
         bestTypes, softmaxes, bestLabels, inputImages, inputMinMaxIndexes = self._input_spectra_info()
         bestMatchLists = []
         bestBroadTypes = []
-        rejectionLabels = []
+        rlapLabels = []
+        matchesReliableLabels = []
         reliableFlags = []
         redshifts = []
         for specNum in range(self.numSpectra):
@@ -95,10 +96,16 @@ class Classify(object):
                 bestMatchList.append((host, name, age, prob))
             bestMatchList = np.array(bestMatchList)
             bestMatchLists.append(bestMatchList[0:n])
-            bestBroadType, reliableFlag = self.best_broad_type(bestMatchList)
+            bestBroadType, matchesReliableFlag = self.best_broad_type(bestMatchList)
             bestBroadTypes.append(bestBroadType)
-            reliableFlags.append(reliableFlag)
-            rejectionLabels.append(self.false_positive_rejection(bestTypes[specNum][0], inputImages[specNum], inputMinMaxIndexes[specNum]))
+            rlapLabel, rlapWarningBool = self.rlap_warning_label(bestTypes[specNum][0], inputImages[specNum], inputMinMaxIndexes[specNum])
+
+            rlapLabels.append(rlapLabel)
+            if matchesReliableFlag:
+                matchesReliableLabels.append("Reliable matches")
+            else:
+                matchesReliableLabels.append("Unreliable matches")
+
 
         bestMatchLists = np.array(bestMatchLists)
 
@@ -108,28 +115,32 @@ class Classify(object):
             redshifts = np.array(redshifts)
 
         if saveFilename:
-            self.save_best_matches(bestMatchLists, redshifts, bestBroadTypes, rejectionLabels, reliableFlags, saveFilename)
+            self.save_best_matches(bestMatchLists, redshifts, bestBroadTypes, rlapLabels, matchesReliableLabels, saveFilename)
 
-        return bestMatchLists, redshifts, bestBroadTypes, rejectionLabels, reliableFlags
+        return bestMatchLists, redshifts, bestBroadTypes, rlapLabels, reliableFlags
 
     def best_broad_type(self, bestMatchList):
         host, prevName, bestAge, probTotal, reliableFlag = combined_prob(bestMatchList[0:10])
 
         return (prevName, bestAge, probTotal), reliableFlag
 
-    def false_positive_rejection(self, bestType, inputImage, inputMinMaxIndex):
+    def rlap_warning_label(self, bestType, inputImage, inputMinMaxIndex):
         host, name, age = classification_split(bestType)
         snInfos, snNames, hostInfos, hostNames = get_templates(name, age, host, self.snTemplates, self.galTemplates, self.nw)
         if snInfos != []:
             if self.rlapScores:
                 templateImages = snInfos[:, 1]
                 templateMinMaxIndexes = list(zip(snInfos[:, 2], snInfos[:, 3]))
-                falsePositiveRejection = FalsePositiveRejection(inputImage, templateImages, snNames, self.wave, inputMinMaxIndex, templateMinMaxIndexes)
-                rejectionLabel = "rlap=%s" % (falsePositiveRejection.rejection_label2())
+                rlapCalc = RlapCalc(inputImage, templateImages, snNames, self.wave, inputMinMaxIndex, templateMinMaxIndexes)
+                rlap, rlapWarningBool = rlapCalc.rlap_label()
+                if rlapWarningBool:
+                    rlapLabel = "Low rlap: {0}".format(rlap)
+                else:
+                    rlapLabel = "Good rlap: {0}".format(rlap)
             else:
-                rejectionLabel = "No rlap"
+                rlapLabel = "No rlap"
         else:
-            rejectionLabel = "(NO_TEMPLATES)"
+            rlapLabel = "(NO_TEMPLATES)"
 
         # import matplotlib
         # matplotlib.use('TkAgg')
@@ -138,31 +149,32 @@ class Classify(object):
         # plt.plot(templateImage)
         # plt.show()
 
-        return rejectionLabel
+        return rlapLabel, rlapWarningBool
 
     def calc_redshift(self, inputFlux, snName, snAge, inputMinMaxIndex):
         host = "No Host"
         snInfos, snNames, hostInfos, hostNames = get_templates(snName, snAge, host, self.snTemplates, self.galTemplates, self.nw)
         numOfSubTemplates = len(snNames)
+        templateNames = snNames
         templateFluxes = []
         templateMinMaxIndexes = []
         for i in range(numOfSubTemplates):
+            templateNames = []
             templateFluxes.append(snInfos[i][1])
             templateMinMaxIndexes.append((snInfos[i][2], snInfos[i][3]))
 
-        redshift, crossCorr = get_median_redshift(inputFlux, templateFluxes, self.nw, self.dwlog, inputMinMaxIndex, templateMinMaxIndexes)
+        redshift, crossCorr, medianName = get_median_redshift(inputFlux, templateFluxes, self.nw, self.dwlog, inputMinMaxIndex, templateMinMaxIndexes, templateNames)
         print(redshift)
         if redshift is None:
             return 0, np.zeros(1024)
 
         return round(redshift, 4), crossCorr
 
-    def save_best_matches(self, bestFits, redshifts, bestTypes, rejectionLabels, reliableFlags, saveFilename='DASH_matches.txt'):
+    def save_best_matches(self, bestFits, redshifts, bestTypes, rlapLabels, matchesReliableLabels, saveFilename='DASH_matches.txt'):
         with open(saveFilename, 'w') as f:
             for i in range(len(self.filenames)):
                 f.write("%s   z=%s     %s      %s     %s\n %s\n\n" % (
-                    self.filenames[i].split('/')[-1], redshifts[i], bestTypes[i], reliableFlags[i], rejectionLabels[i],
-                    bestFits[i]))
+                    self.filenames[i].split('/')[-1], redshifts[i], bestTypes[i], rlapLabels[i], matchesReliableLabels[i], bestFits[i]))
         print("Finished classifying %d spectra!" % len(self.filenames))
 
     def plot_with_gui(self, indexToPlot=0):

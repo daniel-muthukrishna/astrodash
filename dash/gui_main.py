@@ -7,7 +7,7 @@ from dash.design import Ui_MainWindow
 from dash.restore_model import LoadInputSpectra, BestTypesListSingleRedshift, get_training_parameters, classification_split
 from dash.create_arrays import AgeBinning
 from dash.read_binned_templates import load_templates, get_templates, ReadBinnedTemplates
-from dash.false_positive_rejection import combined_prob, FalsePositiveRejection
+from dash.false_positive_rejection import combined_prob, RlapCalc
 from dash.calculate_redshift import get_median_redshift, get_redshift_axis
 
 
@@ -131,14 +131,14 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.snAge = str(self.comboBoxAge.currentText())
         self.hostName = str(self.comboBoxHost.currentText())
 
+        self.redshift, self.crossCorrs, self.medianName = self.calc_redshift(self.snName, self.snAge)
+        self.set_template_sub_index(self.medianName)
         self.templatePlotFlux, self.templatePlotName, self.templateMinMaxIndex = self.get_template_info()
         self.plot_cross_corr(self.snName, self.snAge)
         if self.knownRedshift:
             self.plot_best_matches()
         else:
-            redshift, crossCorr = self.calc_redshift(self.snName, self.snAge)
-            self.set_plot_redshift(redshift)
-        print(self.templatePlotName)
+            self.set_plot_redshift(self.redshift)
 
     def add_combo_box_entries(self):
         ageLabels = AgeBinning(self.minAge, self.maxAge, self.ageBinSize).age_labels()
@@ -195,8 +195,6 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
 
     def select_input_file(self):
         inputFilename = QtGui.QFileDialog.getOpenFileName(self, "Select a spectrum file")[0]
-        print(inputFilename)
-        print(self.inputFilename)
         if (inputFilename == self.inputFilename) or (inputFilename == ""):
             pass
         else:
@@ -282,14 +280,18 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.labelBestSnType.setText(prevName)
         self.labelBestAgeRange.setText(bestAge)
         self.labelBestHostType.setText(host)
+        if host == "":
+            self.labelBestHostType.setFixedWidth(0)
         self.labelBestRedshift.setText(str(self.bestRedshift))
         self.labelBestRelProb.setText("%s%%" % str(round(100*probTotal, 2)))
+        if host == "":                                     
+            self.labelBestHostType.setFixedWidth(0)
         if reliableFlag:
-            self.labelReliableFlag.setText("Reliable")
-            self.labelReliableFlag.setStyleSheet('color: green')
+            self.labelInconsistentWarning.setText("Reliable matches")
+            self.labelInconsistentWarning.setStyleSheet('color: green')
         else:
-            self.labelReliableFlag.setText("Unreliable")
-            self.labelReliableFlag.setStyleSheet('color: red')
+            self.labelInconsistentWarning.setText("Unreliable matches")
+            self.labelInconsistentWarning.setStyleSheet('color: red')
 
     def get_smoothed_templates(self, snName, snAge, hostName):
         snInfos, snNames, hostInfos, hostNames = self.get_sn_and_host_templates(snName, snAge, hostName)
@@ -302,6 +304,13 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             minMaxIndexes.append(minMaxIndex)
 
         return fluxes, snNames, minMaxIndexes
+
+    def low_rlap_warning_label(self, bestName, bestAge, bestHost):
+        fluxes, snNames, templateMinMaxIndexes = self.get_smoothed_templates(bestName, bestAge, bestHost)
+        rlapCalc = RlapCalc(self.inputImageUnRedshifted, fluxes, snNames, self.wave, self.inputMinMaxIndex, templateMinMaxIndexes)
+        rlapLabel, rlapWarning = rlapCalc.rlap_label()
+
+        return rlapLabel, rlapWarning
 
     def list_best_matches_single_redshift(self):
         print("listing best matches...")
@@ -329,8 +338,8 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
                 line.insert(3, str(redshift))
             if self.getRlapScores:
                 fluxes, snNames, templateMinMaxIndexes = self.get_smoothed_templates(name, age, host)
-                falsePositive = FalsePositiveRejection(self.inputImageUnRedshifted, fluxes, snNames, self.wave, self.inputMinMaxIndex, templateMinMaxIndexes)
-                rlap = falsePositive.rejection_label2()
+                rlapCalc = RlapCalc(self.inputImageUnRedshifted, fluxes, snNames, self.wave, self.inputMinMaxIndex, templateMinMaxIndexes)
+                rlap = rlapCalc.rlap_label()[0]
                 line.insert(5, str(rlap))
             self.listWidget.addItem("".join(word.ljust(25) for word in line))
 
@@ -341,15 +350,22 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
                 self.comboBoxAge.setCurrentIndex(AgeComboBoxIndex)
                 hostComboBoxIndex = self.comboBoxHost.findText(host)
                 self.comboBoxHost.setCurrentIndex(hostComboBoxIndex)
+
+                rlap, rlapWarning = self.low_rlap_warning_label(name, age, host)
+                if rlapWarning:
+                    self.labelRlapWarning.setText("Low rlap: {0}".format(rlap))
+                    self.labelRlapWarning.setStyleSheet('color: red')
+                else:
+                    self.labelRlapWarning.setText("Good rlap: {0}".format(rlap))
+                    self.labelRlapWarning.setStyleSheet('color: green')
+
             if not self.knownRedshift:
                 self.bestRedshift = redshifts[0]
         self.best_broad_type()
 
     def list_item_clicked(self, item):
         if item.text()[0].isdigit():
-            self.templateSubIndex = 0
             host = "No Host"
-
             if self.knownRedshift:
                 if self.classifyHost:
                     if self.getRlapScores:
@@ -397,37 +413,43 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             self.graphicsView.plotItem.showGrid(x=True, y=True, alpha=0.95)
 
             if np.any(self.templatePlotFlux):
-                falsePositive = FalsePositiveRejection(self.inputImageUnRedshifted, [self.templatePlotFlux], [self.templatePlotName], self.wave, self.inputMinMaxIndex, [self.templateMinMaxIndex])
-                rlap = falsePositive.rejection_label2()
+                rlapCalc = RlapCalc(self.inputImageUnRedshifted, [self.templatePlotFlux], [self.templatePlotName], self.wave, self.inputMinMaxIndex, [self.templateMinMaxIndex])
+                rlap = rlapCalc.rlap_label()[0]
                 self.labelRlapScore.setText("rlap: {0}".format(rlap))
 
     def best_redshifts(self):
         redshifts = []
         for i in range(20):
             host, name, age = classification_split(self.bestTypes[i])
-            redshift, crossCorr = self.calc_redshift(name, age)
+            redshift, crossCorr, medianName = self.calc_redshift(name, age)
             redshifts.append(redshift)
         return redshifts
+
+    def set_template_sub_index(self, templateName):
+        snInfos, snNames, hostInfos, hostNames = self.get_sn_and_host_templates(self.snName, self.snAge, self.hostName)
+        if snNames.size:
+            self.templateSubIndex = np.where(snNames == templateName)[0][0]
 
     def calc_redshift(self, snName, snAge):
         host = "No Host"
         snInfos, snNames, hostInfos, hostNames = self.get_sn_and_host_templates(snName, snAge, host)
         numOfSubTemplates = len(snNames)
+        templateNames = snNames
         templateFluxes = []
         templateMinMaxIndexes = []
         for i in range(numOfSubTemplates):
             templateFluxes.append(snInfos[i][1])
             templateMinMaxIndexes.append((snInfos[i][2], snInfos[i][3]))
 
-        redshift, crossCorr = get_median_redshift(self.inputImageUnRedshifted, templateFluxes, self.nw, self.dwlog, self.inputMinMaxIndex, templateMinMaxIndexes)
+        redshift, crossCorrs, medianName = get_median_redshift(self.inputImageUnRedshifted, templateFluxes, self.nw, self.dwlog, self.inputMinMaxIndex, templateMinMaxIndexes, templateNames)
         if redshift is None:
             return 0, np.zeros(1024)
 
-        return round(redshift, 4), crossCorr
+        return round(redshift, 4), crossCorrs, medianName
 
     def plot_cross_corr(self, snName, snAge):
         zAxis = get_redshift_axis(self.nw, self.dwlog)
-        redshift, crossCorr = self.calc_redshift(snName, snAge)
+        crossCorr = np.real(self.crossCorrs["_".join(self.templatePlotName.split('_')[:-1])])
         self.graphicsView_2.clear()
         self.graphicsView_2.plot(zAxis, crossCorr)
         self.graphicsView_2.setXRange(0, 1)

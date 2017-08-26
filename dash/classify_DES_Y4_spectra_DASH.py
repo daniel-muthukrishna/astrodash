@@ -135,10 +135,6 @@ bestFits, redshifts, bestTypes, rejectionLabels, reliableFlags = classification.
 
 # SAVE BEST MATCHES
 print(bestFits)
-f = open('classification_results.txt', 'w')
-for i in range(len(atels)):
-    f.write("%s   z=%s     %s     %s      %s\n %s\n\n" % (atels[i][0], atels[i][1], bestTypes[i], reliableFlags[i], rejectionLabels[i], bestFits[i]))
-f.close()
 print("Finished classifying %d spectra!" % len(atels))
 
 # PLOT SPECTRUM ON GUI

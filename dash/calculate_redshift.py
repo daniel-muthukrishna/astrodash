@@ -57,20 +57,21 @@ def get_redshift(inputFlux, tempFlux, nw, dwlog, tempMinMaxIndex):
     return redshift, crossCorr
 
 
-def get_median_redshift(inputFlux, tempFluxes, nw, dwlog, inputMinMaxIndex, tempMinMaxIndexes):
+def get_median_redshift(inputFlux, tempFluxes, nw, dwlog, inputMinMaxIndex, tempMinMaxIndexes, tempNames):
     inputFlux = mean_zero_spectra(inputFlux, inputMinMaxIndex[0], inputMinMaxIndex[1], nw)
 
     redshifts = []
-    crossCorrs = []
+    crossCorrs = {}
 
     for i in range(len(tempFluxes)):
         redshift, crossCorr = get_redshift(inputFlux, tempFluxes[i], nw, dwlog, tempMinMaxIndexes[i])
         redshifts.append(redshift)
-        crossCorrs.append(crossCorr)
+        crossCorrs[tempNames[i]] = crossCorr
 
     if redshifts != []:
         medianIndex = np.argsort(redshifts)[len(redshifts)//2]
         medianRedshift = redshifts[medianIndex]
+        medianName = tempNames[medianIndex]
     else:
         return None, None
 
@@ -79,5 +80,4 @@ def get_median_redshift(inputFlux, tempFluxes, nw, dwlog, inputMinMaxIndex, temp
     else:
         pass # redshiftError = 1/rlap * kz
 
-
-    return medianRedshift, np.real(crossCorrs[medianIndex])
+    return medianRedshift, crossCorrs, medianName

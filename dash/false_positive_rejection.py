@@ -89,7 +89,7 @@ def combined_prob(bestMatchList):
     return hostName, bestName, bestAge, round(probTotal, 4), reliableFlag
 
 
-class FalsePositiveRejection(object):
+class RlapCalc(object):
     def __init__(self, inputFlux, templateFluxes, templateNames, wave, inputMinMaxIndex, templateMinMaxIndexes):
         self.templateFluxes = templateFluxes
         self.templateNames = templateNames
@@ -209,7 +209,6 @@ class FalsePositiveRejection(object):
         lap = np.log(maxWaveOverlap / minWaveOverlap)
         rlap = 5 * r * lap
 
-
         fom = fom * lap
         # print r, lap, rlap, fom
         return r, lap, rlap, fom
@@ -249,36 +248,33 @@ class FalsePositiveRejection(object):
 
         return chi2, pearsonCorr
 
-    def rejection_label(self):
-        chi2List = []
-        pearsonList = []
-        for templateFlux in self.templateFluxes:
-            chi2 = self.calculate_chi_squared(templateFlux)[0]
-            chi2List.append(chi2)
-            pearson = self.calculate_chi_squared(templateFlux)[1]
-            pearsonList.append(pearson)
+    def rlap_score(self, tempIndex):
+        xcorr, rmsinput, rmstemp, xcorrnorm, rmsxcorr, xcorrnormRearranged, rmsA = self._cross_correlation(
+            self.templateFluxes[tempIndex].astype('float'), self.templateMinMaxIndexes[tempIndex])
+        crosscorr = xcorrnormRearranged
+        r, lap, rlap, fom = self.calculate_rlap(crosscorr, rmsA, self.templateFluxes[tempIndex])
 
-        chi2Mean = round(np.mean(chi2List),2)
-        pearsonMean = np.mean(pearsonList)
-        print(chi2Mean, np.median(chi2List), min(chi2List), max(chi2List), len(chi2List))
-        print(pearsonMean, np.median(pearsonList), min(pearsonList), max(pearsonList), len(pearsonList))
+        return r, lap, rlap, fom
 
-        return "%s, Pearson=%s" % (str(chi2Mean), str(pearsonMean))
-
-    def rejection_label2(self):
+    def rlap_label(self):
         self.zAxis = self.get_redshift_axis(self.nw, self.dwlog)
         rlapList = []
         for i in range(len(self.templateNames)):
-            xcorr, rmsinput, rmstemp, xcorrnorm, rmsxcorr, xcorrnormRearranged, rmsA = self._cross_correlation(self.templateFluxes[i].astype('float'), self.templateMinMaxIndexes[i])
-            crosscorr = xcorrnormRearranged
-            r, lap, rlap, fom = self.calculate_rlap(crosscorr, rmsA, self.templateFluxes[i])
+            r, lap, rlap, fom = self.rlap_score(tempIndex=i)
             rlapList.append(rlap)
             if i > 20:
                 break
 
-        print("r={0}, lap={1}, rlap={2}, rmsA={3} - last value".format(r, lap, rlap, rmsA))
+        print("r={0}, lap={1}, rlap={2}, fom={3} - last value".format(r, lap, rlap, fom))
         rlapMean = round(np.mean(rlapList),2)
         print("mean={0}, median={1}, min={2}, max={3}".format(rlapMean, np.median(rlapList), min(rlapList), max(rlapList)))
 
-        return "avg={0}_max={1}".format(str(rlapMean), round(max(rlapList),2))  # return str(rlapMean)
+        rlapLabel = str(rlapMean) # "avg={0}_max={1}".format(str(rlapMean), round(max(rlapList),2))
+
+        if rlapMean < 6:
+            rlapWarning = True
+        else:
+            rlapWarning = False
+
+        return rlapLabel, rlapWarning
 
