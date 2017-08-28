@@ -482,13 +482,16 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
 
         redshift, crossCorrs, medianName = get_median_redshift(self.inputImageUnRedshifted, templateFluxes, self.nw, self.dwlog, self.inputMinMaxIndex, templateMinMaxIndexes, templateNames)
         if redshift is None:
-            return 0, np.zeros(1024), ""
+            return 0, 0, ""
 
         return round(redshift, 4), crossCorrs, medianName
 
     def plot_cross_corr(self, snName, snAge):
         zAxis = get_redshift_axis(self.nw, self.dwlog)
-        crossCorr = np.real(self.crossCorrs["_".join(self.templatePlotName.split('_')[:-1])])
+        if type(self.crossCorrs) == dict:
+            crossCorr = np.real(self.crossCorrs["_".join(self.templatePlotName.split('_')[:-1])])
+        else:
+            crossCorr = np.zeros(self.nw)
         self.graphicsView_2.clear()
         self.graphicsView_2.plot(zAxis, crossCorr)
         self.graphicsView_2.setXRange(0, 1)
