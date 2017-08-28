@@ -73,7 +73,7 @@ def get_median_redshift(inputFlux, tempFluxes, nw, dwlog, inputMinMaxIndex, temp
         medianRedshift = redshifts[medianIndex]
         medianName = tempNames[medianIndex]
     else:
-        return None, None
+        return None, None, None
 
     if len(redshifts) >= 10:
         redshiftError = np.std(redshifts)

@@ -3,6 +3,7 @@ import sys
 import numpy as np
 from PyQt5 import QtGui
 from PyQt5.QtCore import QThread, pyqtSignal
+import pyqtgraph as pg
 from dash.design import Ui_MainWindow
 from dash.restore_model import LoadInputSpectra, BestTypesListSingleRedshift, get_training_parameters, classification_split
 from dash.create_arrays import AgeBinning
@@ -30,6 +31,9 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.snAge = '-20 to -18'
         self.hostName = 'No Host'
         self.lineEditKnownZ.setText('')
+        self.infLine = pg.InfiniteLine(self.plotZ, pen={'width': 3, 'color': (135, 206, 250)}, movable=True, bounds=[-1, 1], hoverPen={'color': (255, 0, 0), 'width': 3}, label='z', labelOpts={'color': (135, 206, 250), 'position': 0.2})
+        self.infLine.sigPositionChanged.connect(self.cross_corr_redshift_changed)
+
 
         self.pushButtonLeftTemplate.clicked.connect(self.select_sub_template_left)
         self.pushButtonRightTemplate.clicked.connect(self.select_sub_template_right)
@@ -57,6 +61,8 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.comboBoxSNType.currentIndexChanged.connect(self.combo_box_changed)
         self.comboBoxAge.currentIndexChanged.connect(self.combo_box_changed)
         self.comboBoxHost.currentIndexChanged.connect(self.combo_box_changed)
+
+        self.btnQuit.clicked.connect(self.close)
 
     def select_tensorflow_model(self):
         if self.checkBoxKnownZ.isChecked():
@@ -167,21 +173,29 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
 
     def redshift_slider_changed(self):
         self.plotZ = self.horizontalSliderRedshift.value()/10000.
-        self.lineEditRedshift.setText(str(self.plotZ))
+        self.lineEditRedshift.setText(str(round(self.plotZ, 3)))
+        self.infLine.setValue(self.plotZ)
 
     def redshift_text_changed(self):
         try:
             self.plotZ = float(self.lineEditRedshift.text())
             self.horizontalSliderRedshift.setValue(int(self.plotZ*10000))
+            self.infLine.setValue(self.plotZ)
             self.plot_best_matches()
         except ValueError:
             print("Redshift Value Error")
 
+    def cross_corr_redshift_changed(self):
+        self.plotZ = self.infLine.value()
+        self.horizontalSliderRedshift.setValue(int(self.plotZ * 10000))
+        self.lineEditRedshift.setText(str(round(self.plotZ, 3)))
+
     def set_plot_redshift(self, plotZ):
         plotZ = float(plotZ)
         self.plotZ = plotZ
-        self.lineEditRedshift.setText(str(plotZ))
+        self.lineEditRedshift.setText(str(round(self.plotZ, 3)))
         self.horizontalSliderRedshift.setValue(int(plotZ*10000))
+        self.infLine.setValue(self.plotZ)
         self.plot_best_matches()
 
     def smooth_slider_changed(self):
@@ -411,6 +425,31 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             self.graphicsView.setXRange(2500, 10000)
             self.graphicsView.setYRange(0, 1)
             self.graphicsView.plotItem.showGrid(x=True, y=True, alpha=0.95)
+            self.graphicsView.plotItem.setLabels(bottom="Observed Wavelength (<font>&#8491;</font>)")
+
+            axis2 = pg.AxisItem('top')
+            #self.graphicsView.addItem(axis2)
+            # self.graphicsView.AxisItem('top')
+
+            # if self.knownRedshift:
+            #     p2 = pg.ViewBox()
+            #     self.graphicsView.plotItem.showAxis('top')
+            #     self.graphicsView.plotItem.scene().addItem(p2)
+            #     self.graphicsView.plotItem.getAxis('top').linkToView(p2)
+            #     p2.setYLink(self.graphicsView.plotItem)
+            #     self.graphicsView.plotItem.getAxis('top').setLabel('axis2', color='#0000ff')
+            #     p2.addItem(self.graphicsView.plot(self.wave, inputPlotFlux, name='Input Spectrum', pen={'color': (0, 255, 0)}))
+            #     p2.addItem(pg.plot(self.wave, inputPlotFlux, name='Input Spectrum', pen={'color': (0, 0, 255)}))
+            #     #p2.setXRange(2500 / (1.1), 10000 / (1.1))
+
+
+                # self.graphicsView.plotItem.setLabels(top="Rest Wavelength (<font>&#8491;</font>)")
+                # self.graphicsView.plotItem.showAxis('top')
+                # p3 = pg.ViewBox()
+                # self.graphicsView.plotItem.scene().addItem(p3)
+                # self.graphicsView.plotItem.getAxis('top').linkToView(p3)
+                # self.graphicsView.plotItem.setLabels(top="Rest Wavelength (<font>&#8491;</font>)")
+                # p3.setYLink(self.graphicsView.plotItem)
 
             if np.any(self.templatePlotFlux):
                 rlapCalc = RlapCalc(self.inputImageUnRedshifted, [self.templatePlotFlux], [self.templatePlotName], self.wave, self.inputMinMaxIndex, [self.templateMinMaxIndex])
@@ -443,7 +482,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
 
         redshift, crossCorrs, medianName = get_median_redshift(self.inputImageUnRedshifted, templateFluxes, self.nw, self.dwlog, self.inputMinMaxIndex, templateMinMaxIndexes, templateNames)
         if redshift is None:
-            return 0, np.zeros(1024)
+            return 0, np.zeros(1024), ""
 
         return round(redshift, 4), crossCorrs, medianName
 
@@ -456,6 +495,8 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.graphicsView_2.setYRange(min(crossCorr), max(crossCorr))
         self.graphicsView_2.plotItem.showGrid(x=True, y=True, alpha=0.95)
         # self.graphicsView_2.plotItem.setLabels(bottom="z")
+        self.graphicsView_2.addItem(self.infLine)
+
 
     def browse_folder(self):
         self.listWidget.clear()
