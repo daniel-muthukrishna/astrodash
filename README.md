@@ -61,7 +61,7 @@ If Known Redshift is ticked, then the user must input a redshift. If it is untic
 
 6. Click 'Re-fit with priors' to classify.
 
-7. Click any of the best matches to view the continuum-subtracted binned spectra. You may also select a particular type, age, and host of a supernova using the combo boxes. You can set the fraction of host galaxy light in the spectrum with the slider. You may also change the redshift slider to view how the spectrum compares to the selected template.
+7. Click any of the best matches to view the continuum-subtracted binned spectra. You may also select a particular type, age, and host of a supernova using the combo boxes. You can set the fraction of host galaxy light in the spectrum with the slider. You may also change the redshift slider or the line on the x-corr plot to view view changes in redshift.
 
 8. Once you have selected the supernova type, you may use the two arrow buttons to change the supernova template which is plotted.
 
