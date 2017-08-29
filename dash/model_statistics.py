@@ -76,10 +76,10 @@ def calc_model_statistics(modelFilename, testImages, testTypeNames, typeNamesLis
 
 
 if __name__ == '__main__':
-    dirModel = "/Users/danmuth/PycharmProjects/DASH/dash/models_other/data_files_zeroZ_withHost/"
+    dirModel = "/Users/danmuth/PycharmProjects/DASH/dash/models_other/zeroZ/data_files_zeroZ_withHost_uniformNoiseOutside/"
     modelFilename = dirModel + "tensorflow_model.ckpt"
 
-    dirTestSet = "/Users/danmuth/PycharmProjects/DASH/dash/models_other/zeroZ/data_files_zeroZ_withHost_withNoise/training_set/"
+    dirTestSet = "/Users/danmuth/PycharmProjects/DASH/dash/models_other/zeroZ/data_files_zeroZ_noHost/training_set/"
     testImages = np.load(dirTestSet + 'testImages.npy', mmap_mode='r')
     # testLabelsIndexes = np.load(dir1 + 'testLabels.npy', mmap_mode='r')
     typeNamesList = np.load(dirTestSet + 'typeNamesList.npy')

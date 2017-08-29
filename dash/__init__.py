@@ -1,7 +1,7 @@
 import sys
 from dash.download_data_files import download_all_files
 
-download_all_files('v02')
+download_all_files('v03')
 
 try:
     from PyQt5 import QtGui

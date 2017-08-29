@@ -13,7 +13,7 @@ from dash.calculate_redshift import get_median_redshift, get_redshift_axis
 
 
 class MainApp(QtGui.QMainWindow, Ui_MainWindow):
-    def __init__(self, parent=None, inputFilename="DefaultFilename", data_files='models_v02'):
+    def __init__(self, parent=None, inputFilename="DefaultFilename", data_files='models_v03'):
         super(MainApp, self).__init__(parent)
         self.setupUi(self)
 

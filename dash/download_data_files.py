@@ -35,7 +35,7 @@ def download_all_files(zipVersion):
                     'model_trainedAtZeroZ_v02.ckpt', 'type_age_atRedshiftZero_v02.npz', 'training_params_v02.pickle', 'templates_v02.npz',
                     'model_trainedAtZeroZ_v03.ckpt', 'type_age_atRedshiftZero_v03.npz', 'training_params.pickle', 'templates_v03.npz',
                     'model_trainedAtZeroZ_v03.ckpt.data-00000-of-00001', 'model_trainedAtZeroZ_v03.ckpt.index', 'model_trainedAtZeroZ_v03.ckpt.meta',
-                    'models_v01.zip']
+                    'models_v01.zip', 'models_v02.zip']
     delete_previous_versions(oldFilenames, scriptDirectory)
 
     saveFilenames = ['models_{0}.zip'.format(zipVersion)]
@@ -51,7 +51,7 @@ def download_all_files(zipVersion):
 
 
 if __name__ == '__main__':
-    download_all_files('v02')
+    download_all_files('v03')
 
 
 
