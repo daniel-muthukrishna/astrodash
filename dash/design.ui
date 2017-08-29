@@ -28,6 +28,12 @@
       </property>
       <item>
        <widget class="QGroupBox" name="groupBox_2">
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>150</height>
+         </size>
+        </property>
         <property name="title">
          <string>Select Spectrum</string>
         </property>
@@ -89,6 +95,12 @@
       </item>
       <item>
        <widget class="QGroupBox" name="groupBox">
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>390</height>
+         </size>
+        </property>
         <property name="title">
          <string>Priors</string>
         </property>
@@ -101,6 +113,12 @@
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>240</height>
+            </size>
+           </property>
            <property name="widgetResizable">
             <bool>true</bool>
            </property>
@@ -108,8 +126,8 @@
             <property name="geometry">
              <rect>
               <x>0</x>
-              <y>0</y>
-              <width>223</width>
+              <y>-6</y>
+              <width>208</width>
               <height>198</height>
              </rect>
             </property>
@@ -304,7 +322,7 @@
               </size>
              </property>
              <property name="text">
-              <string>Re-fit with priors</string>
+              <string>Fit with priors</string>
              </property>
             </widget>
            </item>

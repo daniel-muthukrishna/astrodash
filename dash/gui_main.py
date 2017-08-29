@@ -34,7 +34,6 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.infLine = pg.InfiniteLine(self.plotZ, pen={'width': 3, 'color': (135, 206, 250)}, movable=True, bounds=[-1, 1], hoverPen={'color': (255, 0, 0), 'width': 3}, label='z', labelOpts={'color': (135, 206, 250), 'position': 0.2})
         self.infLine.sigPositionChanged.connect(self.cross_corr_redshift_changed)
 
-
         self.pushButtonLeftTemplate.clicked.connect(self.select_sub_template_left)
         self.pushButtonRightTemplate.clicked.connect(self.select_sub_template_right)
         self.btnBrowse.clicked.connect(self.select_input_file)
@@ -63,6 +62,13 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.comboBoxHost.currentIndexChanged.connect(self.combo_box_changed)
 
         self.btnQuit.clicked.connect(self.close)
+
+        self.graphicsView.plotItem.layout.removeItem(self.graphicsView.plotItem.getAxis('top'))
+        self.cAxis = pg.AxisItem(orientation='top', parent=self.graphicsView.plotItem)
+        self.cAxis.linkToView(self.graphicsView.plotItem.vb)
+        self.graphicsView.plotItem.axes['top']['item'] = self.cAxis
+        self.graphicsView.plotItem.layout.addItem(self.cAxis, 1, 1)
+
 
     def select_tensorflow_model(self):
         if self.checkBoxKnownZ.isChecked():
@@ -130,7 +136,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.templatePlotFlux, self.templatePlotName, self.templateMinMaxIndex = self.get_template_info()
         print(self.templatePlotName)
         self.plot_best_matches()
-        self.plot_cross_corr(self.snName, self.snAge)
+        self.plot_cross_corr()
 
     def combo_box_changed(self):
         self.snName = str(self.comboBoxSNType.currentText())
@@ -140,7 +146,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.redshift, self.crossCorrs, self.medianName = self.calc_redshift(self.snName, self.snAge)
         self.set_template_sub_index(self.medianName)
         self.templatePlotFlux, self.templatePlotName, self.templateMinMaxIndex = self.get_template_info()
-        self.plot_cross_corr(self.snName, self.snAge)
+        self.plot_cross_corr()
         if self.knownRedshift:
             self.plot_best_matches()
         else:
@@ -249,6 +255,9 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         if not os.path.isfile(self.modelFilename + ".index"):
             QtGui.QMessageBox.critical(self, "Error", "Model does not exist")
             return
+        if not os.path.isfile(self.inputFilename):
+            QtGui.QMessageBox.critical(self, "Error", "File not found!")
+            return
         if self.checkBoxRlap.isChecked():
             self.getRlapScores = True
         else:
@@ -281,7 +290,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             self.plotted = True
             self.list_best_matches_single_redshift()
             self.set_plot_redshift(self.bestRedshift)
-            self.plot_cross_corr(self.snName, self.snAge)
+            self.plot_cross_corr()
             self.progressBar.setValue(100)
             QtGui.QMessageBox.information(self, "Done!", "Finished Fitting Input Spectrum")
 
@@ -405,7 +414,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
                 self.set_plot_redshift(redshift)
             agePlot = age1 + ' to ' + age3
 
-            self.plot_cross_corr(self.snName, self.snAge)
+            self.plot_cross_corr()
             snTypeComboBoxIndex = self.comboBoxSNType.findText(snTypePlot)
             self.comboBoxSNType.setCurrentIndex(snTypeComboBoxIndex)
             AgeComboBoxIndex = self.comboBoxAge.findText(agePlot)
@@ -427,29 +436,9 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             self.graphicsView.plotItem.showGrid(x=True, y=True, alpha=0.95)
             self.graphicsView.plotItem.setLabels(bottom="Observed Wavelength (<font>&#8491;</font>)")
 
-            axis2 = pg.AxisItem('top')
-            #self.graphicsView.addItem(axis2)
-            # self.graphicsView.AxisItem('top')
-
-            # if self.knownRedshift:
-            #     p2 = pg.ViewBox()
-            #     self.graphicsView.plotItem.showAxis('top')
-            #     self.graphicsView.plotItem.scene().addItem(p2)
-            #     self.graphicsView.plotItem.getAxis('top').linkToView(p2)
-            #     p2.setYLink(self.graphicsView.plotItem)
-            #     self.graphicsView.plotItem.getAxis('top').setLabel('axis2', color='#0000ff')
-            #     p2.addItem(self.graphicsView.plot(self.wave, inputPlotFlux, name='Input Spectrum', pen={'color': (0, 255, 0)}))
-            #     p2.addItem(pg.plot(self.wave, inputPlotFlux, name='Input Spectrum', pen={'color': (0, 0, 255)}))
-            #     #p2.setXRange(2500 / (1.1), 10000 / (1.1))
-
-
-                # self.graphicsView.plotItem.setLabels(top="Rest Wavelength (<font>&#8491;</font>)")
-                # self.graphicsView.plotItem.showAxis('top')
-                # p3 = pg.ViewBox()
-                # self.graphicsView.plotItem.scene().addItem(p3)
-                # self.graphicsView.plotItem.getAxis('top').linkToView(p3)
-                # self.graphicsView.plotItem.setLabels(top="Rest Wavelength (<font>&#8491;</font>)")
-                # p3.setYLink(self.graphicsView.plotItem)
+            self.cAxis.setScale(1/(1+self.plotZ))
+            self.cAxis.setGrid(False)
+            self.cAxis.setLabel("Rest Wavelength (<font>&#8491;</font>)")
 
             if np.any(self.templatePlotFlux):
                 rlapCalc = RlapCalc(self.inputImageUnRedshifted, [self.templatePlotFlux], [self.templatePlotName], self.wave, self.inputMinMaxIndex, [self.templateMinMaxIndex])
@@ -486,7 +475,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
 
         return round(redshift, 4), crossCorrs, medianName
 
-    def plot_cross_corr(self, snName, snAge):
+    def plot_cross_corr(self):
         zAxis = get_redshift_axis(self.nw, self.dwlog)
         if type(self.crossCorrs) == dict:
             crossCorr = np.real(self.crossCorrs["_".join(self.templatePlotName.split('_')[:-1])])
@@ -499,7 +488,6 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.graphicsView_2.plotItem.showGrid(x=True, y=True, alpha=0.95)
         # self.graphicsView_2.plotItem.setLabels(bottom="z")
         self.graphicsView_2.addItem(self.infLine)
-
 
     def browse_folder(self):
         self.listWidget.clear()
