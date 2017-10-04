@@ -226,6 +226,9 @@ class PreProcessSpectrum(object):
         minindex, maxindex = self.processingTools.min_max_index(fluxout)
         minindex, maxindex = int(minindex), int(maxindex)
 
+        # Set wavelength range without data to 0.5 instead of zero
+        fluxout[0:minindex] = 0.5 * np.ones(minindex)
+        fluxout[maxindex + 1:] = 0.5 * np.ones(self.nw - maxindex - 1)
 
         return wlog, fluxout, minindex, maxindex
 
@@ -247,7 +250,7 @@ class PreProcessSpectrum(object):
         return continuum
 
     def continuum_removal(self, wave, flux, numSplinePoints, minindex, maxindex):
-        newflux = np.zeros(int(self.nw))
+        newflux = np.copy(flux)
 
         splineFit = self.spline_fit(wave, flux, numSplinePoints, minindex, maxindex)
         newflux[minindex:maxindex] = flux[minindex:maxindex] - splineFit[minindex:maxindex]
@@ -258,11 +261,8 @@ class PreProcessSpectrum(object):
         """mean zero flux"""
         meanflux = np.mean(flux[minindex:maxindex])
         meanzeroflux = flux - meanflux
-
-        for i in range(0,minindex):
-            meanzeroflux[i] = 0
-        for i in range(maxindex,len(flux)):
-            meanzeroflux[i] = 0
+        meanzeroflux[0:minindex] = flux[0:minindex]
+        meanzeroflux[maxindex + 1:] = flux[maxindex+1]
 
         return meanzeroflux
 

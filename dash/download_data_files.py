@@ -26,16 +26,15 @@ def delete_previous_versions(oldFilenames, scriptDirectory):
         if os.path.isfile(dataFilename):
             print("Deleting previous version of data file: %s" % oldFilename)
             os.remove(dataFilename)
+        if os.path.isdir(dataFilename.strip('.zip')):
+            shutil.rmtree(dataFilename.strip('.zip'))
 
 
 def download_all_files(zipVersion):
     scriptDirectory = os.path.dirname(os.path.abspath(__file__))
 
-    oldFilenames = ['model_trainedAtZeroZ.ckpt', 'type_age_atRedshiftZero.npz', 'training_params.pickle', 'templates.npz',
-                    'model_trainedAtZeroZ_v02.ckpt', 'type_age_atRedshiftZero_v02.npz', 'training_params_v02.pickle', 'templates_v02.npz',
-                    'model_trainedAtZeroZ_v03.ckpt', 'type_age_atRedshiftZero_v03.npz', 'training_params.pickle', 'templates_v03.npz',
-                    'model_trainedAtZeroZ_v03.ckpt.data-00000-of-00001', 'model_trainedAtZeroZ_v03.ckpt.index', 'model_trainedAtZeroZ_v03.ckpt.meta',
-                    'models_v01.zip', 'models_v02.zip']
+    oldFilenames = ['models_v01.zip', 'models_v02.zip']
+
     delete_previous_versions(oldFilenames, scriptDirectory)
 
     saveFilenames = ['models_{0}.zip'.format(zipVersion)]

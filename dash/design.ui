@@ -126,8 +126,8 @@
             <property name="geometry">
              <rect>
               <x>0</x>
-              <y>-6</y>
-              <width>208</width>
+              <y>0</y>
+              <width>223</width>
               <height>198</height>
              </rect>
             </property>
@@ -206,7 +206,7 @@
                  <item row="0" column="1">
                   <widget class="QLineEdit" name="lineEditMinWave">
                    <property name="text">
-                    <string>2500</string>
+                    <string>3500</string>
                    </property>
                   </widget>
                  </item>

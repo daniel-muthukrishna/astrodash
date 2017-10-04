@@ -8,7 +8,7 @@ import shutil
 import time
 
 if __name__ == '__main__':
-    dataDirName = 'data_files_zeroZ_withHost/'
+    dataDirName = 'data_files_zeroZ_test'
     dataFilenames = []
     if not os.path.exists(dataDirName):
         os.makedirs(dataDirName)
@@ -26,6 +26,8 @@ if __name__ == '__main__':
         f.write("Redshift Precision: 0.01\n")
         f.write("Fraction of Training Set Used: 0.9\n")
         f.write("Training Amount: 50 x 400000\n")
+        f.write("Changed wavelength range to 3500 to 10000A\n")
+        f.write("Set outer region to 0.5\n")
         dataFilenames.append(modelInfoFilename)
 
     # CREATE PARAMETERS PICKLE FILE
@@ -48,12 +50,12 @@ if __name__ == '__main__':
     print("time spent: {0:.2f}".format(t4 - t3))
 
     # SAVE ALL FILES TO ZIP FILE
-    dataFilesZip = 'data_files_zeroZ_withHost_v01.zip'
+    dataFilesZip = 'data_files_zeroZ_test.zip'
     with zipfile.ZipFile(dataFilesZip, 'w') as myzip:
         for f in dataFilenames:
             myzip.write(f)
 
-    modelZip = 'model_zeroZ_withHost_v01.zip'
+    modelZip = 'model_zeroZ_test.zip'
     with zipfile.ZipFile(modelZip, 'w') as myzip:
         for f in [dataFilenames[0]] + dataFilenames[2:]:
             myzip.write(f)

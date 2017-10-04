@@ -46,6 +46,15 @@ class InputSpectra(object):
             filenames.append(self.filename + "_" + str(-z))
             redshifts.append(-z)
             minMaxIndexes.append((minIndex, maxIndex))
+            # # Add white noise to regions outside minIndex to maxIndex
+            # noise = np.zeros(self.nw)
+            # noise[0:minIndex] = np.random.uniform(0.0, 1.0, minIndex)
+            # noise[maxIndex:] = np.random.uniform(0.0, 1.0, self.nw - maxIndex)
+            #
+            # augmentedFlux = flux + noise
+            # augmentedFlux = normalise_spectrum(augmentedFlux)
+            # augmentedFlux = zero_non_overlap_part(augmentedFlux, minIndex, maxIndex)
+
 
         inputImages = np.array(images)
         inputFilenames = np.array(filenames)

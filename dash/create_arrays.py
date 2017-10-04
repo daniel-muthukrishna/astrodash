@@ -213,6 +213,10 @@ class ArrayTools(object):
         noise = np.zeros(self.nw)
         stdDev = abs(np.random.normal(stdDevMean, stdDevStdDev)) # randomised standard deviation
         noise[minIndex:maxIndex] = np.random.normal(0, stdDev, maxIndex - minIndex)
+        # # Add white noise to regions outside minIndex to maxIndex
+        # noise[0:minIndex] = np.random.uniform(0.0, 1.0, minIndex)
+        # noise[maxIndex:] = np.random.uniform(0.0, 1.0, self.nw-maxIndex)
+
         augmentedFlux = flux + noise
         augmentedFlux = normalise_spectrum(augmentedFlux)
         augmentedFlux = zero_non_overlap_part(augmentedFlux, minIndex, maxIndex)
@@ -246,8 +250,7 @@ class ArrayTools(object):
             typeName = typeNamesShuf[i]
 
             labelIndex = label # np.argmax(label)
-            
-            print(idx, i, int(overSampleAmount[labelIndex]))
+
             if overSampleAmount[labelIndex] < 10:
                 std = 0.03
             else:
@@ -368,7 +371,7 @@ class CreateArrays(object):
                                     break
 
                                 if self.minAge < float(ages[ageidx]) < self.maxAge:
-                                    if self.hostTypes is None: # Checks if we are classifying by host as well
+                                    if self.hostTypes is None:  # Checks if we are classifying by host as well
                                         labelIndex, typeName = self.createLabels.label_array(ttype, ages[ageidx], host=None)
                                     else:
                                         labelIndex, typeName = self.createLabels.label_array(ttype, ages[ageidx], host=galTempList[j])

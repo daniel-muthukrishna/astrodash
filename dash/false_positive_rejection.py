@@ -265,11 +265,8 @@ class RlapCalc(object):
             if i > 20:
                 break
 
-        print("r={0}, lap={1}, rlap={2}, fom={3} - last value".format(r, lap, rlap, fom))
         rlapMean = round(np.mean(rlapList),2)
-        print("mean={0}, median={1}, min={2}, max={3}".format(rlapMean, np.median(rlapList), min(rlapList), max(rlapList)))
-
-        rlapLabel = str(rlapMean) # "avg={0}_max={1}".format(str(rlapMean), round(max(rlapList),2))
+        rlapLabel = str(rlapMean)
 
         if rlapMean < 6:
             rlapWarning = True
