@@ -33,7 +33,7 @@ def delete_previous_versions(oldFilenames, scriptDirectory):
 def download_all_files(zipVersion):
     scriptDirectory = os.path.dirname(os.path.abspath(__file__))
 
-    oldFilenames = ['models_v01.zip', 'models_v02.zip']
+    oldFilenames = ['models_v01.zip', 'models_v02.zip', 'models_v03.zip']
 
     delete_previous_versions(oldFilenames, scriptDirectory)
 
@@ -50,7 +50,7 @@ def download_all_files(zipVersion):
 
 
 if __name__ == '__main__':
-    download_all_files('v03')
+    download_all_files('v04')
 
 
 

@@ -262,7 +262,7 @@ class PreProcessSpectrum(object):
         meanflux = np.mean(flux[minindex:maxindex])
         meanzeroflux = flux - meanflux
         meanzeroflux[0:minindex] = flux[0:minindex]
-        meanzeroflux[maxindex + 1:] = flux[maxindex+1]
+        meanzeroflux[maxindex + 1:] = flux[maxindex + 1:]
 
         return meanzeroflux
 

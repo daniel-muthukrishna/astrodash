@@ -8,7 +8,8 @@ import shutil
 import time
 
 if __name__ == '__main__':
-    dataDirName = 'data_files_zeroZ_test'
+    modelName = 'zeroZ_test'
+    dataDirName = 'data_files_{0}'.format(modelName)
     dataFilenames = []
     if not os.path.exists(dataDirName):
         os.makedirs(dataDirName)
@@ -38,7 +39,7 @@ if __name__ == '__main__':
     print("time spent: {0:.2f}".format(t2 - t1))
 
     # CREATE TRAINING SET FILES
-    trainingSetFilename = create_training_set_files(dataDirName, minZ=0, maxZ=0., redshiftPrecision=0.01, trainWithHost=True, classifyHost=False)
+    trainingSetFilename = create_training_set_files(dataDirName, minZ=0, maxZ=0.8, redshiftPrecision=0.01, trainWithHost=True, classifyHost=False)
     dataFilenames.append(trainingSetFilename)
     t3 = time.time()
     print("time spent: {0:.2f}".format(t3 - t2))
@@ -50,12 +51,12 @@ if __name__ == '__main__':
     print("time spent: {0:.2f}".format(t4 - t3))
 
     # SAVE ALL FILES TO ZIP FILE
-    dataFilesZip = 'data_files_zeroZ_test.zip'
+    dataFilesZip = 'data_files_{0}.zip'.format(modelName)
     with zipfile.ZipFile(dataFilesZip, 'w') as myzip:
         for f in dataFilenames:
             myzip.write(f)
 
-    modelZip = 'model_zeroZ_test.zip'
+    modelZip = 'model_{0}.zip'.format(modelName)
     with zipfile.ZipFile(modelZip, 'w') as myzip:
         for f in [dataFilenames[0]] + dataFilenames[2:]:
             myzip.write(f)

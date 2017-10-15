@@ -13,7 +13,7 @@ from dash.calculate_redshift import get_median_redshift, get_redshift_axis
 
 
 class MainApp(QtGui.QMainWindow, Ui_MainWindow):
-    def __init__(self, parent=None, inputFilename="DefaultFilename", data_files='models_v03'):
+    def __init__(self, parent=None, inputFilename="DefaultFilename", data_files='models_v04'):
         super(MainApp, self).__init__(parent)
         self.setupUi(self)
 
@@ -431,7 +431,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             inputPlotFlux = self.inputImageUnRedshifted
             self.graphicsView.plot(self.wave, inputPlotFlux, name='Input Spectrum', pen={'color': (0, 255, 0)})
             self.graphicsView.plot(templateWave, self.templatePlotFlux, name=self.templatePlotName, pen={'color': (255,0,0)})
-            self.graphicsView.setXRange(2500, 10000)
+            self.graphicsView.setXRange(int(self.w0), int(self.w1))
             self.graphicsView.setYRange(0, 1)
             self.graphicsView.plotItem.showGrid(x=True, y=True, alpha=0.95)
             self.graphicsView.plotItem.setLabels(bottom="Observed Wavelength (<font>&#8491;</font>)")

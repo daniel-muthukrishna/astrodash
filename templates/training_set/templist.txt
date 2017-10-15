@@ -469,7 +469,6 @@ sn2009jf.lnw
 sn2009mg.lnw
 sn2009nz.lnw
 sn2010ay.lnw
-sn2010bh.lnw
 sn2010ma.lnw
 sn2011bm.lnw
 sn2011dh.lnw
