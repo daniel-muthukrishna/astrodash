@@ -73,7 +73,7 @@ class CombineSnAndHost(object):
 if __name__ == '__main__':
     fSN = '/Users/danmuth/PycharmProjects/DASH/templates/snid_templates_Modjaz_BSNIP/sn2001br.lnw'
     fGal = '/Users/danmuth/PycharmProjects/DASH/templates/superfit_templates/gal/Sa'
-    combine = CombineSnAndHost(fSN, fGal, 2500, 10000, 1024)
+    combine = CombineSnAndHost(fSN, fGal, 3500, 10000, 1024)
 
     f = plt.figure()
     xSN, ySN, minSN, maxSN = combine.snid_sn_template_data(ageIdx=0)

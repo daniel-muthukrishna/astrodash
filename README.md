@@ -8,13 +8,8 @@ interface that enables a user to view and classify a spectrum.
 
 In a terminal run: 
 ```bash
-pip install astrodash
+pip install astrodash --upgrade
 ```
-    
-(or clone from github: https://github.com/daniel-muthukrishna/DASH)
-
-To update run:
-`pip install astrodash --upgrade`
 
 ## 2. Dependencies:
 Using pip to install DASH will automatically install the mandatory dependencies: numpy, scipy, specutils, pyqtgraph, and tensorflow.

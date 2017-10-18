@@ -375,6 +375,8 @@ class CreateArrays(object):
                                         labelIndex, typeName = self.createLabels.label_array(ttype, ages[ageidx], host=None)
                                     else:
                                         labelIndex, typeName = self.createLabels.label_array(ttype, ages[ageidx], host=galTempList[j])
+                                    if tminindex > (self.nw - 1):
+                                        continue
                                     nonzeroflux = tempflux[tminindex:tmaxindex + 1]
                                     newflux = (nonzeroflux - min(nonzeroflux)) / (max(nonzeroflux) - min(nonzeroflux))
                                     newflux2 = np.concatenate((tempflux[0:tminindex], newflux, tempflux[tmaxindex + 1:]))
