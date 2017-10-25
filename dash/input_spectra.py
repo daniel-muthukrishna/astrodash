@@ -1,5 +1,6 @@
 import numpy as np
 from dash.create_arrays import *
+from dash.array_tools import normalise_spectrum, zero_non_overlap_part
 
 
 class InputSpectra(object):
@@ -40,7 +41,7 @@ class InputSpectra(object):
         for z in np.linspace(self.minZ, self.maxZ, self.numOfRedshifts + 1):
             wave, flux, minIndex, maxIndex = readSpectra.input_spectrum(z, self.smooth, self.minWave, self.maxWave)
             nonzeroflux = flux[minIndex:maxIndex + 1]
-            newflux = (nonzeroflux - min(nonzeroflux)) / (max(nonzeroflux) - min(nonzeroflux))
+            newflux = normalise_spectrum(nonzeroflux)
             newflux2 = np.concatenate((flux[0:minIndex], newflux, flux[maxIndex + 1:]))
             images = np.append(images, np.array([newflux2]), axis=0)  # images.append(newflux2)
             filenames.append(self.filename + "_" + str(-z))

@@ -1,7 +1,7 @@
 import numpy as np
 from random import shuffle
 from dash.sn_processing import PreProcessing
-from dash.combine_sn_and_host import CombineSnAndHost
+from dash.combine_sn_and_host import training_template_data
 from dash.preprocessing import ProcessingTools
 from dash.array_tools import zero_non_overlap_part, normalise_spectrum
 import multiprocessing as mp
@@ -92,7 +92,7 @@ class CreateLabels(object):
                     for ageLabel in self.ageBinning.age_labels():
                         typeNamesList.append("{}: {}: {}".format(host, tType, ageLabel))
 
-        return typeNamesList
+        return np.array(typeNamesList)
         
 
 class TempList(object):
@@ -119,10 +119,9 @@ class ReadSpectra(object):
             self.data = PreProcessing(snFilename, w0, w1, nw)
         else:
             self.galFilename = galFilename
-            self.dataCombined = CombineSnAndHost(snFilename, galFilename, w0, w1, nw)
 
     def sn_plus_gal_template(self, snAgeIdx, snCoeff, galCoeff, z):
-        wave, flux, minIndex, maxIndex, nCols, ages, tType = self.dataCombined.training_template_data(snAgeIdx, snCoeff, galCoeff, z)
+        wave, flux, minIndex, maxIndex, nCols, ages, tType = training_template_data(snAgeIdx, snCoeff, galCoeff, z, self.snFilename, self.galFilename, self.w0, self.w1, self.nw)
 
         return wave, flux, nCols, ages, tType, minIndex, maxIndex
 
@@ -168,30 +167,29 @@ class ArrayTools(object):
         self.nLabels = nLabels
         self.nw = nw
 
-    def shuffle_arrays(self, images, labels, filenames, typeNames):
-        arraySize = len(labels)
-        imagesShuf = np.empty((arraySize, int(self.nw)), np.float16)
-        labelsShuf = np.empty(arraySize, np.uint16)
-        filenamesShuf = np.empty(arraySize, dtype=object)
-        typeNamesShuf = np.empty(arraySize, dtype=object)
+    def shuffle_arrays(self, **kwargs):
+        """ Must take images and labels as arguments with the keyword specified.
+        Can optionally take filenames and typeNames as arguments """
+        arraySize = len(kwargs['labels'])
+        kwargShuf = {}
+        for key in kwargs:
+            if key == 'images':
+                arrayShuf = np.zeros((arraySize, int(self.nw)), np.float16)
+            elif key == 'labels':
+                arrayShuf = np.zeros(arraySize, np.uint16)
+            else:
+                arrayShuf = np.empty(arraySize, dtype=object)
+            kwargShuf[key] = arrayShuf
         idx = 0
-        print("Shuffle2")
         # Randomise order
         indexShuf = list(range(arraySize))
         shuffle(indexShuf)
         for i in indexShuf:
-            imagesShuf[idx] = images[i]
-            labelsShuf[idx] = labels[i]
-            filenamesShuf[idx] = filenames[i]
-            typeNamesShuf[idx] = typeNames[i]
+            for key in kwargs:
+                kwargShuf[key][idx] = kwargs[key][i]
             idx += 1
-        print("LenLabels")
-        print(len(labels), idx)
-            
-        print(imagesShuf)
-        print(typeNamesShuf)
-        print("Shuffle3")    
-        return imagesShuf, labelsShuf, filenamesShuf, typeNamesShuf
+
+        return kwargShuf
 
     def count_labels(self, labels):
         counts = np.zeros(self.nLabels)
@@ -209,7 +207,7 @@ class ArrayTools(object):
         return c
 
     def augment_data(self, flux, stdDevMean=0.05, stdDevStdDev=0.05):
-        minIndex, maxIndex = ProcessingTools().min_max_index(flux)
+        minIndex, maxIndex = ProcessingTools().min_max_index(flux, outerVal=0.5)
         noise = np.zeros(self.nw)
         stdDev = abs(np.random.normal(stdDevMean, stdDevStdDev)) # randomised standard deviation
         noise[minIndex:maxIndex] = np.random.normal(0, stdDev, maxIndex - minIndex)
@@ -219,12 +217,14 @@ class ArrayTools(object):
 
         augmentedFlux = flux + noise
         augmentedFlux = normalise_spectrum(augmentedFlux)
-        augmentedFlux = zero_non_overlap_part(augmentedFlux, minIndex, maxIndex)
+        augmentedFlux = zero_non_overlap_part(augmentedFlux, minIndex, maxIndex, outerVal=0.5)
 
         return augmentedFlux
 
-    def over_sample_arrays(self, images, labels, filenames, typeNames):
-        counts = self.count_labels(labels)
+    def over_sample_arrays(self, **kwargs):
+        """ Must take images and labels as arguments with the keyword specified.
+        Can optionally take filenames and typeNames as arguments """
+        counts = self.count_labels(kwargs['labels'])
         idx = 0
         print("Before OverSample")  #
         print(counts)  #
@@ -233,33 +233,35 @@ class ArrayTools(object):
         overSampleArraySize = int(sum(np.array(overSampleAmount, int) * counts))
         print(np.array(overSampleAmount, int) * counts)
         print(np.array(overSampleAmount, int))
-        print(overSampleArraySize, len(labels))
-        imagesOverSampled = np.zeros((overSampleArraySize, int(self.nw)), np.float16)
-        labelsOverSampled = np.zeros(overSampleArraySize, np.uint16)
-        filenamesOverSampled = np.empty(overSampleArraySize, dtype=object)
-        typeNamesOverSampled = np.empty(overSampleArraySize, dtype=object)
+        print(overSampleArraySize, len(kwargs['labels']))
+        kwargOverSampled = {}
+        for key in kwargs:
+            if key == 'images':
+                arrayOverSampled = np.zeros((overSampleArraySize, int(self.nw)), np.float16)
+            elif key == 'labels':
+                arrayOverSampled = np.zeros(overSampleArraySize, np.uint16)
+            else:
+                arrayOverSampled = np.empty(overSampleArraySize, dtype=object)
+            kwargOverSampled[key] = arrayOverSampled
 
         counts1 = np.zeros(self.nLabels)
 
-        imagesShuf, labelsShuf, filenamesShuf, typeNamesShuf = self.shuffle_arrays(images, labels, filenames, typeNames)
-        print(len(labelsShuf))
-        for i in range(len(labelsShuf)):
-            label = labelsShuf[i]
-            image = imagesShuf[i]
-            filename = filenamesShuf[i]
-            typeName = typeNamesShuf[i]
+        kwargShuf = self.shuffle_arrays(**kwargs)
 
-            labelIndex = label # np.argmax(label)
+        print(len(kwargShuf['labels']))
+        for i in range(len(kwargShuf['labels'])):
+            labelIndex = kwargShuf['labels'][i]
 
             if overSampleAmount[labelIndex] < 10:
                 std = 0.03
             else:
                 std = 0.05
             for r in range(int(overSampleAmount[labelIndex])):
-                imagesOverSampled[idx] = self.augment_data(image, stdDevMean=0.05, stdDevStdDev=std)  # image
-                labelsOverSampled[idx] = label
-                filenamesOverSampled[idx] = filename
-                typeNamesOverSampled[idx] = typeName
+                for key in kwargs:
+                    if key == 'images':
+                        kwargOverSampled[key][idx] = self.augment_data(kwargShuf[key][i], stdDevMean=0.05, stdDevStdDev=std)
+                    else:
+                        kwargOverSampled[key][idx] = kwargShuf[key][i]
                 counts1[labelIndex] += 1
                 idx += 1
 
@@ -267,9 +269,9 @@ class ArrayTools(object):
         print(counts1)  #
 
         print("Before Shuffling")
-        imagesOverSampledShuf, labelsOverSampledShuf, filenamesOverSampledShuf, typeNamesOverSampledShuf = self.shuffle_arrays(imagesOverSampled, labelsOverSampled, filenamesOverSampled, typeNamesOverSampled)
+        kwargOverSampledShuf = self.shuffle_arrays(**kwargOverSampled)
         print("After Shuffling")
-        return imagesOverSampledShuf, labelsOverSampledShuf, filenamesOverSampledShuf, typeNamesOverSampledShuf
+        return kwargOverSampledShuf
 
 
 class CreateArrays(object):
@@ -284,7 +286,7 @@ class CreateArrays(object):
         self.typeList = typeList
         self.minZ = minZ
         self.maxZ = maxZ
-        self.numOfRedshifts = (maxZ - minZ) * 1./redshiftPrecision
+        self.numOfRedshifts = int((maxZ - minZ) * 1./redshiftPrecision)
         self.ageBinning = AgeBinning(minAge, maxAge, ageBinSize)
         self.numOfAgeBins = self.ageBinning.age_bin(maxAge-0.1) + 1
         self.nLabels = nTypes * self.numOfAgeBins * nHostTypes
@@ -361,7 +363,7 @@ class CreateArrays(object):
                 readSpectra = ReadSpectra(self.w0, self.w1, self.nw, snTemplateLocation + snTempList[i], galTemplateLocation + galTempList[j])
                 for ageidx in range(0, 1000):
                     if ageidx < ncols:
-                        for snCoeff in [0.01, 0.02, 0.05, 0.07, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:
+                        for snCoeff in [0.99, 0.98, 0.95, 0.93, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]:
                             galCoeff = 1 - snCoeff
                             for z in np.linspace(self.minZ, self.maxZ, self.numOfRedshifts + 1):
                                 tempwave, tempflux, ncols, ages, ttype, tminindex, tmaxindex = readSpectra.sn_plus_gal_template(ageidx, snCoeff, galCoeff, z)

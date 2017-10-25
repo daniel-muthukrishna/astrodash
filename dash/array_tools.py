@@ -10,10 +10,10 @@ def labels_indexes_to_arrays(labelsIndexes, nLabels):
     return labels
 
 
-def zero_non_overlap_part(array, minIndex, maxIndex):
+def zero_non_overlap_part(array, minIndex, maxIndex, outerVal=0.):
     slicedArray = np.copy(array)
-    slicedArray[0:minIndex] = np.zeros(minIndex)
-    slicedArray[maxIndex:] = np.zeros(len(array)-maxIndex)
+    slicedArray[0:minIndex] = outerVal * np.ones(minIndex)
+    slicedArray[maxIndex:] = outerVal * np.ones(len(array)-maxIndex)
 
     return slicedArray
 

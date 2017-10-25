@@ -1,6 +1,7 @@
 import numpy as np
 from specutils.io import read_fits
 from scipy.interpolate import interp1d, UnivariateSpline
+from dash.array_tools import normalise_spectrum, zero_non_overlap_part
 
 
 class ProcessingTools(object):
@@ -15,19 +16,24 @@ class ProcessingTools(object):
 
         return wave_new, flux
 
-    def min_max_index(self, flux):
+    def min_max_index(self, flux, outerVal=0):
+        """ 
+        :param flux: 
+        :param outerVal: is the scalar value in all entries before the minimum and after the maximum index
+        :return: 
+        """
         nw = len(flux)
         minindex, maxindex = (0, nw - 1)
-        zeros = np.where(flux == 0)[0]
-        j = 0
+        zeros = np.where(flux == outerVal)[0]
+        j = outerVal
         for i in zeros:
-            if (i != j):
+            if i != j:
                 break
             j += 1
             minindex = j
         j = int(nw) - 1
         for i in zeros[::-1]:
-            if (i != j):
+            if i != j:
                 break
             j -= 1
             maxindex = j
@@ -182,7 +188,7 @@ class PreProcessSpectrum(object):
 
     def log_wavelength(self, wave, flux):
         fluxout = np.zeros(int(self.nw))
-        j =0
+
         # Set up log wavelength array bins
         wlog = self.w0 * np.exp(np.arange(0,self.nw) * self.dwlog)
 
@@ -223,17 +229,13 @@ class PreProcessSpectrum(object):
     ##            print('--------------------------')
 
 
-        minindex, maxindex = self.processingTools.min_max_index(fluxout)
+        minindex, maxindex = self.processingTools.min_max_index(fluxout, outerVal=0)
         minindex, maxindex = int(minindex), int(maxindex)
-
-        # Set wavelength range without data to 0.5 instead of zero
-        fluxout[0:minindex] = 0.5 * np.ones(minindex)
-        fluxout[maxindex + 1:] = 0.5 * np.ones(self.nw - maxindex - 1)
 
         return wlog, fluxout, minindex, maxindex
 
     def spline_fit(self, wave, flux, numSplinePoints, minindex, maxindex):
-        continuum = np.zeros(int(self.nw))
+        continuum = np.zeros(int(self.nw)) + 1
         minindex, maxindex = int(minindex), int(maxindex)
         if (maxindex - minindex) > 5:
             spline = UnivariateSpline(wave[minindex:maxindex+1], flux[minindex:maxindex+1], k=3)
@@ -241,23 +243,26 @@ class PreProcessSpectrum(object):
             splinePoints = spline(splineWave)
 
             splineMore = UnivariateSpline(splineWave, splinePoints, k=3)
-            splinePointsMore = splineMore(wave[minindex:maxindex])
+            splinePointsMore = splineMore(wave[minindex:maxindex+1])
 
-            continuum[minindex:maxindex] = splinePointsMore
+            continuum[minindex:maxindex+1] = splinePointsMore
         else:
             print("WARNING: LESS THAN 6 POINTS IN SPECTRUM")
 
         return continuum
 
-    def continuum_removal(self, wave, flux, numSplinePoints, minindex, maxindex):
-        newflux = np.copy(flux)
+    def continuum_removal(self, wave, flux, numSplinePoints, minIndex, maxIndex):
+        flux = flux + 1  # Important to keep this as +1
+        contRemovedFlux = np.copy(flux)
 
-        splineFit = self.spline_fit(wave, flux, numSplinePoints, minindex, maxindex)
-        newflux[minindex:maxindex] = flux[minindex:maxindex] - splineFit[minindex:maxindex]
+        splineFit = self.spline_fit(wave, flux, numSplinePoints, minIndex, maxIndex)
+        contRemovedFlux[minIndex:maxIndex + 1] = flux[minIndex:maxIndex + 1] / splineFit[minIndex:maxIndex + 1]
+        contRemovedFluxNorm = normalise_spectrum(contRemovedFlux - 1)
+        contRemovedFluxNorm = zero_non_overlap_part(contRemovedFluxNorm, minIndex, maxIndex)
 
-        return newflux, splineFit
+        return contRemovedFluxNorm, splineFit
 
-    def mean_zero(self, wave, flux, minindex, maxindex):
+    def mean_zero(self, flux, minindex, maxindex):
         """mean zero flux"""
         meanflux = np.mean(flux[minindex:maxindex])
         meanzeroflux = flux - meanflux
@@ -266,7 +271,7 @@ class PreProcessSpectrum(object):
 
         return meanzeroflux
 
-    def apodize(self, wave, flux, minindex, maxindex):
+    def apodize(self, flux, minindex, maxindex):
         """apodize with 5% cosine bell"""
         percent = 0.05
         fluxout = flux + 0
@@ -284,3 +289,34 @@ class PreProcessSpectrum(object):
                 break
 
         return fluxout
+
+
+if __name__=='__main__':
+    # Plot comparison of superfit galaxies and Bsnip galaxies
+    from dash.array_tools import normalise_spectrum
+    import matplotlib.pyplot as plt
+    preProcess = PreProcessSpectrum(3500, 10000, 1024)
+
+    for gal in ['E', 'S0', 'Sa', 'Sb', 'Sc', 'SB1', 'SB2', 'SB3', 'SB4', 'SB5', 'SB6']:
+        sfReadSpectrum = ReadSpectrumFile('../templates/superfit_templates/gal/%s' % gal, 3500, 10000, 1024)
+        sfWave, sfFlux = sfReadSpectrum.file_extension()
+        sfWave, sfFlux = sfReadSpectrum.two_col_input_spectrum(sfWave, sfFlux, z=0)
+        #plt.plot(sfWave, sfFlux)
+        sfWave, sfFlux, sfMinIndex, sfMaxIndex = preProcess.log_wavelength(sfWave, sfFlux)
+        plt.plot(sfWave, normalise_spectrum(sfFlux))
+        sfFlux, continuum = preProcess.continuum_removal(sfWave, sfFlux, 13, sfMinIndex, sfMaxIndex)
+        #plt.plot(sfWave, continuum-1)
+
+        snidReadSpectrum = ReadSpectrumFile('../templates/bsnip_v7_snid_templates/kc%s.lnw' % gal, 3500, 10000, 1024)
+        snidSpectrum = snidReadSpectrum.file_extension()
+        snidWave, snidFluxes, ncols, ages, ttype, splineInfo = snidSpectrum
+        snidWave, snidFlux, snidMinIndex, snidMaxIndex = preProcess.log_wavelength(snidWave, snidFluxes[0])
+        snidFlux = normalise_spectrum(snidFlux)
+        fluxNorm = zero_non_overlap_part(snidFlux, snidMinIndex, snidMaxIndex, outerVal=0.5)
+
+        plt.title(gal)
+        plt.plot(sfWave, sfFlux, label='superfit')
+        #plt.plot(snidWave, snidFlux, label='BSNIP')
+        plt.plot(sfWave, normalise_spectrum(sfFlux*(continuum-1)), label='superfit_continuumMultiply')
+        plt.legend()
+        plt.show()

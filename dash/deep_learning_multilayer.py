@@ -8,6 +8,8 @@ import gzip
 import time
 from dash.array_tools import labels_indexes_to_arrays
 from dash.model_statistics import calc_model_statistics
+from dash.create_arrays import ArrayTools
+
 
 
 def train_model(dataDirName):
@@ -51,9 +53,14 @@ def train_model(dataDirName):
     print(len(trainImages))
 
     nLabels = len(typeNamesList)
+    N = 1024
+
+    arrayTools = ArrayTools(nLabels, N)
+    trainArrays = arrayTools.over_sample_arrays(images=trainImages, labels=trainLabels)
+    trainImages, trainLabels = trainArrays['images'], trainArrays['labels']
 
     # Set up the convolutional network architecture
-    N = 1024
+
     imWidth = 32  # Image size and width
     imWidthReduc = 8
     a = []
@@ -75,7 +82,7 @@ def train_model(dataDirName):
 
         trainImagesCycle = itertools.cycle(trainImages)
         trainLabelsCycle = itertools.cycle(trainLabels)
-        for i in range(400000):
+        for i in range(500000):
             batch_xs = np.array(list(itertools.islice(trainImagesCycle, 50 * i, 50 * i + 50)))
             batch_ys = labels_indexes_to_arrays(list(itertools.islice(trainLabelsCycle, 50 * i, 50 * i + 50)), nLabels)
             train_step.run(feed_dict={x: batch_xs, y_: batch_ys, keep_prob: 0.5})

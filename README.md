@@ -56,7 +56,7 @@ If Known Redshift is ticked, then the user must input a redshift. If it is untic
 
 6. Click 'Re-fit with priors' to classify.
 
-7. Click any of the best matches to view the continuum-subtracted binned spectra. You may also select a particular type, age, and host of a supernova using the combo boxes. You can set the fraction of host galaxy light in the spectrum with the slider. You may also change the redshift slider or the line on the x-corr plot to view view changes in redshift.
+7. Click any of the best matches to view the continuum-subtracted binned spectra. You may also select a particular type, age, and host of a supernova using the combo boxes. You can set the fraction of host galaxy light in the spectrum with the slider. You may also change the redshift slider or the line on the x-corr plot to view changes in redshift.
 
 8. Once you have selected the supernova type, you may use the two arrow buttons to change the supernova template which is plotted.
 
@@ -100,7 +100,8 @@ DASH can be run on Mac (tested on Sierra 10.12), most Linux distributions (teste
 
     DASH is available on both Python2 and Python3 distributions, and easily installed with `pip install astrodash`.
 
-2. Windows
+2. Windows:
+
     Currently one of the primary dependencies, Tensorflow, is only available on Python 3 for Windows.
     So DASH is available on Python 3 distributions. It can be installed with:
         `pip install astrodash`

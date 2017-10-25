@@ -38,18 +38,19 @@ class CreateTrainingSet(object):
         else:
             snTypeList, images, labels, filenames, typeNames = self.createArrays.combined_sn_gal_arrays_multiprocessing(self.snidTemplateLocation, self.snidTempFileList, self.galTemplateLocation, self.galTempFileList)
 
-        imagesShuf, labelsShuf, filenamesShuf, typeNamesShuf = self.arrayTools.shuffle_arrays(images, labels, filenames, typeNames)
+        arraysShuf = self.arrayTools.shuffle_arrays(images=images, labels=labels, filenames=filenames, typeNames=typeNames)
 
         typeAmounts = self.type_amounts(labels)
         
-        return snTypeList, imagesShuf, labelsShuf, filenamesShuf, typeNamesShuf, typeAmounts
+        return snTypeList, arraysShuf, typeAmounts
 
     def sort_data(self):
         trainPercentage = 0.9
         testPercentage = 0.1
         validatePercentage = 0.
 
-        typeList, images, labels, filenames, typeNames, typeAmounts = self.all_templates_to_arrays()
+        typeList, arrays, typeAmounts = self.all_templates_to_arrays()
+        images, labels, filenames, typeNames = arrays['images'], arrays['labels'], arrays['filenames'], arrays['typeNames']
 
         trainSize = int(trainPercentage * len(images))
         testSize = int(testPercentage * len(images))
@@ -67,15 +68,12 @@ class CreateTrainingSet(object):
         testTypeNames = typeNames[trainSize: trainSize + testSize]
         validateTypeNames = typeNames[trainSize + testSize:]
 
-        trainImagesOverSample, trainLabelsOverSample, trainFilenamesOverSample, trainTypeNamesOverSample = self.arrayTools.over_sample_arrays(trainImages, trainLabels, trainFilenames, trainTypeNames)
-        testImagesShortlist, testLabelsShortlist, testFilenamesShortlist, testTypeNamesShortlist = testImages, testLabels, testFilenames, testTypeNames  # (testImages, testLabels, testFilenames)
+        typeAmounts = self.type_amounts(trainLabels)
 
-        typeAmountsOverSampled = self.type_amounts(trainLabelsOverSample)
-
-        return ((trainImagesOverSample, trainLabelsOverSample, trainFilenamesOverSample, trainTypeNamesOverSample),
-                (testImagesShortlist, testLabelsShortlist, testFilenamesShortlist, testTypeNamesShortlist),
+        return ((trainImages, trainLabels, trainFilenames, trainTypeNames),
+                (testImages, testLabels, testFilenames, testTypeNames),
                 (validateImages, validateLabels, validateFilenames, validateTypeNames),
-                (typeAmounts, typeAmountsOverSampled))
+                typeAmounts)
 
 
 class SaveTrainingSet(object):
@@ -106,8 +104,7 @@ class SaveTrainingSet(object):
         self.validateLabels = self.sortData[2][1]
         self.validateFilenames = self.sortData[2][2]
         self.validateTypeNames = self.sortData[2][3]
-        self.typeAmounts = self.sortData[3][0]
-        self.typeAmountsOverSampled = self.sortData[3][1]
+        self.typeAmounts = self.sortData[3]
 
         self.typeNamesList = self.createLabels.type_names_list()
 
@@ -117,7 +114,6 @@ class SaveTrainingSet(object):
         return self.typeNamesList, self.typeAmounts
 
     def save_arrays(self, saveFilename):
-        saveFilename = saveFilename
         arraysToSave = {'trainImages.npy.gz': self.trainImages, 'trainLabels.npy.gz': self.trainLabels,
                         'testImages.npy.gz': self.testImages, 'testLabels.npy.gz': self.testLabels,
                         'testTypeNames.npy.gz': self.testTypeNames, 'typeNamesList.npy.gz': self.typeNamesList,

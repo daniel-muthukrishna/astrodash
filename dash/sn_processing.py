@@ -1,8 +1,9 @@
 #Pre-processing class
-
+import sys
 from scipy.signal import medfilt
 import numpy as np
 from dash.preprocessing import ReadSpectrumFile, PreProcessSpectrum, ProcessingTools
+from dash.array_tools import normalise_spectrum, zero_non_overlap_part
 
 
 def limit_wavelength_range(wave, flux, minWave, maxWave):
@@ -35,8 +36,8 @@ class PreProcessing(object):
         wave, flux = self.readSpectrumFile.two_col_input_spectrum(self.wave, self.flux, z)
         binnedwave, binnedflux, minindex, maxindex = self.preProcess.log_wavelength(wave, flux)
         newflux, continuum = self.preProcess.continuum_removal(binnedwave, binnedflux, self.numSplinePoints, minindex, maxindex)
-        meanzero = self.preProcess.mean_zero(binnedwave, newflux, minindex, maxindex)
-        apodized = self.preProcess.apodize(binnedwave, meanzero, minindex, maxindex)
+        meanzero = self.preProcess.mean_zero(newflux, minindex, maxindex)
+        apodized = self.preProcess.apodize(meanzero, minindex, maxindex)
 
         plt.figure('Galaxy_SB1')
         plt.plot(wave,flux, label='original')
@@ -50,7 +51,6 @@ class PreProcessing(object):
 
         return binnedwave, apodized, minindex, maxindex
 
-
     def two_column_data(self, z, smooth, minWave, maxWave):
         self.wave, self.flux = self.spectrum
         self.flux = limit_wavelength_range(self.wave, self.flux, minWave, maxWave)
@@ -60,14 +60,21 @@ class PreProcessing(object):
         filterSize = int(self.wDensity / wavelengthDensity * smooth / 2) * 2 + 1
         preFiltered = medfilt(self.flux, kernel_size=filterSize)
         wave, flux = self.readSpectrumFile.two_col_input_spectrum(self.wave, preFiltered, z)
-        binnedwave, binnedflux, minindex, maxindex = self.preProcess.log_wavelength(wave, flux)
-        newflux, continuum = self.preProcess.continuum_removal(binnedwave, binnedflux, self.numSplinePoints, minindex, maxindex)
-        meanzero = self.preProcess.mean_zero(binnedwave, newflux, minindex, maxindex)
-        apodized = self.preProcess.apodize(binnedwave, meanzero, minindex, maxindex)
+        if len(wave) < 2:
+            sys.exit("The redshifted spectrum of file: {0} is out of the classification range between {1} to {2} "
+                     "Angstroms. Please remove this file from classification or reduce the redshift before re-running "
+                     "the program.".format(self.filename, self.w0, self.w1))
+
+        binnedwave, binnedflux, minIndex, maxIndex = self.preProcess.log_wavelength(wave, flux)
+        newflux, continuum = self.preProcess.continuum_removal(binnedwave, binnedflux, self.numSplinePoints, minIndex, maxIndex)
+        meanzero = self.preProcess.mean_zero(newflux, minIndex, maxIndex)
+        apodized = self.preProcess.apodize(meanzero, minIndex, maxIndex)
 
 
         #filterSize = smooth * 2 + 1
         medianFiltered = medfilt(apodized, kernel_size=1)#filterSize)
+        fluxNorm = normalise_spectrum(medianFiltered)
+        fluxNorm = zero_non_overlap_part(fluxNorm, minIndex, maxIndex, outerVal=0.5)
 
 
         # # PAPER PLOTS
@@ -123,7 +130,7 @@ class PreProcessing(object):
         #
         # plt.show()
 
-        return binnedwave, medianFiltered, minindex, maxindex
+        return binnedwave, fluxNorm, minIndex, maxIndex
 
     def snid_template_data(self, ageIdx, z):
         """lnw templates """

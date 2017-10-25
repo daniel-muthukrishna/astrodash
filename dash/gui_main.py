@@ -7,7 +7,7 @@ import pyqtgraph as pg
 from dash.design import Ui_MainWindow
 from dash.restore_model import LoadInputSpectra, BestTypesListSingleRedshift, get_training_parameters, classification_split
 from dash.create_arrays import AgeBinning
-from dash.read_binned_templates import load_templates, get_templates, ReadBinnedTemplates
+from dash.read_binned_templates import load_templates, get_templates, combined_sn_and_host_data
 from dash.false_positive_rejection import combined_prob, RlapCalc
 from dash.calculate_redshift import get_median_redshift, get_redshift_axis
 
@@ -110,12 +110,14 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             self.templateSubIndex = numOfSubTemplates - 1
 
         if snInfos != []:
-            readBinnedTemplates = ReadBinnedTemplates(snInfos[self.templateSubIndex], hostInfos[0], self.w0, self.w1, self.nw)
             name = "%s_%s" % (snNames[self.templateSubIndex], hostNames[0])
             if self.hostName != "No Host":
-                wave, flux, minMaxIndex = readBinnedTemplates.template_data(snCoeff=1 - self.hostFraction/100., galCoeff=self.hostFraction/100., z=0)
+                snCoeff = 1 - self.hostFraction/100.
+                galCoeff = self.hostFraction / 100.
             else:
-                wave, flux, minMaxIndex = readBinnedTemplates.template_data(snCoeff=1, galCoeff=0, z=0)
+                snCoeff = 1
+                galCoeff = 0
+            wave, flux, minMaxIndex = combined_sn_and_host_data(snCoeff=snCoeff, galCoeff=galCoeff, z=0, snInfo=snInfos[self.templateSubIndex], galInfo=hostInfos[0], w0=self.w0, w1=self.w1, nw=self.nw)
             return flux, name, minMaxIndex
         else:
             flux = np.zeros(self.nw)
@@ -321,8 +323,8 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         fluxes = []
         minMaxIndexes = []
         for i in range(len(snNames)):
-            readBinnedTemplates = ReadBinnedTemplates(snInfos[i], hostInfos[0], self.w0, self.w1, self.nw)
-            wave, flux, minMaxIndex = readBinnedTemplates.template_data(snCoeff=1, galCoeff=0, z=0)
+            wave, flux, minMaxIndex = combined_sn_and_host_data(snCoeff=1, galCoeff=0, z=0, snInfo=snInfos[i], galInfo=hostInfos[0], w0=self.w0, w1=self.w1, nw=self.nw)
+
             fluxes.append(flux)
             minMaxIndexes.append(minMaxIndex)
 
@@ -436,7 +438,10 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             self.graphicsView.plotItem.showGrid(x=True, y=True, alpha=0.95)
             self.graphicsView.plotItem.setLabels(bottom="Observed Wavelength (<font>&#8491;</font>)")
 
-            self.cAxis.setScale(1/(1+self.plotZ))
+            try:
+                self.cAxis.setScale(1/(1+self.plotZ))
+            except ZeroDivisionError:
+                print("Invalid redshift. Redshift cannot be -1.")
             self.cAxis.setGrid(False)
             self.cAxis.setLabel("Rest Wavelength (<font>&#8491;</font>)")
 

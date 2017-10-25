@@ -5,7 +5,7 @@ import numpy as np
 from dash.download_data_files import download_all_files
 from dash.restore_model import LoadInputSpectra, BestTypesListSingleRedshift, get_training_parameters, classification_split
 from dash.false_positive_rejection import RlapCalc, combined_prob
-from dash.read_binned_templates import load_templates, get_templates, ReadBinnedTemplates
+from dash.read_binned_templates import load_templates, get_templates
 from dash.calculate_redshift import get_median_redshift
 
 try:
@@ -84,7 +84,6 @@ class Classify(object):
         bestBroadTypes = []
         rlapLabels = []
         matchesReliableLabels = []
-        reliableFlags = []
         redshifts = []
         for specNum in range(self.numSpectra):
             bestMatchList = []
@@ -117,7 +116,7 @@ class Classify(object):
         if saveFilename:
             self.save_best_matches(bestMatchLists, redshifts, bestBroadTypes, rlapLabels, matchesReliableLabels, saveFilename)
 
-        return bestMatchLists, redshifts, bestBroadTypes, rlapLabels, reliableFlags
+        return bestMatchLists, redshifts, bestBroadTypes, rlapLabels, matchesReliableLabels
 
     def best_broad_type(self, bestMatchList):
         host, prevName, bestAge, probTotal, reliableFlag = combined_prob(bestMatchList[0:10])

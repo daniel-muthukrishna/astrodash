@@ -8,7 +8,7 @@ import shutil
 import time
 
 if __name__ == '__main__':
-    modelName = 'zeroZ_test'
+    modelName = 'zeroZ_test/'
     dataDirName = 'data_files_{0}'.format(modelName)
     dataFilenames = []
     if not os.path.exists(dataDirName):
@@ -39,7 +39,7 @@ if __name__ == '__main__':
     print("time spent: {0:.2f}".format(t2 - t1))
 
     # CREATE TRAINING SET FILES
-    trainingSetFilename = create_training_set_files(dataDirName, minZ=0, maxZ=0.8, redshiftPrecision=0.01, trainWithHost=True, classifyHost=False)
+    trainingSetFilename = create_training_set_files(dataDirName, minZ=0, maxZ=0., redshiftPrecision=0.01, trainWithHost=True, classifyHost=False)
     dataFilenames.append(trainingSetFilename)
     t3 = time.time()
     print("time spent: {0:.2f}".format(t3 - t2))
