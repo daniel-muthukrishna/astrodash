@@ -8,8 +8,8 @@ import shutil
 import time
 
 if __name__ == '__main__':
-    modelName = 'zeroZ_test/'
-    dataDirName = 'data_files_{0}'.format(modelName)
+    modelName = 'zeroZ_test'
+    dataDirName = 'data_files_{0}/'.format(modelName)
     dataFilenames = []
     if not os.path.exists(dataDirName):
         os.makedirs(dataDirName)

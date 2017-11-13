@@ -17,7 +17,7 @@ def limit_wavelength_range(wave, flux, minWave, maxWave):
 
 
 class PreProcessing(object):
-    """ Pre-processes spectra for cross correlation """
+    """ Pre-processes spectra before training """
     
     def __init__(self, filename, w0, w1, nw):
         self.filename = filename
@@ -30,26 +30,6 @@ class PreProcessing(object):
         self.preProcess = PreProcessSpectrum(w0, w1, nw)
 
         self.spectrum = self.readSpectrumFile.file_extension()
-
-    def galaxy_template(self, z):
-        self.wave, self.flux = self.spectrum
-        wave, flux = self.readSpectrumFile.two_col_input_spectrum(self.wave, self.flux, z)
-        binnedwave, binnedflux, minindex, maxindex = self.preProcess.log_wavelength(wave, flux)
-        newflux, continuum = self.preProcess.continuum_removal(binnedwave, binnedflux, self.numSplinePoints, minindex, maxindex)
-        meanzero = self.preProcess.mean_zero(newflux, minindex, maxindex)
-        apodized = self.preProcess.apodize(meanzero, minindex, maxindex)
-
-        plt.figure('Galaxy_SB1')
-        plt.plot(wave,flux, label='original')
-        plt.plot(binnedwave,binnedflux, label='binned')
-        plt.plot(binnedwave, continuum, label='continuum')
-        plt.plot(binnedwave,newflux, label='continuumSubtracted')
-        plt.plot(binnedwave, meanzero, label='meanzero')
-        plt.plot(binnedwave,apodized, label='apodized')
-        plt.legend()
-        #plt.show()
-
-        return binnedwave, apodized, minindex, maxindex
 
     def two_column_data(self, z, smooth, minWave, maxWave):
         self.wave, self.flux = self.spectrum
@@ -131,15 +111,6 @@ class PreProcessing(object):
         # plt.show()
 
         return binnedwave, fluxNorm, minIndex, maxIndex
-
-    def snid_template_data(self, ageIdx, z):
-        """lnw templates """
-        wave, fluxes, ncols, ages, ttype, splineInfo = self.spectrum
-        wave, flux = self.processingTools.redshift_spectrum(wave, fluxes[ageIdx], z)
-        binnedwave, binnedflux, minindex, maxindex = self.preProcess.log_wavelength(wave, flux)
-        medianFiltered = medfilt(binnedflux, kernel_size=1)
-
-        return binnedwave, medianFiltered, ncols, ages, ttype, minindex, maxindex
 
 
 

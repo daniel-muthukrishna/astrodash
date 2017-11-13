@@ -61,8 +61,7 @@ class CreateLabels(object):
         try:
             typeIndex = self.typeList.index(ttype)
         except ValueError as err:
-            print("INVALID TYPE: {0}".format(err))
-            raise ValueError
+            raise Exception("INVALID TYPE: {0}".format(err))
 
         if host is None:
             labelArray = np.zeros((self.nTypes, self.numOfAgeBins))
@@ -124,36 +123,6 @@ class ReadSpectra(object):
         wave, flux, minIndex, maxIndex, nCols, ages, tType = training_template_data(snAgeIdx, snCoeff, galCoeff, z, self.snFilename, self.galFilename, self.w0, self.w1, self.nw)
 
         return wave, flux, nCols, ages, tType, minIndex, maxIndex
-
-    def snid_template_data(self, ageIdx, z):
-        """ lnw template files """
-        wave, flux, nCols, ages, tType, minIndex, maxIndex = self.data.snid_template_data(ageIdx, z)
-
-        return wave, flux, nCols, ages, tType, minIndex, maxIndex
-
-    def sf_age(self):
-        snName, extension = self.snFilename.strip('.dat').split('.')
-        ttype, snName = snName.split('/')
-
-        if extension == 'max':
-            age = 0
-        elif extension[0] == 'p':
-            age = float(extension[1:])
-        elif extension[0] == 'm':
-            age = -float(extension[1:])
-        else:
-            print("Invalid Superfit Filename: " + self.snFilename)
-
-        return snName, ttype, age
-
-    def superfit_template_data(self, z):
-        """ Returns wavelength and flux after all preprocessing """
-        wave, flux, minIndex, maxIndex = self.data.two_column_data(z, minWave=self.w0, maxWave=self.nw)
-        snName, ttype, age = self.sf_age()
-
-        print(snName, ttype, age)
-
-        return wave, flux, minIndex, maxIndex, age, snName, ttype
 
     def input_spectrum(self, z, smooth, minWave, maxWave):
         wave, flux, minIndex, maxIndex = self.data.two_column_data(z, smooth, minWave, maxWave)
@@ -293,63 +262,7 @@ class CreateArrays(object):
         self.createLabels = CreateLabels(self.nTypes, self.minAge, self.maxAge, self.ageBinSize, self.typeList, hostTypes, nHostTypes)
         self.hostTypes = hostTypes
 
-    def snid_templates_to_arrays(self, snidTemplateLocation, tempfilelist):
-        """ This function is for the SNID processed files, which
-            have been preprocessed to negatives, and so cannot be
-            imaged yet """
-
-        tempList = TempList().temp_list(tempfilelist) #Arbrirary redshift to read filelist
-        typeList = []
-        images = np.empty((0, int(self.nw)), np.float16)  # Number of pixels
-        labelsIndexes = [] # labels = np.empty((0, self.nLabels), np.uint8)  # Number of labels (SN types)
-        filenames = []#np.empty(0)
-        typeNames = []#np.empty(0)
-        agesList = []
-
-        for i in range(0, len(tempList)):
-            ncols = 15
-            readSpectra = ReadSpectra(self.w0, self.w1, self.nw, snidTemplateLocation + tempList[i])
-            
-            for ageidx in range(0, 1000):
-                if ageidx < ncols:
-                    for z in np.linspace(self.minZ, self.maxZ, self.numOfRedshifts + 1):
-                        tempwave, tempflux, ncols, ages, ttype, tminindex, tmaxindex = readSpectra.snid_template_data(ageidx, z)
-                        agesList.append(ages[ageidx])
-                        if not tempflux.any():
-                            print("NO DATA for {} ageIdx:{} z>={}".format(tempList[i], ageidx, z))
-                            break
-
-                        if self.minAge < float(ages[ageidx]) < self.maxAge:
-                            labelIndex, typeName = self.createLabels.label_array(ttype, ages[ageidx])
-                            nonzeroflux = tempflux[tminindex:tmaxindex + 1]
-                            newflux = (nonzeroflux - min(nonzeroflux)) / (max(nonzeroflux) - min(nonzeroflux))
-                            newflux2 = np.concatenate((tempflux[0:tminindex], newflux, tempflux[tmaxindex + 1:]))
-                            images = np.append(images, np.array([newflux2]), axis=0)  # images.append(newflux2)
-                            labelsIndexes.append(labelIndex) # labels = np.append(labels, np.array([label]), axis=0)  # labels.append(ttype)
-                            filenames.append(tempList[i] + '_' + ttype + '_' + str(ages[ageidx]) + '_z' + str(z))
-                            typeNames.append(typeName)
-
-                    print(tempList[i], ageidx, ncols)
-                else:
-                    break
-
-            # Create List of all SN types
-            if ttype not in typeList:
-                typeList.append(ttype)
-        print(len(images))
-
-        try:
-            print("SIZE OF ARRAYS:")
-            print(images.nbytes)
-            print(np.array(labelsIndexes).nbytes)
-            print(np.array(filenames).nbytes)
-            print(np.array(typeNames).nbytes)
-        except:
-            print("Exception Raised")
-
-        return typeList, images, np.array(labelsIndexes), np.array(filenames), np.array(typeNames)
-
-    def combined_sn_gal_templates_to_arrays(self, snTemplateLocation, snTempFileList, galTemplateLocation, galTempList):
+    def combined_sn_gal_templates_to_arrays(self, snTemplateLocation, snTempFileList, galTemplateLocation, galTempList, snFractions):
         snTempList = TempList().temp_list(snTempFileList)
         typeList = []
         images = np.empty((0, int(self.nw)), np.float16)  # Number of pixels
@@ -357,13 +270,15 @@ class CreateArrays(object):
         filenames = []  # np.empty(0)
         typeNames = []  # np.empty(0)
         agesList = []
+
         for j in range(len(galTempList)):
+            galFilename = galTemplateLocation + galTempList[j] if galTemplateLocation is not None else None
             for i in range(0, len(snTempList)):
                 ncols = 15
-                readSpectra = ReadSpectra(self.w0, self.w1, self.nw, snTemplateLocation + snTempList[i], galTemplateLocation + galTempList[j])
+                readSpectra = ReadSpectra(self.w0, self.w1, self.nw, snTemplateLocation + snTempList[i], galFilename)
                 for ageidx in range(0, 1000):
                     if ageidx < ncols:
-                        for snCoeff in [0.99, 0.98, 0.95, 0.93, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]:
+                        for snCoeff in snFractions:
                             galCoeff = 1 - snCoeff
                             for z in np.linspace(self.minZ, self.maxZ, self.numOfRedshifts + 1):
                                 tempwave, tempflux, ncols, ages, ttype, tminindex, tmaxindex = readSpectra.sn_plus_gal_template(ageidx, snCoeff, galCoeff, z)
@@ -408,7 +323,11 @@ class CreateArrays(object):
         return typeList, images, np.array(labelsIndexes), np.array(filenames), np.array(typeNames)
 
     def combined_sn_gal_arrays_multiprocessing(self, snTemplateLocation, snTempFileList, galTemplateLocation, galTempFileList):
+        if galTemplateLocation is None or galTempFileList is None:
+            return self.combined_sn_gal_templates_to_arrays(snTemplateLocation, snTempFileList, galTemplateLocation=None, galTempList=[None], snFractions=[1.0])
+
         galTempList = TempList().temp_list(galTempFileList)
+        snFractions = [0.99, 0.98, 0.95, 0.93, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
 
         images = np.empty((0, int(self.nw)), np.float16)
         labelsIndexes = np.empty(0, np.uint16)
@@ -417,7 +336,7 @@ class CreateArrays(object):
 
         t1 = time.time()
         pool = mp.Pool(processes=11)
-        results = [pool.apply_async(self.combined_sn_gal_templates_to_arrays, args=(snTemplateLocation, snTempFileList, galTemplateLocation, [gList],)) for gList in galTempList]
+        results = [pool.apply_async(self.combined_sn_gal_templates_to_arrays, args=(snTemplateLocation, snTempFileList, galTemplateLocation, [gList], snFractions)) for gList in galTempList]
         pool.close()
         pool.join()
 

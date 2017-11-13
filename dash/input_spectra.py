@@ -63,7 +63,6 @@ class InputSpectra(object):
 
         return inputImages, inputFilenames, inputRedshifts, self.typeNamesList, minMaxIndexes
 
-
     def saveArrays(self):
         inputImages, inputFilenames, inputRedshifts, minMaxIndex = self.redshifting()
         np.savez_compressed('input_data.npz', inputImages=inputImages, inputFilenames=inputFilenames,

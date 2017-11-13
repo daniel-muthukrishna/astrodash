@@ -54,9 +54,15 @@ class BinTemplate(object):
         self.templateType = templateType
         self.preProcess = PreProcessSpectrum(w0, w1, nw)
         self.readSpectrumFile = ReadSpectrumFile(filename, w0, w1, nw)
-        self.spectrum = self.readSpectrumFile.file_extension()
+        self.spectrum = self.readSpectrumFile.file_extension(template=True)
         if templateType == 'sn':
-            self.wave, self.fluxes, self.nCols, self.ages, self.tType, self.splineInfo = self.spectrum
+            if len(self.spectrum) == 6:
+                self.snidTemplate = True
+                self.wave, self.fluxes, self.nCols, self.ages, self.tType, self.splineInfo = self.spectrum
+            else:
+                self.snidTemplate = False
+                self.wave, self.flux, self.nCols, self.age, self.tType = self.spectrum
+
         elif templateType == 'gal':
             self.wave, self.flux = self.spectrum
             self.tType = self.filename
@@ -65,11 +71,12 @@ class BinTemplate(object):
 
     def bin_template(self, ageIdx=None):
         if self.templateType == 'sn':
-            if ageIdx is not None:
-                return self._bin_sn_template(ageIdx)
-            else:
+            if ageIdx is None and self.snidTemplate:
                 print("AGE INDEX ARGUMENT MISSING")
                 return None
+            else:
+                return self._bin_sn_template(ageIdx)
+
         elif self.templateType == 'gal':
             return self._bin_gal_template()
         else:
@@ -78,7 +85,10 @@ class BinTemplate(object):
 
     def _bin_sn_template(self, ageIdx):
         # Undo continuum in the following step in preprocessing.py
-        wave, flux = self.wave, self.fluxes[ageIdx]  # self.snReadSpectrumFile.snid_template_undo_processing(self.snWave, self.snFluxes[ageIdx], self.splineInfo, ageIdx)
+        if self.snidTemplate:
+            wave, flux = self.wave, self.fluxes[ageIdx]  # self.snReadSpectrumFile.snid_template_undo_processing(self.snWave, self.snFluxes[ageIdx], self.splineInfo, ageIdx)
+        else:
+            wave, flux = self.wave, self.flux
         binnedWave, binnedFlux, minIndex, maxIndex = self.preProcess.log_wavelength(wave, flux)
         binnedFluxNorm = normalise_spectrum(binnedFlux)
         binnedFluxNorm = zero_non_overlap_part(binnedFluxNorm, minIndex, maxIndex, outerVal=0.5)
@@ -98,12 +108,15 @@ class BinTemplate(object):
 
 def training_template_data(snAgeIdx, snCoeff, galCoeff, z, snFile, galFile, w0, w1, nw):
     snBinTemplate = BinTemplate(filename=snFile, templateType='sn', w0=w0, w1=w1, nw=nw)
-    galBinTemplate = BinTemplate(filename=galFile, templateType='gal', w0=w0, w1=w1, nw=nw)
-
     snInfo = snBinTemplate.bin_template(snAgeIdx)
-    galInfo = galBinTemplate.bin_template()
-    combineSnAndHost = CombineSnAndHost(snInfo, galInfo, w0, w1, nw)
-    binnedWave, fluxNorm, (minIndex, maxIndex) = combineSnAndHost.template_data(snCoeff, galCoeff, z)
+
+    if galFile is None:  # No host combining
+        binnedWave, fluxNorm, minIndex, maxIndex = snInfo
+    else:
+        galBinTemplate = BinTemplate(filename=galFile, templateType='gal', w0=w0, w1=w1, nw=nw)
+        galInfo = galBinTemplate.bin_template()
+        combineSnAndHost = CombineSnAndHost(snInfo, galInfo, w0, w1, nw)
+        binnedWave, fluxNorm, (minIndex, maxIndex) = combineSnAndHost.template_data(snCoeff, galCoeff, z)
 
     nCols, ages, tType = snBinTemplate.nCols, snBinTemplate.ages, snBinTemplate.tType
 

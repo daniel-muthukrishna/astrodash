@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from specutils.io import read_fits
 from scipy.interpolate import interp1d, UnivariateSpline
@@ -68,24 +69,43 @@ class ReadSpectrumFile(object):
     def read_dat_file(self):
         wave = []
         flux = []
-        try:
-            with open(self.filename, 'r') as FileObj:
-                for line in FileObj:
-                    if line.strip()[0] != '#':
-                        datapoint = line.rstrip('\n').strip().split()
-                        wave.append(float(datapoint[0].replace('D', 'E')))
-                        flux.append(float(datapoint[1].replace('D', 'E')))
-        except (ValueError, IndexError):
-            print("Invalid Superfit file: " + self.filename) #D-13 instead of E-13
+        with open(self.filename, 'r') as FileObj:
+            for line in FileObj:
+                if line.strip()[0] != '#':
+                    datapoint = line.rstrip('\n').strip().split()
+                    wave.append(float(datapoint[0].replace('D', 'E')))
+                    flux.append(float(datapoint[1].replace('D', 'E')))
 
         wave = np.array(wave)
         flux = np.array(flux)
 
         return wave, flux
 
-    def file_extension(self):
-        extension = self.filename.split('.')[-1]
-        if extension == 'dat' or extension == self.filename or extension in ['flm', 'txt', 'dat']:
+    def read_superfit_template(self):
+        wave, flux = self.read_dat_file()
+        tType = os.path.split(os.path.split(self.filename)[0])[-1]  # Name of directory is the type name
+        filename = os.path.basename(self.filename)
+        snName, ageInfo = os.path.basename(filename).strip('.dat').split('.')
+        if ageInfo == 'max':
+            age = 0
+        elif ageInfo[0] == 'm':
+            age = -float(ageInfo[1:])
+        elif ageInfo[0] == 'p':
+            age = float(ageInfo[1:])
+        else:
+            raise Exception("Invalid Superfit file: {0}".format(self.filename))
+
+        # Add in stuff to read SLSN. Ad also add SLSN and other superfit templates to the training_set directory and templist.txt
+        nCols = 1
+
+        return wave, flux, nCols, age, tType
+
+    def file_extension(self, template=False):
+        filename = os.path.basename(self.filename)
+        extension = filename.split('.')[-1]
+        if template is True and extension == 'dat' and len(filename.split('.')) == 3 and filename.split('.')[1][0] in ['m', 'p']:  # Check if input is a superfit template
+            return self.read_superfit_template(template)
+        elif extension == self.filename or extension in ['flm', 'txt', 'dat']:
             return self.read_dat_file()
         elif extension == 'fits':
             return self.read_fits_file()
@@ -103,13 +123,13 @@ class ReadSpectrumFile(object):
 
         if max(wave) >= self.w1:
             for i in range(0,len(wave)):
-                if (wave[i] >= self.w1):
+                if wave[i] >= self.w1:
                     break
             wave = wave[0:i]
             flux = flux[0:i]
         if min(wave) < self.w0:
             for i in range(0,len(wave)):
-                if (wave[i] >= self.w0):
+                if wave[i] >= self.w0:
                     break
             wave = wave[i:]
             flux = flux[i:]
