@@ -1,3 +1,4 @@
+from scipy.signal import medfilt
 from dash.preprocessing import ReadSpectrumFile, ProcessingTools, PreProcessSpectrum
 from dash.array_tools import zero_non_overlap_part, normalise_spectrum
 
@@ -61,7 +62,7 @@ class BinTemplate(object):
                 self.wave, self.fluxes, self.nCols, self.ages, self.tType, self.splineInfo = self.spectrum
             else:
                 self.snidTemplate = False
-                self.wave, self.flux, self.nCols, self.age, self.tType = self.spectrum
+                self.wave, self.flux, self.nCols, self.ages, self.tType = self.spectrum
 
         elif templateType == 'gal':
             self.wave, self.flux = self.spectrum
@@ -87,11 +88,17 @@ class BinTemplate(object):
         # Undo continuum in the following step in preprocessing.py
         if self.snidTemplate:
             wave, flux = self.wave, self.fluxes[ageIdx]  # self.snReadSpectrumFile.snid_template_undo_processing(self.snWave, self.snFluxes[ageIdx], self.splineInfo, ageIdx)
+            binnedWave, binnedFlux, minIndex, maxIndex = self.preProcess.log_wavelength(wave, flux)
+            binnedFluxNorm = normalise_spectrum(binnedFlux)
+            binnedFluxNorm = zero_non_overlap_part(binnedFluxNorm, minIndex, maxIndex, outerVal=0.5)
         else:
-            wave, flux = self.wave, self.flux
-        binnedWave, binnedFlux, minIndex, maxIndex = self.preProcess.log_wavelength(wave, flux)
-        binnedFluxNorm = normalise_spectrum(binnedFlux)
-        binnedFluxNorm = zero_non_overlap_part(binnedFluxNorm, minIndex, maxIndex, outerVal=0.5)
+            wave, flux = self.wave, medfilt(self.flux, kernel_size=3)
+            binnedWave, binnedFlux, minIndex, maxIndex = self.preProcess.log_wavelength(wave, flux)
+            contRemovedFlux, continuum = self.preProcess.continuum_removal(binnedWave, binnedFlux, self.numSplinePoints, minIndex, maxIndex)
+            meanzero = self.preProcess.mean_zero(contRemovedFlux, minIndex, maxIndex)
+            apodized = self.preProcess.apodize(meanzero, minIndex, maxIndex)
+            binnedFluxNorm = normalise_spectrum(apodized)
+            binnedFluxNorm = zero_non_overlap_part(binnedFluxNorm, minIndex, maxIndex, outerVal=0.5)
 
         return binnedWave, binnedFluxNorm, minIndex, maxIndex
 

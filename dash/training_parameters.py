@@ -5,8 +5,9 @@ def create_training_params_file(dataDirName):
     parameters = {
         'typeList': ['Ia-norm', 'Ia-91T', 'Ia-91bg', 'Ia-csm', 'Ia-02cx', 'Ia-pec',
                      'Ib-norm', 'Ibn', 'IIb', 'Ib-pec', 'Ic-norm', 'Ic-broad',
-                     'Ic-pec', 'IIP', 'IIL', 'IIn', 'II-pec'],
-        'nTypes': 17,
+                     'Ic-pec', 'IIP', 'IIL', 'IIn', 'II-pec',
+                     'SLSN'],
+        'nTypes': 18,
         'w0': 3500.,  # wavelength range in Angstroms
         'w1': 10000.,
         'nw': 1024,  # number of wavelength bins

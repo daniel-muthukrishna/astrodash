@@ -98,13 +98,13 @@ class ReadSpectrumFile(object):
         # Add in stuff to read SLSN. Ad also add SLSN and other superfit templates to the training_set directory and templist.txt
         nCols = 1
 
-        return wave, flux, nCols, age, tType
+        return wave, flux, nCols, [age], tType
 
     def file_extension(self, template=False):
         filename = os.path.basename(self.filename)
         extension = filename.split('.')[-1]
         if template is True and extension == 'dat' and len(filename.split('.')) == 3 and filename.split('.')[1][0] in ['m', 'p']:  # Check if input is a superfit template
-            return self.read_superfit_template(template)
+            return self.read_superfit_template()
         elif extension == self.filename or extension in ['flm', 'txt', 'dat']:
             return self.read_dat_file()
         elif extension == 'fits':
