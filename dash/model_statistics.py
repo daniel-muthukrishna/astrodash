@@ -4,6 +4,7 @@ from dash.multilayer_convnet import convnet_variables
 
 
 def calc_model_statistics(modelFilename, testImages, testTypeNames, typeNamesList):
+    tf.reset_default_graph()
     nw = len(testImages[0])
     nBins = len(typeNamesList)
     imWidthReduc = 8

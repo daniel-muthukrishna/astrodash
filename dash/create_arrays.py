@@ -1,12 +1,12 @@
 import numpy as np
 from random import shuffle
+import multiprocessing as mp
+import itertools
+import time
 from dash.sn_processing import PreProcessing
 from dash.combine_sn_and_host import training_template_data
 from dash.preprocessing import ProcessingTools
 from dash.array_tools import zero_non_overlap_part, normalise_spectrum
-import multiprocessing as mp
-import random
-import time
 
 
 class AgeBinning(object):
@@ -328,6 +328,7 @@ class CreateArrays(object):
 
         galTempList = TempList().temp_list(galTempFileList)
         snFractions = [0.99, 0.98, 0.95, 0.93, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
+        galAndSnFracParams = list(itertools.product(galTempList, snFractions))
 
         images = np.empty((0, int(self.nw)), np.float16)
         labelsIndexes = np.empty(0, np.uint16)
@@ -335,8 +336,8 @@ class CreateArrays(object):
         typeNames = np.empty(0)
 
         t1 = time.time()
-        pool = mp.Pool(processes=11)
-        results = [pool.apply_async(self.combined_sn_gal_templates_to_arrays, args=(snTemplateLocation, snTempFileList, galTemplateLocation, [gList], snFractions)) for gList in galTempList]
+        pool = mp.Pool()
+        results = [pool.apply_async(self.combined_sn_gal_templates_to_arrays, args=(snTemplateLocation, snTempFileList, galTemplateLocation, [gal], [snFrac])) for gal, snFrac in galAndSnFracParams]
         pool.close()
         pool.join()
 
