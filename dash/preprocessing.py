@@ -23,23 +23,13 @@ class ProcessingTools(object):
         :param outerVal: is the scalar value in all entries before the minimum and after the maximum index
         :return: 
         """
-        nw = len(flux)
-        minindex, maxindex = (0, nw - 1)
-        zeros = np.where(flux == outerVal)[0]
-        j = outerVal
-        for i in zeros:
-            if i != j:
-                break
-            j += 1
-            minindex = j
-        j = int(nw) - 1
-        for i in zeros[::-1]:
-            if i != j:
-                break
-            j -= 1
-            maxindex = j
+        nonZeros = np.where(flux != outerVal)[0]
+        if nonZeros.size:
+            minIndex, maxIndex = min(nonZeros), max(nonZeros)
+        else:
+            minIndex, maxIndex = len(flux), len(flux)
 
-        return minindex, maxindex
+        return minIndex, maxIndex
 
 
 class ReadSpectrumFile(object):
@@ -240,23 +230,18 @@ class PreProcessSpectrum(object):
                 fluxval = flux[i] * alen/(s1log-s0log) * dnu
                 fluxout[j] = fluxout[j] + fluxval
 
-
-
     ##            print(j, range(int(s0log), int(s1log)), int(s0log), s0log, int(s1log), s1log)
     ##            print(fluxout[j])
     ##            print(j+1, s1log, j, s0log)
     ##            print(min(s1log, j+1), max(s0log, j), alen, s1log-s0log)
     ##            print('--------------------------')
 
+        minIndex, maxIndex = self.processingTools.min_max_index(fluxout, outerVal=0)
 
-        minindex, maxindex = self.processingTools.min_max_index(fluxout, outerVal=0)
-        minindex, maxindex = int(minindex), int(maxindex)
-
-        return wlog, fluxout, minindex, maxindex
+        return wlog, fluxout, minIndex, maxIndex
 
     def spline_fit(self, wave, flux, numSplinePoints, minindex, maxindex):
         continuum = np.zeros(int(self.nw)) + 1
-        minindex, maxindex = int(minindex), int(maxindex)
         if (maxindex - minindex) > 5:
             spline = UnivariateSpline(wave[minindex:maxindex+1], flux[minindex:maxindex+1], k=3)
             splineWave = np.linspace(wave[minindex], wave[maxindex], num=numSplinePoints, endpoint=True)

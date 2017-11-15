@@ -75,6 +75,8 @@ if __name__ == '__main__':
     print(len(SAME_SN_WITH_SAME_AGES_AS_SNID), len(NO_MAX_BSNIP_AGE_999))
     files = os.listdir('.')
 
+    minWaves, maxWaves = [], []
+    countBelow3000 = 0
     snTypes = {'Ia':[], 'Ib':[], 'Ic':[], 'II':[]}
     for fname in files:
         if fname.endswith('.lnw'):
@@ -85,6 +87,15 @@ if __name__ == '__main__':
                     snTypes[broadType].append((ttype, fname))
                 elif broadType == 'Ib' and 'IIb' in ttype:
                     snTypes['Ib'].append((ttype, fname))
+            for ageIdx in range(len(ages)):
+                flux = fluxes[ageIdx]
+                nonZeros = np.where(flux != 0)[0]
+                minIndex, maxIndex = min(nonZeros), max(nonZeros)
+                minWaves.append(wave[minIndex])
+                if wave[minIndex] < 3000:
+                    countBelow3000 += 1
+                maxWaves.append(wave[maxIndex])
+        
     import pprint
     pprint.pprint(snTypes)
     print([("{0}: {1}".format(broadType, len(snTypes[broadType]))) for broadType in snTypes.keys()])
@@ -92,6 +103,20 @@ if __name__ == '__main__':
             # # Check if age is -999
             # if -999 in ages:
             #     noMax.append(fname)
+
+    minWaves, maxWaves = np.array(minWaves), np.array(maxWaves)
+    print(minWaves)
+    print(maxWaves)
+    print("MinWaves: Min:{0}, Max:{1}, Mean:{2}, Median:{3}, Std:{4}".format(min(minWaves), max(minWaves), np.mean(minWaves), np.median(minWaves), np.std(minWaves)))
+    print("MaxWaves: Min:{0}, Max:{1}, Mean:{2}, Median:{3}, Std:{4}".format(min(maxWaves), max(maxWaves), np.mean(maxWaves), np.median(maxWaves), np.std(maxWaves)))
+    print(countBelow3000, len(minWaves))
+    import matplotlib.pyplot as plt
+    plt.figure("MinWaves")
+    plt.hist(minWaves, bins=75)
+    plt.figure("MaxWaves")
+    plt.hist(maxWaves, bins=75)
+    plt.show()
+
 
     # Create Template list
     f = open('templist.txt', 'w')

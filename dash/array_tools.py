@@ -19,7 +19,10 @@ def zero_non_overlap_part(array, minIndex, maxIndex, outerVal=0.):
 
 
 def normalise_spectrum(flux):
-    fluxNorm = (flux - min(flux)) / (max(flux) - min(flux))
+    if min(flux) == max(flux):  # No data
+        fluxNorm = np.zeros(len(flux))
+    else:
+        fluxNorm = (flux - min(flux)) / (max(flux) - min(flux))
 
     return fluxNorm
 
