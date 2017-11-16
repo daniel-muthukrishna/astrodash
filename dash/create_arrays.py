@@ -276,33 +276,32 @@ class CreateArrays(object):
                 nCols = 15
                 readSpectra = ReadSpectra(self.w0, self.w1, self.nw, snTemplateLocation + snTempList[i], galFilename)
                 for ageidx in range(0, 1000):
-                    if ageidx < nCols:
-                        for snCoeff in snFractions:
-                            galCoeff = 1 - snCoeff
-                            for z in np.linspace(self.minZ, self.maxZ, self.numOfRedshifts + 1):
-                                tempWave, tempFlux, nCols, ages, tType, tMinIndex, tMaxIndex = readSpectra.sn_plus_gal_template(ageidx, snCoeff, galCoeff, z)
-                                agesList.append(ages[ageidx])
-                                if tMinIndex == tMaxIndex or not tempFlux.any():
-                                    print("NO DATA for {} {} ageIdx:{} z>={}".format(galTempList[j], snTempList[i], ageidx, z))
-                                    break
-
-                                if self.minAge < float(ages[ageidx]) < self.maxAge:
-                                    if self.hostTypes is None:  # Checks if we are classifying by host as well
-                                        labelIndex, typeName = self.createLabels.label_array(tType, ages[ageidx], host=None)
-                                    else:
-                                        labelIndex, typeName = self.createLabels.label_array(tType, ages[ageidx], host=galTempList[j])
-                                    if tMinIndex > (self.nw - 1):
-                                        continue
-                                    nonzeroflux = tempFlux[tMinIndex:tMaxIndex + 1]
-                                    newflux = (nonzeroflux - min(nonzeroflux)) / (max(nonzeroflux) - min(nonzeroflux))
-                                    newflux2 = np.concatenate((tempFlux[0:tMinIndex], newflux, tempFlux[tMaxIndex + 1:]))
-                                    images = np.append(images, np.array([newflux2]), axis=0)
-                                    labelsIndexes.append(labelIndex) # labels = np.append(labels, np.array([label]), axis=0)
-                                    filenames.append("{0}_{1}_{2}_{3}_snCoeff{4}_z{5}".format(snTempList[i], tType, str(ages[ageidx]), galTempList[j], snCoeff, (z)))
-                                    typeNames.append(typeName)
-                        print(snTempList[i], ageidx, nCols, galTempList[j], snCoeff)
-                    else:
+                    if ageidx >= nCols:
                         break
+                    for snCoeff in snFractions:
+                        galCoeff = 1 - snCoeff
+                        for z in np.linspace(self.minZ, self.maxZ, self.numOfRedshifts + 1):
+                            tempWave, tempFlux, nCols, ages, tType, tMinIndex, tMaxIndex = readSpectra.sn_plus_gal_template(ageidx, snCoeff, galCoeff, z)
+                            agesList.append(ages[ageidx])
+                            if tMinIndex == tMaxIndex or not tempFlux.any():
+                                print("NO DATA for {} {} ageIdx:{} z>={}".format(galTempList[j], snTempList[i], ageidx, z))
+                                break
+
+                            if self.minAge < float(ages[ageidx]) < self.maxAge:
+                                if self.hostTypes is None:  # Checks if we are classifying by host as well
+                                    labelIndex, typeName = self.createLabels.label_array(tType, ages[ageidx], host=None)
+                                else:
+                                    labelIndex, typeName = self.createLabels.label_array(tType, ages[ageidx], host=galTempList[j])
+                                if tMinIndex > (self.nw - 1):
+                                    continue
+                                nonzeroflux = tempFlux[tMinIndex:tMaxIndex + 1]
+                                newflux = (nonzeroflux - min(nonzeroflux)) / (max(nonzeroflux) - min(nonzeroflux))
+                                newflux2 = np.concatenate((tempFlux[0:tMinIndex], newflux, tempFlux[tMaxIndex + 1:]))
+                                images = np.append(images, np.array([newflux2]), axis=0)
+                                labelsIndexes.append(labelIndex) # labels = np.append(labels, np.array([label]), axis=0)
+                                filenames.append("{0}_{1}_{2}_{3}_snCoeff{4}_z{5}".format(snTempList[i], tType, str(ages[ageidx]), galTempList[j], snCoeff, (z)))
+                                typeNames.append(typeName)
+                print(snTempList[i], ageidx, nCols, galTempList[j], snCoeff)
 
         return typeList, images, np.array(labelsIndexes), np.array(filenames), np.array(typeNames)
 
