@@ -57,17 +57,23 @@ class ReadSpectrumFile(object):
         return wave, flux
 
     def read_dat_file(self):
-        wave = []
-        flux = []
-        with open(self.filename, 'r') as FileObj:
-            for line in FileObj:
-                if line.strip() != '' and line.strip()[0] != '#':
-                    datapoint = line.rstrip('\n').strip().split()
-                    wave.append(float(datapoint[0].replace('D', 'E')))
-                    flux.append(float(datapoint[1].replace('D', 'E')))
+        try:
+            data = np.loadtxt(self.filename)
+            wave = data[:, 0]
+            flux = data[:, 1]
+        except:
+            print("COULDN'T USE NP.LOADTXT FOR FILE: {0}\n READ LINE BY LINE INSTEAD.".format(self.filename))
+            wave = []
+            flux = []
+            with open(self.filename, 'r') as FileObj:
+                for line in FileObj:
+                    if line.strip() != '' and line.strip()[0] != '#':
+                        datapoint = line.rstrip('\n').strip().split()
+                        wave.append(float(datapoint[0].replace('D', 'E')))
+                        flux.append(float(datapoint[1].replace('D', 'E')))
 
-        wave = np.array(wave)
-        flux = np.array(flux)
+            wave = np.array(wave)
+            flux = np.array(flux)
 
         return wave, flux
 
