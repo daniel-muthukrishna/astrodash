@@ -81,7 +81,7 @@ if __name__ == '__main__':
     for fname in files:
         if fname.endswith('.lnw'):
             wave, fluxes, numAges, ages, ttype, splineInfo = snid_template_spectra_all(fname)
-            print(ttype, fname)
+            # print(ttype, fname)
             for broadType in snTypes.keys():
                 if broadType in ttype and 'IIb' not in ttype:
                     snTypes[broadType].append((ttype, fname))
@@ -92,8 +92,9 @@ if __name__ == '__main__':
                 nonZeros = np.where(flux != 0)[0]
                 minIndex, maxIndex = min(nonZeros), max(nonZeros)
                 minWaves.append(wave[minIndex])
-                if wave[minIndex] < 3000:
+                if wave[minIndex] < 2900:
                     countBelow3000 += 1
+                    print("Min Below 3000A: ", ttype, fname, ages[ageIdx], wave[minIndex])
                 maxWaves.append(wave[maxIndex])
         
     import pprint

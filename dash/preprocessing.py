@@ -61,7 +61,7 @@ class ReadSpectrumFile(object):
         flux = []
         with open(self.filename, 'r') as FileObj:
             for line in FileObj:
-                if line.strip()[0] != '#':
+                if line.strip() != '' and line.strip()[0] != '#':
                     datapoint = line.rstrip('\n').strip().split()
                     wave.append(float(datapoint[0].replace('D', 'E')))
                     flux.append(float(datapoint[1].replace('D', 'E')))
