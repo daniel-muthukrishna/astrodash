@@ -262,8 +262,7 @@ class CreateArrays(object):
         self.createLabels = CreateLabels(self.nTypes, self.minAge, self.maxAge, self.ageBinSize, self.typeList, hostTypes, nHostTypes)
         self.hostTypes = hostTypes
 
-    def combined_sn_gal_templates_to_arrays(self, snTemplateLocation, snTempFileList, galTemplateLocation, galTempList, snFractions):
-        snTempList = TempList().temp_list(snTempFileList)
+    def combined_sn_gal_templates_to_arrays(self, snTemplateLocation, snTempList, galTemplateLocation, galTempList, snFractions):
         typeList = []
         images = np.empty((0, int(self.nw)), np.float16)  # Number of pixels
         labelsIndexes = [] # labels = np.empty((0, self.nLabels), np.uint8)  # Number of labels (SN types)
@@ -301,7 +300,6 @@ class CreateArrays(object):
                                     labelsIndexes.append(labelIndex) # labels = np.append(labels, np.array([label]), axis=0)
                                     filenames.append("{0}_{1}_{2}_{3}_snCoeff{4}_z{5}".format(snTempList[i], tType, str(ages[ageidx]), galTempList[j], snCoeff, (z)))
                                     typeNames.append(typeName)
-
                         print(snTempList[i], ageidx, nCols, galTempList[j], snCoeff)
                     else:
                         break
@@ -310,25 +308,27 @@ class CreateArrays(object):
 
     def combined_sn_gal_arrays_multiprocessing(self, snTemplateLocation, snTempFileList, galTemplateLocation, galTempFileList):
         if galTemplateLocation is None or galTempFileList is None:
-            return self.combined_sn_gal_templates_to_arrays(snTemplateLocation, snTempFileList, galTemplateLocation=None, galTempList=[None], snFractions=[1.0])
-
-        galTempList = TempList().temp_list(galTempFileList)
-        snFractions = [0.99, 0.98, 0.95, 0.93, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
-        galAndSnFracParams = list(itertools.product(galTempList, snFractions))
+            galTempList = [None]
+            galTemplateLocation = None
+            snFractions = [1.0]
+        else:
+            galTempList = TempList().temp_list(galTempFileList)
+            snFractions = [0.99, 0.98, 0.95, 0.93, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
 
         images = np.empty((0, int(self.nw)), np.float16)
         labelsIndexes = np.empty(0, np.uint16)
         filenames = np.empty(0)
         typeNames = np.empty(0)
 
-        t1 = time.time()
+        snTempList = TempList().temp_list(snTempFileList)
+        galAndSnTemps = list(itertools.product(galTempList, snTempList))
+
         pool = mp.Pool()
-        results = [pool.apply_async(self.combined_sn_gal_templates_to_arrays, args=(snTemplateLocation, snTempFileList, galTemplateLocation, [gal], [snFrac])) for gal, snFrac in galAndSnFracParams]
+        results = [pool.apply_async(self.combined_sn_gal_templates_to_arrays, args=(snTemplateLocation, [sn], galTemplateLocation, [gal], snFractions)) for gal, sn in galAndSnTemps]
         pool.close()
         pool.join()
 
         outputs = [p.get() for p in results]
-
         for out in outputs:
             typeList, imagesPart, labelsPart, filenamesPart, typeNamesPart = out
             images = np.append(images, imagesPart, axis=0)
@@ -336,17 +336,6 @@ class CreateArrays(object):
             filenames = np.append(filenames, filenamesPart)
             typeNames = np.append(typeNames, typeNamesPart)
 
-        t2 = time.time()
-        print("time spent: {0:.2f}".format(t2 - t1))
-
-        try:
-            print("SIZE OF ARRAYS:")
-            print(images.nbytes)
-            print(labelsIndexes.nbytes)
-            print(filenames.nbytes)
-            print(typeNames.nbytes)
-        except Exception as e:
-            print("Exception Raised: {0}".format(e))
         print("Completed Creating Arrays!")
 
         return typeList, images, labelsIndexes, filenames, typeNames
