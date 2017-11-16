@@ -3,6 +3,12 @@ import numpy as np
 from specutils.io import read_fits
 from scipy.interpolate import interp1d, UnivariateSpline
 from dash.array_tools import normalise_spectrum, zero_non_overlap_part
+try:
+    import pandas as pd
+    USE_PANDAS = True
+except ImportError:
+    print("Pandas module not installed. Will use numpy to load spectral files instead (slower).")
+    USE_PANDAS = False
 
 
 class ProcessingTools(object):
@@ -58,11 +64,14 @@ class ReadSpectrumFile(object):
 
     def read_dat_file(self):
         try:
-            data = np.loadtxt(self.filename)
+            if USE_PANDAS is True:
+                data = pd.read_csv(self.filename, header=None, delim_whitespace=True).values
+            else:
+                data = np.loadtxt(self.filename)
             wave = data[:, 0]
             flux = data[:, 1]
         except:
-            print("COULDN'T USE NP.LOADTXT FOR FILE: {0}\n READ LINE BY LINE INSTEAD.".format(self.filename))
+            print("COULDN'T USE LOADTXT FOR FILE: {0}\n READ LINE BY LINE INSTEAD.".format(self.filename))
             wave = []
             flux = []
             with open(self.filename, 'r') as FileObj:
@@ -142,12 +151,12 @@ class ReadSpectrumFile(object):
                 if lineNum == 0:
                     header = (line.strip('\n')).split(' ')
                     header = [x for x in header if x != '']
-                    numAges, nwx, w0x, w1x, mostknots, tname, dta, ttype, ittype, itstype = header
-                    numAges, mostknots = map(int, (numAges, mostknots))
+                    numAges, nwx, w0x, w1x, mostKnots, tname, dta, ttype, ittype, itstype = header
+                    numAges, mostKnots = map(int, (numAges, mostKnots))
                     nk = np.zeros(numAges)
                     fmean = np.zeros(numAges)
-                    xk = np.zeros((mostknots,numAges))
-                    yk = np.zeros((mostknots,numAges))
+                    xk = np.zeros((mostKnots,numAges))
+                    yk = np.zeros((mostKnots,numAges))
 
                 # Read Spline Info
                 elif lineNum == 1:
@@ -155,24 +164,27 @@ class ReadSpectrumFile(object):
                     splineInfo = [x for x in splineInfo if x != '']
                     for j in range(numAges):
                         nk[j], fmean[j] = (splineInfo[2*j+1], splineInfo[2*j+2])
-                elif lineNum in range(2, mostknots+2):
+                elif lineNum in range(2, mostKnots+2):
                     splineInfo = (line.strip('\n')).split(' ')
                     splineInfo = [x for x in splineInfo if x != '']
                     for j in range(numAges):
                         xk[lineNum-2,j], yk[lineNum-2,j] = (splineInfo[2*j+1], splineInfo[2*j+2])
 
-                elif lineNum == mostknots+2:
+                elif lineNum == mostKnots+2:
                     break
 
         splineInfo = (nk, fmean, xk, yk)
 
         # Read Normalized spectra
-        arr=np.loadtxt(self.filename, skiprows=mostknots+2)
+        if USE_PANDAS is True:
+            arr = pd.read_csv(self.filename, skiprows=mostKnots+2, header=None, delim_whitespace=True).values
+        else:
+            arr = np.loadtxt(self.filename, skiprows=mostKnots+2)
         ages = arr[0]
         ages = np.delete(ages, 0)
-        arr = np.delete(arr, 0 ,0)
+        arr = np.delete(arr, 0, 0)
 
-        wave = arr[:,0]
+        wave = arr[:, 0]
         fluxes = np.zeros(shape=(numAges,len(arr))) # initialise 2D array
 
         for i in range(0, len(arr[0])-1):

@@ -306,20 +306,6 @@ class CreateArrays(object):
                     else:
                         break
 
-                # Create List of all SN types
-                if tType not in typeList:
-                    typeList.append(tType)
-        print(len(images))
-
-        try:
-            print("SIZE OF ARRAYS:")
-            print(images.nbytes)
-            print(np.array(labelsIndexes).nbytes)
-            print(np.array(filenames).nbytes)
-            print(np.array(typeNames).nbytes)
-        except:
-            print("Exception Raised")
-
         return typeList, images, np.array(labelsIndexes), np.array(filenames), np.array(typeNames)
 
     def combined_sn_gal_arrays_multiprocessing(self, snTemplateLocation, snTempFileList, galTemplateLocation, galTempFileList):
@@ -359,8 +345,8 @@ class CreateArrays(object):
             print(labelsIndexes.nbytes)
             print(filenames.nbytes)
             print(typeNames.nbytes)
-        except:
-            print("Exception Raised")
+        except Exception as e:
+            print("Exception Raised: {0}".format(e))
         print("Completed Creating Arrays!")
 
         return typeList, images, labelsIndexes, filenames, typeNames
