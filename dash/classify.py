@@ -173,13 +173,14 @@ class Classify(object):
         with open(saveFilename, 'w') as f:
             for i in range(len(self.filenames)):
                 f.write("%s   z=%s     %s      %s     %s\n %s\n\n" % (
-                    self.filenames[i].split('/')[-1], redshifts[i], bestTypes[i], rlapLabels[i], matchesReliableLabels[i], bestFits[i]))
+                    str(self.filenames[i]).split('/')[-1], redshifts[i], bestTypes[i], rlapLabels[i], matchesReliableLabels[i], bestFits[i]))
         print("Finished classifying %d spectra!" % len(self.filenames))
 
     def plot_with_gui(self, indexToPlot=0):
         app = QtGui.QApplication(sys.argv)
         form = MainApp(inputFilename=self.filenames[indexToPlot])
-        form.lblInputFilename.setText(self.filenames[indexToPlot].split('/')[-1])
+        if not isinstance(self.filenames[indexToPlot], (list, np.ndarray)):
+            form.lblInputFilename.setText(self.filenames[indexToPlot].split('/')[-1])
         form.checkBoxKnownZ.setChecked(self.knownZ)
         form.checkBoxClassifyHost.setChecked(self.classifyHost)
         form.lineEditKnownZ.setText(str(self.redshifts[indexToPlot]))

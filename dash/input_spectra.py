@@ -44,7 +44,7 @@ class InputSpectra(object):
             newflux = normalise_spectrum(nonzeroflux)
             newflux2 = np.concatenate((flux[0:minIndex], newflux, flux[maxIndex + 1:]))
             images = np.append(images, np.array([newflux2]), axis=0)  # images.append(newflux2)
-            filenames.append(self.filename + "_" + str(-z))
+            filenames.append(str(self.filename) + "_" + str(-z))
             redshifts.append(-z)
             minMaxIndexes.append((minIndex, maxIndex))
             # # Add white noise to regions outside minIndex to maxIndex

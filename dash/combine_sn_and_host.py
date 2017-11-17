@@ -1,3 +1,4 @@
+import os
 from scipy.signal import medfilt
 from dash.preprocessing import ReadSpectrumFile, ProcessingTools, PreProcessSpectrum
 from dash.array_tools import zero_non_overlap_part, normalise_spectrum
@@ -51,7 +52,7 @@ class BinTemplate(object):
         self.w1 = w1
         self.nw = nw
         self.numSplinePoints = 13
-        self.filename = filename.split('/')[-1]
+        self.filename = os.path.basename(filename)
         self.templateType = templateType
         self.preProcess = PreProcessSpectrum(w0, w1, nw)
         self.readSpectrumFile = ReadSpectrumFile(filename, w0, w1, nw)

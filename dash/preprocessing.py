@@ -100,14 +100,18 @@ class ReadSpectrumFile(object):
         else:
             raise Exception("Invalid Superfit file: {0}".format(self.filename))
 
-        # Add in stuff to read SLSN. Ad also add SLSN and other superfit templates to the training_set directory and templist.txt
         nCols = 1
 
         return wave, flux, nCols, [age], tType
 
     def file_extension(self, template=False):
-        filename = os.path.basename(self.filename)
-        extension = filename.split('.')[-1]
+        if isinstance(self.filename, (list, np.ndarray)):
+            wave, flux = self.filename[0], self.filename[1]
+            return wave, flux
+        else:
+            filename = os.path.basename(self.filename)
+            extension = filename.split('.')[-1]
+
         if template is True and extension == 'dat' and len(filename.split('.')) == 3 and filename.split('.')[1][0] in ['m', 'p']:  # Check if input is a superfit template
             return self.read_superfit_template()
         elif extension == self.filename or extension in ['flm', 'txt', 'dat']:
@@ -185,7 +189,7 @@ class ReadSpectrumFile(object):
         arr = np.delete(arr, 0, 0)
 
         wave = arr[:, 0]
-        fluxes = np.zeros(shape=(numAges,len(arr))) # initialise 2D array
+        fluxes = np.zeros(shape=(numAges, len(arr))) # initialise 2D array
 
         for i in range(0, len(arr[0])-1):
             fluxes[i] = arr[:, i+1]
@@ -201,7 +205,7 @@ class ReadSpectrumFile(object):
         nk, fmean, xk, yk = int(nkAll[ageIdx]), fmeanAll[ageIdx], xkAll[:,ageIdx], ykAll[:,ageIdx]
         xk, yk = xk[:nk], yk[:nk]
 
-        # NEED TO USE THIS TO ACTUALLY ADD THE SPLINE CONTINUUM BACK
+        # NEED TO USE THIS TO ACTUALLY ADD THE SPLINE CONTINUUM BACK. NOT DOING ANYTHING AT THE MOMENT.
 
         return wave, flux
 

@@ -257,7 +257,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         if not os.path.isfile(self.modelFilename + ".index"):
             QtGui.QMessageBox.critical(self, "Error", "Model does not exist")
             return
-        if not os.path.isfile(self.inputFilename):
+        if not isinstance(self.inputFilename, (list, np.ndarray)) and not os.path.isfile(self.inputFilename):
             QtGui.QMessageBox.critical(self, "Error", "File not found!")
             return
         if self.checkBoxRlap.isChecked():
@@ -509,7 +509,7 @@ class FitSpectrumThread(QThread):
 
     def __init__(self, inputFilename, knownZ, modelFilename, smooth, classifyHost, minWave, maxWave):
         QThread.__init__(self)
-        self.inputFilename = str(inputFilename)
+        self.inputFilename = inputFilename
         self.knownZ = knownZ
         self.modelFilename = modelFilename
         self.smooth = smooth
