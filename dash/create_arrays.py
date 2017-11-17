@@ -263,7 +263,6 @@ class CreateArrays(object):
         self.hostTypes = hostTypes
 
     def combined_sn_gal_templates_to_arrays(self, snTemplateLocation, snTempList, galTemplateLocation, galTempList, snFractions):
-        typeList = []
         images = np.empty((0, int(self.nw)), np.float16)  # Number of pixels
         labelsIndexes = [] # labels = np.empty((0, self.nLabels), np.uint8)  # Number of labels (SN types)
         filenames = []  # np.empty(0)
@@ -303,7 +302,7 @@ class CreateArrays(object):
                                 typeNames.append(typeName)
                 print(snTempList[i], ageidx, nCols, galTempList[j], snCoeff)
 
-        return typeList, images, np.array(labelsIndexes), np.array(filenames), np.array(typeNames)
+        return images, np.array(labelsIndexes).astype(int), np.array(filenames), np.array(typeNames)
 
     def combined_sn_gal_arrays_multiprocessing(self, snTemplateLocation, snTempFileList, galTemplateLocation, galTempFileList):
         if galTemplateLocation is None or galTempFileList is None:
@@ -329,7 +328,7 @@ class CreateArrays(object):
 
         outputs = [p.get() for p in results]
         for out in outputs:
-            typeList, imagesPart, labelsPart, filenamesPart, typeNamesPart = out
+            imagesPart, labelsPart, filenamesPart, typeNamesPart = out
             images = np.append(images, imagesPart, axis=0)
             labelsIndexes = np.append(labelsIndexes, labelsPart, axis=0)
             filenames = np.append(filenames, filenamesPart)
@@ -337,4 +336,4 @@ class CreateArrays(object):
 
         print("Completed Creating Arrays!")
 
-        return typeList, images, labelsIndexes, filenames, typeNames
+        return images, labelsIndexes.astype(int), filenames, typeNames

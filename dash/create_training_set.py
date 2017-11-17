@@ -33,20 +33,20 @@ class CreateTrainingSet(object):
         return counts
 
     def all_templates_to_arrays(self):
-        snTypeList, images, labels, filenames, typeNames = self.createArrays.combined_sn_gal_arrays_multiprocessing(self.snidTemplateLocation, self.snidTempFileList, self.galTemplateLocation, self.galTempFileList)
+        images, labels, filenames, typeNames = self.createArrays.combined_sn_gal_arrays_multiprocessing(self.snidTemplateLocation, self.snidTempFileList, self.galTemplateLocation, self.galTempFileList)
 
         arraysShuf = self.arrayTools.shuffle_arrays(images=images, labels=labels, filenames=filenames, typeNames=typeNames)
 
         typeAmounts = self.type_amounts(labels)
         
-        return snTypeList, arraysShuf, typeAmounts
+        return arraysShuf, typeAmounts
 
     def sort_data(self):
         trainPercentage = 0.9
         testPercentage = 0.1
         validatePercentage = 0.
 
-        typeList, arrays, typeAmounts = self.all_templates_to_arrays()
+        arrays, typeAmounts = self.all_templates_to_arrays()
         images, labels, filenames, typeNames = arrays['images'], arrays['labels'], arrays['filenames'], arrays['typeNames']
 
         trainSize = int(trainPercentage * len(images))
