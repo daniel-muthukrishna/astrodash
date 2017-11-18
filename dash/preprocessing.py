@@ -106,7 +106,7 @@ class ReadSpectrumFile(object):
         return wave, flux, nCols, [age], tType
 
     def file_extension(self, template=False):
-        if isinstance(self.filename, (list, np.ndarray)):  # Is an Nx2 arra file handle
+        if isinstance(self.filename, (list, np.ndarray)):  # Is an Nx2 array
             wave, flux = self.filename[0], self.filename[1]
             return wave, flux
         elif hasattr(self.filename, 'read'):  # Is a file handle
