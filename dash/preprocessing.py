@@ -115,20 +115,20 @@ class ReadSpectrumFile(object):
             filename = os.path.basename(self.filename)
             extension = filename.split('.')[-1]
 
-        if template is True and extension == 'dat' and len(filename.split('.')) == 3 and filename.split('.')[1][0] in ['m', 'p']:  # Check if input is a superfit template
-            return self.read_superfit_template()
-        elif extension == self.filename or extension in ['flm', 'txt', 'dat']:
-            return self.read_dat_file()
-        elif extension == 'fits':
-            return self.read_fits_file()
-        elif extension == 'lnw':
-            return self.snid_template_spectra_all()
-        else:
-            try:
+            if template is True and extension == 'dat' and len(filename.split('.')) == 3 and filename.split('.')[1][0] in ['m', 'p']:  # Check if input is a superfit template
+                return self.read_superfit_template()
+            elif extension == self.filename or extension in ['flm', 'txt', 'dat']:
                 return self.read_dat_file()
-            except:
-                print("Invalid Input File")
-                return 0
+            elif extension == 'fits':
+                return self.read_fits_file()
+            elif extension == 'lnw':
+                return self.snid_template_spectra_all()
+            else:
+                try:
+                    return self.read_dat_file()
+                except:
+                    print("Invalid Input File")
+                    return 0
 
     def two_col_input_spectrum(self, wave, flux, z):
         wave, flux = self.processingTools.deredshift_spectrum(wave, flux, z)
