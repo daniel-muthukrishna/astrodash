@@ -64,6 +64,7 @@ class ReadSpectrumFile(object):
 
     def read_dat_file(self):
         try:
+            self.filename.seek(0)
             if USE_PANDAS is True:
                 data = pd.read_csv(self.filename, header=None, delim_whitespace=True).values
             else:
@@ -105,10 +106,12 @@ class ReadSpectrumFile(object):
         return wave, flux, nCols, [age], tType
 
     def file_extension(self, template=False):
-        if isinstance(self.filename, (list, np.ndarray)):
+        if isinstance(self.filename, (list, np.ndarray)):  # Is an Nx2 arra file handle
             wave, flux = self.filename[0], self.filename[1]
             return wave, flux
-        else:
+        elif hasattr(self.filename, 'read'):  # Is a file handle
+            return self.read_dat_file()
+        else:  # Is a filename string
             filename = os.path.basename(self.filename)
             extension = filename.split('.')[-1]
 

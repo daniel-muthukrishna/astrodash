@@ -257,7 +257,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         if not os.path.isfile(self.modelFilename + ".index"):
             QtGui.QMessageBox.critical(self, "Error", "Model does not exist")
             return
-        if not isinstance(self.inputFilename, (list, np.ndarray)) and not os.path.isfile(self.inputFilename):
+        if not isinstance(self.inputFilename, (list, np.ndarray)) and not hasattr(self.inputFilename, 'read') and not os.path.isfile(self.inputFilename):  # Not an array and not a file-handle and not a file
             QtGui.QMessageBox.critical(self, "Error", "File not found!")
             return
         if self.checkBoxRlap.isChecked():
