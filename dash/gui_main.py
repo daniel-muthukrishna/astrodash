@@ -10,6 +10,7 @@ from dash.create_arrays import AgeBinning
 from dash.read_binned_templates import load_templates, get_templates, combined_sn_and_host_data
 from dash.false_positive_rejection import combined_prob, RlapCalc
 from dash.calculate_redshift import get_median_redshift, get_redshift_axis
+from dash.read_from_catalog import catalogDict
 
 
 class MainApp(QtGui.QMainWindow, Ui_MainWindow):
@@ -40,6 +41,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.listWidget.itemClicked.connect(self.list_item_clicked)
         self.btnRefit.clicked.connect(self.fit_spectra)
         self.inputFilename = inputFilename
+        self.inputFilenameSetText = inputFilename
         self.progressBar.setValue(100)
         self.add_combo_box_entries()
         self.labelRlapScore.setText('')
@@ -47,6 +49,8 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.select_tensorflow_model()
         self.checkBoxKnownZ.stateChanged.connect(self.select_tensorflow_model)
         self.checkBoxClassifyHost.stateChanged.connect(self.select_tensorflow_model)
+
+        self.lineEditInputFilename.textChanged.connect(self.input_filename_changed)
 
         self.horizontalSliderSmooth.valueChanged.connect(self.smooth_slider_changed)
         self.lineEditSmooth.textChanged.connect(self.smooth_text_changed)
@@ -215,13 +219,21 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         except ValueError:
             pass
 
+    def input_filename_changed(self):
+        inputFilename = self.lineEditInputFilename.text()
+        if inputFilename == self.inputFilenameSetText or inputFilename == self.inputFilename or inputFilename == "":
+            pass
+        else:
+            self.inputFilename = inputFilename
+
     def select_input_file(self):
         inputFilename = QtGui.QFileDialog.getOpenFileName(self, "Select a spectrum file")[0]
         if (inputFilename == self.inputFilename) or (inputFilename == ""):
             pass
         else:
             self.inputFilename = inputFilename
-            self.lblInputFilename.setText(inputFilename.split('/')[-1])
+            self.inputFilenameSetText = self.inputFilename # os.path.basename(self.inputFilename)
+            self.lineEditInputFilename.setText(self.inputFilenameSetText)
 
             self.fit_spectra()
 
@@ -257,7 +269,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         if not os.path.isfile(self.modelFilename + ".index"):
             QtGui.QMessageBox.critical(self, "Error", "Model does not exist")
             return
-        if not isinstance(self.inputFilename, (list, np.ndarray)) and not hasattr(self.inputFilename, 'read') and not os.path.isfile(self.inputFilename) and self.inputFilename[0:4] != 'osc-':  # Not an array and not a file-handle and not a file and not from OSC
+        if not isinstance(self.inputFilename, (list, np.ndarray)) and not hasattr(self.inputFilename, 'read') and not os.path.isfile(self.inputFilename) and self.inputFilename.split('-')[0] not in list(catalogDict.keys()):   # Not an array and not a file-handle and not a file and not a catalog input
             QtGui.QMessageBox.critical(self, "Error", "File not found!")
             return
         if self.checkBoxRlap.isChecked():

@@ -38,11 +38,20 @@ class Ui_MainWindow(object):
         self.horizontalLayout_8 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_8.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
         self.horizontalLayout_8.setObjectName("horizontalLayout_8")
-        self.lblInputFilename = QtWidgets.QLabel(self.groupBox_2)
-        self.lblInputFilename.setMaximumSize(QtCore.QSize(200, 16777215))
-        self.lblInputFilename.setWordWrap(False)
-        self.lblInputFilename.setObjectName("lblInputFilename")
-        self.horizontalLayout_8.addWidget(self.lblInputFilename, 0, QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter)
+        self.lineEditInputFilename = QtWidgets.QLineEdit(self.groupBox_2)
+        self.lineEditInputFilename.setMaximumSize(QtCore.QSize(150, 16777215))
+        font = QtGui.QFont()
+        font.setBold(False)
+        font.setItalic(False)
+        font.setUnderline(False)
+        font.setWeight(50)
+        font.setKerning(True)
+        self.lineEditInputFilename.setFont(font)
+        self.lineEditInputFilename.setAutoFillBackground(False)
+        self.lineEditInputFilename.setAlignment(QtCore.Qt.AlignCenter)
+        self.lineEditInputFilename.setReadOnly(False)
+        self.lineEditInputFilename.setObjectName("lineEditInputFilename")
+        self.horizontalLayout_8.addWidget(self.lineEditInputFilename)
         self.gridLayout_2.addLayout(self.horizontalLayout_8, 0, 0, 1, 1)
         self.verticalLayout_7.addLayout(self.gridLayout_2)
         self.verticalLayout.addWidget(self.groupBox_2)
@@ -398,7 +407,7 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "DASH"))
         self.groupBox_2.setTitle(_translate("MainWindow", "Select Spectrum"))
         self.btnBrowse.setText(_translate("MainWindow", "Browse"))
-        self.lblInputFilename.setText(_translate("MainWindow", "Select SN File..."))
+        self.lineEditInputFilename.setText(_translate("MainWindow", "Select SN File..."))
         self.groupBox.setTitle(_translate("MainWindow", "Priors"))
         self.checkBoxKnownZ.setText(_translate("MainWindow", "Known Redshift"))
         self.lineEditKnownZ.setText(_translate("MainWindow", "0"))
@@ -441,3 +450,13 @@ class Ui_MainWindow(object):
         self.lineEditRedshift.setText(_translate("MainWindow", "0"))
 
 from pyqtgraph import PlotWidget
+
+if __name__ == "__main__":
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    MainWindow = QtWidgets.QMainWindow()
+    ui = Ui_MainWindow()
+    ui.setupUi(MainWindow)
+    MainWindow.show()
+    sys.exit(app.exec_())
+

@@ -2,11 +2,8 @@ import os
 import numpy as np
 from specutils.io import read_fits
 from scipy.interpolate import interp1d, UnivariateSpline
-from collections import OrderedDict
-import json
-from six.moves.urllib.request import urlopen
-
 from dash.array_tools import normalise_spectrum, zero_non_overlap_part
+from dash.read_from_catalog import catalogDict
 try:
     import pandas as pd
     USE_PANDAS = True
@@ -69,7 +66,6 @@ class ReadSpectrumFile(object):
 
     def read_dat_file(self):
         try:
-            self.filename.seek(0)
             if USE_PANDAS is True:
                 data = pd.read_csv(self.filename, header=None, delim_whitespace=True).values
             else:
@@ -110,29 +106,12 @@ class ReadSpectrumFile(object):
 
         return wave, flux, nCols, [age], tType
 
-    def read_osc_input(self):
-        """ self.filename in the form osc-name-ageIndex. E.g. osc-sn2002er-10"""
-        osc, name, ageIdx = self.filename.split('-')
-        url = "https://api.sne.space/" + name + "/spectra/time+data?item={0}".format(ageIdx)
-        response = urlopen(url)
-        data = json.loads(response.read(), object_pairs_hook=OrderedDict)
-
-        data = data[next(iter(data))]['spectra'][0][1]
-        data = np.array(list(map(list, zip(*data)))).astype(np.float)
-        wave, flux = data[0], data[1]
-
-        url = "https://api.sne.space/" + name + "/redshift/value"
-        response = urlopen(url)
-        redshift = json.loads(response.read(), object_pairs_hook=OrderedDict)
-        redshift = float(redshift[next(iter(redshift))]['redshift'][0][0])
-
-        return wave, flux, redshift
-
     def file_extension(self, template=False):
         if isinstance(self.filename, (list, np.ndarray)):  # Is an Nx2 array
             wave, flux = self.filename[0], self.filename[1]
             return wave, flux
         elif hasattr(self.filename, 'read'):  # Is a file handle
+            self.filename.seek(0)
             return self.read_dat_file()
         else:  # Is a filename string
             filename = os.path.basename(self.filename)
@@ -140,8 +119,8 @@ class ReadSpectrumFile(object):
 
             if template is True and extension == 'dat' and len(filename.split('.')) == 3 and filename.split('.')[1][0] in ['m', 'p']:  # Check if input is a superfit template
                 return self.read_superfit_template()
-            elif self.filename[0:4] == 'osc-':
-                return self.read_osc_input()
+            elif self.filename.split('-')[0] in list(catalogDict.keys()):  # Read input from catalog
+                return catalogDict[self.filename[0:3]](self.filename)
             elif extension == self.filename or extension in ['flm', 'txt', 'dat']:
                 return self.read_dat_file()
             elif extension == 'fits':

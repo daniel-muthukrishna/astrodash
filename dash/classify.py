@@ -7,6 +7,7 @@ from dash.restore_model import LoadInputSpectra, BestTypesListSingleRedshift, ge
 from dash.false_positive_rejection import RlapCalc, combined_prob
 from dash.read_binned_templates import load_templates, get_templates
 from dash.calculate_redshift import get_median_redshift
+from dash.read_from_catalog import catalogDict
 
 try:
     from PyQt5 import QtGui
@@ -53,7 +54,7 @@ class Classify(object):
                 self.modelFilename = os.path.join(self.scriptDirectory, data_files, "models/agnosticZ/tensorflow_model.ckpt")
 
     def _get_images(self, filename, redshift):
-        if redshift == 'osc':
+        if redshift in list(catalogDict.keys()):
             redshift = 0
         loadInputSpectra = LoadInputSpectra(filename, redshift, redshift, self.smooth, self.pars, self.minWave, self.maxWave, self.classifyHost)
         inputImage, inputRedshift, typeNamesList, nw, nBins, inputMinMaxIndex = loadInputSpectra.input_spectra()
@@ -183,7 +184,7 @@ class Classify(object):
         app = QtGui.QApplication(sys.argv)
         form = MainApp(inputFilename=self.filenames[indexToPlot])
         if not isinstance(self.filenames[indexToPlot], (list, np.ndarray)) and not hasattr(self.filenames[indexToPlot], 'read'):  # Not an array and not a file-handle
-            form.lblInputFilename.setText(self.filenames[indexToPlot].split('/')[-1])
+            form.lineEditInputFilename.setText(self.filenames[indexToPlot].split('/')[-1])
         form.checkBoxKnownZ.setChecked(self.knownZ)
         form.checkBoxClassifyHost.setChecked(self.classifyHost)
         form.lineEditKnownZ.setText(str(self.redshifts[indexToPlot]))
