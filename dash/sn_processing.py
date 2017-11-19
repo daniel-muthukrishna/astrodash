@@ -30,9 +30,16 @@ class PreProcessing(object):
         self.preProcess = PreProcessSpectrum(w0, w1, nw)
 
         self.spectrum = self.readSpectrumFile.file_extension()
+        if len(self.spectrum) == 3:
+            self.redshiftFromFile = True
+        else:
+            self.redshiftFromFile = False
 
     def two_column_data(self, z, smooth, minWave, maxWave):
-        self.wave, self.flux = self.spectrum
+        if self.redshiftFromFile is True:
+            self.wave, self.flux, z = self.spectrum
+        else:
+            self.wave, self.flux = self.spectrum
         self.flux = limit_wavelength_range(self.wave, self.flux, minWave, maxWave)
         self.wDensity = (self.w1 - self.w0)/self.nw  # Average wavelength spacing
         wavelengthDensity = (max(self.wave) - min(self.wave)) / len(self.wave)
@@ -110,7 +117,7 @@ class PreProcessing(object):
         #
         # plt.show()
 
-        return binnedwave, fluxNorm, minIndex, maxIndex
+        return binnedwave, fluxNorm, minIndex, maxIndex, z
 
 
 

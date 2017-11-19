@@ -39,7 +39,7 @@ class InputSpectra(object):
 
         #Undo it's previous redshift)
         for z in np.linspace(self.minZ, self.maxZ, self.numOfRedshifts + 1):
-            wave, flux, minIndex, maxIndex = readSpectra.input_spectrum(z, self.smooth, self.minWave, self.maxWave)
+            wave, flux, minIndex, maxIndex, z = readSpectra.input_spectrum(z, self.smooth, self.minWave, self.maxWave)
             nonzeroflux = flux[minIndex:maxIndex + 1]
             newflux = normalise_spectrum(nonzeroflux)
             newflux2 = np.concatenate((flux[0:minIndex], newflux, flux[maxIndex + 1:]))

@@ -2,12 +2,17 @@ import os
 import numpy as np
 from specutils.io import read_fits
 from scipy.interpolate import interp1d, UnivariateSpline
+from collections import OrderedDict
+import json
+from six.moves.urllib.request import urlopen
+
 from dash.array_tools import normalise_spectrum, zero_non_overlap_part
 try:
     import pandas as pd
     USE_PANDAS = True
 except ImportError:
-    print("Pandas module not installed. Will use numpy to load spectral files instead (slower).")
+    print("Pandas module not installed. DASH will use numpy to load spectral files instead. "
+          "This can be up to 10x slower.")
     USE_PANDAS = False
 
 
@@ -105,6 +110,24 @@ class ReadSpectrumFile(object):
 
         return wave, flux, nCols, [age], tType
 
+    def read_osc_input(self):
+        """ self.filename in the form osc-name-ageIndex. E.g. osc-sn2002er-10"""
+        osc, name, ageIdx = self.filename.split('-')
+        url = "https://api.sne.space/" + name + "/spectra/time+data?item={0}".format(ageIdx)
+        response = urlopen(url)
+        data = json.loads(response.read(), object_pairs_hook=OrderedDict)
+
+        data = data[next(iter(data))]['spectra'][0][1]
+        data = np.array(list(map(list, zip(*data)))).astype(np.float)
+        wave, flux = data[0], data[1]
+
+        url = "https://api.sne.space/" + name + "/redshift/value"
+        response = urlopen(url)
+        redshift = json.loads(response.read(), object_pairs_hook=OrderedDict)
+        redshift = float(redshift[next(iter(redshift))]['redshift'][0][0])
+
+        return wave, flux, redshift
+
     def file_extension(self, template=False):
         if isinstance(self.filename, (list, np.ndarray)):  # Is an Nx2 array
             wave, flux = self.filename[0], self.filename[1]
@@ -117,6 +140,8 @@ class ReadSpectrumFile(object):
 
             if template is True and extension == 'dat' and len(filename.split('.')) == 3 and filename.split('.')[1][0] in ['m', 'p']:  # Check if input is a superfit template
                 return self.read_superfit_template()
+            elif self.filename[0:4] == 'osc-':
+                return self.read_osc_input()
             elif extension == self.filename or extension in ['flm', 'txt', 'dat']:
                 return self.read_dat_file()
             elif extension == 'fits':

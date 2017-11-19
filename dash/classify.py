@@ -53,10 +53,12 @@ class Classify(object):
                 self.modelFilename = os.path.join(self.scriptDirectory, data_files, "models/agnosticZ/tensorflow_model.ckpt")
 
     def _get_images(self, filename, redshift):
+        if redshift == 'osc':
+            redshift = 0
         loadInputSpectra = LoadInputSpectra(filename, redshift, redshift, self.smooth, self.pars, self.minWave, self.maxWave, self.classifyHost)
         inputImage, inputRedshift, typeNamesList, nw, nBins, inputMinMaxIndex = loadInputSpectra.input_spectra()
 
-        return inputImage, typeNamesList, nw, nBins, inputMinMaxIndex
+        return inputImage, typeNamesList, nw, nBins, inputMinMaxIndex, inputRedshift
 
     def _input_spectra_info(self):
         inputImages = np.empty((0, int(self.nw)), np.float16)
@@ -67,7 +69,8 @@ class Classify(object):
                 z = self.redshifts[i]
             else:
                 z = 0
-            inputImage, typeNamesList, nw, nBins, inputMinMaxIndex = self._get_images(f, z)
+            inputImage, typeNamesList, nw, nBins, inputMinMaxIndex, inputRedshift = self._get_images(f, z)
+            self.redshifts[i] = -inputRedshift[0]
             inputImages = np.append(inputImages, inputImage, axis=0)
             inputMinMaxIndexes.append(inputMinMaxIndex[0])
         bestTypesList = BestTypesListSingleRedshift(self.modelFilename, inputImages, typeNamesList, self.nw, nBins)

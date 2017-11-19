@@ -125,9 +125,9 @@ class ReadSpectra(object):
         return wave, flux, nCols, ages, tType, minIndex, maxIndex
 
     def input_spectrum(self, z, smooth, minWave, maxWave):
-        wave, flux, minIndex, maxIndex = self.data.two_column_data(z, smooth, minWave, maxWave)
+        wave, flux, minIndex, maxIndex, z = self.data.two_column_data(z, smooth, minWave, maxWave)
 
-        return wave, flux, int(minIndex), int(maxIndex)
+        return wave, flux, int(minIndex), int(maxIndex), z
 
 
 class ArrayTools(object):
