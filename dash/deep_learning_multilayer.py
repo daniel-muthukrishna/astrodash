@@ -106,28 +106,28 @@ def train_model(dataDirName):
                 predictedIndex = np.argmax(yy[i])
                 print(i, testTypeNames[i], typeNamesList[predictedIndex])
 
-        # SAVE THE MODEL
-        saveFilename = dataDirName + "tensorflow_model.ckpt"
-        saver = tf.train.Saver()
-        save_path = saver.save(sess, saveFilename)
-        print("Model saved in file: %s" % save_path)
+    # SAVE THE MODEL
+    saveFilename = dataDirName + "tensorflow_model.ckpt"
+    saver = tf.train.Saver()
+    save_path = saver.save(sess, saveFilename)
+    print("Model saved in file: %s" % save_path)
 
-        modelFilenames = [saveFilename + '.index', saveFilename + '.meta', saveFilename + '.data-00000-of-00001']
+    modelFilenames = [saveFilename + '.index', saveFilename + '.meta', saveFilename + '.data-00000-of-00001']
 
-        try:
-            import matplotlib.pyplot as plt
-            plt.plot(a)
-            plt.xlabel("Number of Epochs")
-            plt.ylabel("Testing accuracy")
-            plt.savefig(os.path.join(dataDirName, "testing_accuracy.png"))
-            np.savetxt(os.path.join(dataDirName, "testing_accuracy.txt"), np.array(a))
-        except Exception as e:
-            print(e)
+    try:
+        import matplotlib.pyplot as plt
+        plt.plot(a)
+        plt.xlabel("Number of Epochs")
+        plt.ylabel("Testing accuracy")
+        plt.savefig(os.path.join(dataDirName, "testing_accuracy.png"))
+        np.savetxt(os.path.join(dataDirName, "testing_accuracy.txt"), np.array(a))
+    except Exception as e:
+        print(e)
 
-        try:
-            calc_model_statistics(saveFilename, testImages, testTypeNames, typeNamesList)
-        except Exception as e:
-            print(e)
+    try:
+        calc_model_statistics(saveFilename, testImages, testTypeNames, typeNamesList)
+    except Exception as e:
+        print(e)
 
     return modelFilenames
 

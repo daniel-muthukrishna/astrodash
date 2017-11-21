@@ -58,7 +58,7 @@ if __name__ == '__main__':
 
     modelZip = 'model_{0}.zip'.format(modelName)
     with zipfile.ZipFile(modelZip, 'w') as myzip:
-        for f in [dataFilenames[0]] + dataFilenames[2:]:
+        for f in [dataFilenames[0:2]] + dataFilenames[3:]:
             myzip.write(f)
 
     # Delete data_files folder since they are now in the zip files

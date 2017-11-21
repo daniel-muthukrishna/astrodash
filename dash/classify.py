@@ -184,7 +184,7 @@ class Classify(object):
         app = QtGui.QApplication(sys.argv)
         form = MainApp(inputFilename=self.filenames[indexToPlot])
         if not isinstance(self.filenames[indexToPlot], (list, np.ndarray)) and not hasattr(self.filenames[indexToPlot], 'read'):  # Not an array and not a file-handle
-            form.lineEditInputFilename.setText(self.filenames[indexToPlot].split('/')[-1])
+            form.lineEditInputFilename.setText(self.filenames[indexToPlot])
         form.checkBoxKnownZ.setChecked(self.knownZ)
         form.checkBoxClassifyHost.setChecked(self.classifyHost)
         form.lineEditKnownZ.setText(str(self.redshifts[indexToPlot]))

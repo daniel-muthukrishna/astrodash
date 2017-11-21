@@ -414,7 +414,7 @@ class Ui_MainWindow(object):
         self.checkBoxClassifyHost.setText(_translate("MainWindow", "Classify Host"))
         self.label_8.setText(_translate("MainWindow", "Max wave"))
         self.label_7.setText(_translate("MainWindow", "Min wave"))
-        self.lineEditMinWave.setText(_translate("MainWindow", "3500"))
+        self.lineEditMinWave.setText(_translate("MainWindow", "3000"))
         self.lineEditMaxWave.setText(_translate("MainWindow", "10000"))
         self.label_3.setText(_translate("MainWindow", "Smooth"))
         self.lineEditSmooth.setText(_translate("MainWindow", "6"))
