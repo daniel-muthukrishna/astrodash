@@ -94,6 +94,7 @@ class BinTemplate(object):
             binnedFluxNorm = zero_non_overlap_part(binnedFluxNorm, minIndex, maxIndex, outerVal=0.5)
         else:
             wave, flux = self.wave, medfilt(self.flux, kernel_size=3)
+            flux = normalise_spectrum(flux)
             binnedWave, binnedFlux, minIndex, maxIndex = self.preProcess.log_wavelength(wave, flux)
             contRemovedFlux, continuum = self.preProcess.continuum_removal(binnedWave, binnedFlux, self.numSplinePoints, minIndex, maxIndex)
             meanzero = self.preProcess.mean_zero(contRemovedFlux, minIndex, maxIndex)
@@ -105,6 +106,7 @@ class BinTemplate(object):
 
     def _bin_gal_template(self):
         wave, flux = self.readSpectrumFile.two_col_input_spectrum(self.wave, self.flux, z=0)
+        flux = normalise_spectrum(flux)
         binnedWave, binnedFlux, minIndex, maxIndex = self.preProcess.log_wavelength(wave, flux)
         contRemovedFlux, continuum = self.preProcess.continuum_removal(binnedWave, binnedFlux, self.numSplinePoints, minIndex, maxIndex)
         newFlux = contRemovedFlux * continuum  # Spectral features weighted by the continuum

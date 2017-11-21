@@ -1,6 +1,21 @@
 import os
+import sys
 import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
 
+rootDir = os.path.dirname(os.path.realpath(sys.argv[0]))
+print(rootDir)
+fileList = []
+for dir_, _, files in os.walk(rootDir):
+    for fileName in files:
+        relDir = os.path.relpath(dir_, rootDir)
+        if relDir == '.':
+            relFile = fileName
+        else:
+            relFile = os.path.join(relDir, fileName)
+        print(relFile)
+        fileList.append(relFile)
 
 def snid_template_spectra_all(filename):
     """lnw file"""
@@ -51,6 +66,38 @@ def snid_template_spectra_all(filename):
 
     return wave, fluxes, numAges, ages, ttype, splineInfo
 
+
+def read_dat_file(filename):
+    data = pd.read_csv(filename, header=None, delim_whitespace=True).values
+    wave = data[:, 0]
+    flux = data[:, 1]
+
+    return wave, flux
+
+
+def read_superfit_template(filename):
+    wave, flux = read_dat_file(filename)
+    tType = os.path.split(os.path.split(filename)[0])[-1]  # Name of directory is the type name
+    filename = os.path.basename(filename)
+    snName, ageInfo = os.path.basename(filename).strip('.dat').split('.')
+    if ageInfo == 'max':
+        age = 0
+    elif ageInfo[0] == 'm':
+        age = -float(ageInfo[1:])
+    elif ageInfo[0] == 'p':
+        age = float(ageInfo[1:])
+    else:
+        raise Exception("Invalid Superfit file: {0}".format(filename))
+
+    nCols = 1
+
+    # plt.plot(wave, flux, label=filename)
+    # plt.legend()
+    # plt.show()
+
+    return wave, [flux], nCols, [age], tType
+
+
 def delete_files(fileList):
     for fname in fileList:
         if not fname.endswith('.lnw'):
@@ -60,8 +107,7 @@ def delete_files(fileList):
             print("Deleted: {0}".format(fname))
 
 
-if __name__ == '__main__':
-
+def main():
     # Delete Files from templates-2.0 and Liu & Modjaz
     NO_MAX_SNID_LIU_MODJAZ = ["sn1997X", "sn2001ai", "sn2001ej", "sn2001gd", "sn2001ig", "sn2002ji", "sn2004ao", "sn2004eu", "sn2004gk", "sn2005ar", "sn2005da", "sn2005kf", "sn2005nb", "sn2005U", "sn2006ck", "sn2006fo", "sn2006lc", "sn2006lv", "sn2006ld", "sn2007ce", "sn2007I", "sn2007rz", "sn2008an", "sn2008aq", "sn2008cw", "sn1988L", "sn1990K", "sn1990aa", "sn1991A", "sn1991N", "sn1991ar", "sn1995F", "sn1997cy", "sn1997dc", "sn1997dd", "sn1997dq", "sn1997ei", "sn1998T", "sn1999di", "sn1999dn", "sn2004dj"]
     BAD_SPECTRA = ['sn2010bh']
@@ -73,29 +119,32 @@ if __name__ == '__main__':
     delete_files(NO_MAX_BSNIP_AGE_999)
     delete_files(SAME_SN_WITH_SAME_AGES_AS_SNID)
     print(len(SAME_SN_WITH_SAME_AGES_AS_SNID), len(NO_MAX_BSNIP_AGE_999))
-    files = os.listdir('.')
 
     minWaves, maxWaves = [], []
     countBelow3000 = 0
-    snTypes = {'Ia':[], 'Ib':[], 'Ic':[], 'II':[]}
-    for fname in files:
+    snTypes = {'Ia':[], 'Ib':[], 'Ic':[], 'II':[], 'SLSN':[]}
+    for fname in fileList:
         if fname.endswith('.lnw'):
-            wave, fluxes, numAges, ages, ttype, splineInfo = snid_template_spectra_all(fname)
-            # print(ttype, fname)
-            for broadType in snTypes.keys():
-                if broadType in ttype and 'IIb' not in ttype:
-                    snTypes[broadType].append((ttype, fname))
-                elif broadType == 'Ib' and 'IIb' in ttype:
-                    snTypes['Ib'].append((ttype, fname))
-            for ageIdx in range(len(ages)):
-                flux = fluxes[ageIdx]
-                nonZeros = np.where(flux != 0)[0]
-                minIndex, maxIndex = min(nonZeros), max(nonZeros)
-                minWaves.append(wave[minIndex])
-                if wave[minIndex] < 2900:
-                    countBelow3000 += 1
-                    print("Min Below 3000A: ", ttype, fname, ages[ageIdx], wave[minIndex])
-                maxWaves.append(wave[maxIndex])
+            continue # wave, fluxes, numAges, ages, ttype, splineInfo = snid_template_spectra_all(fname)
+        elif fname.endswith('.dat'):
+            wave, fluxes, nCols, ages, ttype = read_superfit_template(fname)
+        else:
+            continue
+        # print(ttype, fname)
+        for broadType in snTypes.keys():
+            if broadType in ttype and 'IIb' not in ttype:
+                snTypes[broadType].append((ttype, fname))
+            elif broadType == 'Ib' and 'IIb' in ttype:
+                snTypes['Ib'].append((ttype, fname))
+        for ageIdx in range(len(ages)):
+            flux = fluxes[ageIdx]
+            nonZeros = np.where(flux != 0)[0]
+            minIndex, maxIndex = min(nonZeros), max(nonZeros)
+            minWaves.append(wave[minIndex])
+            if wave[minIndex] < 2900:
+                countBelow3000 += 1
+                print("Min Below 3000A: ", ttype, fname, ages[ageIdx], wave[minIndex])
+            maxWaves.append(wave[maxIndex])
         
     import pprint
     pprint.pprint(snTypes)
@@ -111,7 +160,6 @@ if __name__ == '__main__':
     print("MinWaves: Min:{0}, Max:{1}, Mean:{2}, Median:{3}, Std:{4}".format(min(minWaves), max(minWaves), np.mean(minWaves), np.median(minWaves), np.std(minWaves)))
     print("MaxWaves: Min:{0}, Max:{1}, Mean:{2}, Median:{3}, Std:{4}".format(min(maxWaves), max(maxWaves), np.mean(maxWaves), np.median(maxWaves), np.std(maxWaves)))
     print(countBelow3000, len(minWaves))
-    import matplotlib.pyplot as plt
     plt.figure("MinWaves")
     plt.hist(minWaves, bins=75)
     plt.figure("MaxWaves")
@@ -119,13 +167,18 @@ if __name__ == '__main__':
     plt.show()
 
 
-    # Create Template list
-    f = open('templist.txt', 'w')
-    for fname in files:
-        if fname.endswith('.lnw'):
-            f.write(fname)
-            f.write('\n')
-    f.close()
+if __name__ == '__main__':
+    main()
+
+
+
+    # # Create Template list
+    # f = open('templist.txt', 'w')
+    # for fname in files:
+    #     if fname.endswith('.lnw'):
+    #         f.write(fname)
+    #         f.write('\n')
+    # f.close()
 
 
 

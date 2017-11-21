@@ -294,7 +294,7 @@ class PreProcessSpectrum(object):
         contRemovedFluxNorm = normalise_spectrum(contRemovedFlux - 1)
         contRemovedFluxNorm = zero_non_overlap_part(contRemovedFluxNorm, minIndex, maxIndex)
 
-        return contRemovedFluxNorm, splineFit
+        return contRemovedFluxNorm, splineFit-1
 
     def mean_zero(self, flux, minindex, maxindex):
         """mean zero flux"""
