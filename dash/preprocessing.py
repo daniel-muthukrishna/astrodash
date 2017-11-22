@@ -14,7 +14,6 @@ except ImportError:
 
 
 class ProcessingTools(object):
-
     def redshift_spectrum(self, wave, flux, z):
         wave_new = wave * (z + 1)
 
@@ -41,7 +40,6 @@ class ProcessingTools(object):
 
 
 class ReadSpectrumFile(object):
-
     def __init__(self, filename, w0, w1, nw):
         self.filename = filename
         self.w0 = w0
@@ -50,7 +48,7 @@ class ReadSpectrumFile(object):
         self.processingTools = ProcessingTools()
 
     def read_fits_file(self):
-        #filename = unicode(self.filename.toUtf8(), encoding="UTF-8")
+        # filename = unicode(self.filename.toUtf8(), encoding="UTF-8")
         spectrum = read_fits.read_fits_spectrum1d(self.filename)
         if len(spectrum) > 1:
             spectrum = spectrum[0]
@@ -60,7 +58,7 @@ class ReadSpectrumFile(object):
             wave = np.array(spectrum.dispersion)
             print("No wavelength attribute in FITS File. Using 'dispersion' attribute instead")
         flux = np.array(spectrum.flux)
-        flux[np.isnan(flux)] = 0 #convert nan's to zeros
+        flux[np.isnan(flux)] = 0  # convert nan's to zeros
 
         return wave, flux
 
@@ -138,19 +136,19 @@ class ReadSpectrumFile(object):
         wave, flux = self.processingTools.deredshift_spectrum(wave, flux, z)
 
         if max(wave) >= self.w1:
-            for i in range(0,len(wave)):
+            for i in range(0, len(wave)):
                 if wave[i] >= self.w1:
                     break
             wave = wave[0:i]
             flux = flux[0:i]
         if min(wave) < self.w0:
-            for i in range(0,len(wave)):
+            for i in range(0, len(wave)):
                 if wave[i] >= self.w0:
                     break
             wave = wave[i:]
             flux = flux[i:]
 
-        fluxNorm = (flux - min(flux))/(max(flux)-min(flux))
+        fluxNorm = (flux - min(flux)) / (max(flux) - min(flux))
 
         return wave, fluxNorm
 
@@ -166,40 +164,40 @@ class ReadSpectrumFile(object):
                     numAges, mostKnots = map(int, (numAges, mostKnots))
                     nk = np.zeros(numAges)
                     fmean = np.zeros(numAges)
-                    xk = np.zeros((mostKnots,numAges))
-                    yk = np.zeros((mostKnots,numAges))
+                    xk = np.zeros((mostKnots, numAges))
+                    yk = np.zeros((mostKnots, numAges))
 
                 # Read Spline Info
                 elif lineNum == 1:
                     splineInfo = (line.strip('\n')).split(' ')
                     splineInfo = [x for x in splineInfo if x != '']
                     for j in range(numAges):
-                        nk[j], fmean[j] = (splineInfo[2*j+1], splineInfo[2*j+2])
-                elif lineNum in range(2, mostKnots+2):
+                        nk[j], fmean[j] = (splineInfo[2 * j + 1], splineInfo[2 * j + 2])
+                elif lineNum in range(2, mostKnots + 2):
                     splineInfo = (line.strip('\n')).split(' ')
                     splineInfo = [x for x in splineInfo if x != '']
                     for j in range(numAges):
-                        xk[lineNum-2,j], yk[lineNum-2,j] = (splineInfo[2*j+1], splineInfo[2*j+2])
+                        xk[lineNum - 2, j], yk[lineNum - 2, j] = (splineInfo[2 * j + 1], splineInfo[2 * j + 2])
 
-                elif lineNum == mostKnots+2:
+                elif lineNum == mostKnots + 2:
                     break
 
         splineInfo = (nk, fmean, xk, yk)
 
         # Read Normalized spectra
         if USE_PANDAS is True:
-            arr = pd.read_csv(self.filename, skiprows=mostKnots+2, header=None, delim_whitespace=True).values
+            arr = pd.read_csv(self.filename, skiprows=mostKnots + 2, header=None, delim_whitespace=True).values
         else:
-            arr = np.loadtxt(self.filename, skiprows=mostKnots+2)
+            arr = np.loadtxt(self.filename, skiprows=mostKnots + 2)
         ages = arr[0]
         ages = np.delete(ages, 0)
         arr = np.delete(arr, 0, 0)
 
         wave = arr[:, 0]
-        fluxes = np.zeros(shape=(numAges, len(arr))) # initialise 2D array
+        fluxes = np.zeros(shape=(numAges, len(arr)))  # initialise 2D array
 
-        for i in range(0, len(arr[0])-1):
-            fluxes[i] = arr[:, i+1]
+        for i in range(0, len(arr[0]) - 1):
+            fluxes[i] = arr[:, i + 1]
 
         if ttype == 'Ia-99aa':
             ttype = 'Ia-91T'
@@ -209,7 +207,7 @@ class ReadSpectrumFile(object):
     def snid_template_undo_processing(self, wave, flux, splineInfo, ageIdx):
         # Undo continuum removal -> then add galaxy -> then redshift
         nkAll, fmeanAll, xkAll, ykAll = splineInfo
-        nk, fmean, xk, yk = int(nkAll[ageIdx]), fmeanAll[ageIdx], xkAll[:,ageIdx], ykAll[:,ageIdx]
+        nk, fmean, xk, yk = int(nkAll[ageIdx]), fmeanAll[ageIdx], xkAll[:, ageIdx], ykAll[:, ageIdx]
         xk, yk = xk[:nk], yk[:nk]
 
         # NEED TO USE THIS TO ACTUALLY ADD THE SPLINE CONTINUUM BACK. NOT DOING ANYTHING AT THE MOMENT.
@@ -222,64 +220,103 @@ class PreProcessSpectrum(object):
         self.w0 = w0
         self.w1 = w1
         self.nw = nw
-        self.dwlog = np.log(w1/w0) / nw
+        self.dwlog = np.log(w1 / w0) / nw
         self.processingTools = ProcessingTools()
 
     def log_wavelength(self, wave, flux):
-        fluxout = np.zeros(int(self.nw))
-
         # Set up log wavelength array bins
-        wlog = self.w0 * np.exp(np.arange(0,self.nw) * self.dwlog)
+        wlog = self.w0 * np.exp(np.arange(0, self.nw) * self.dwlog)
 
-        A = self.nw/np.log(self.w1/self.w0)
-        B = -self.nw*np.log(self.w0)/np.log(self.w1/self.w0)
+        fluxOut = self._vectorised_log_binning(wave, flux)
+        # fluxOut = self._original_log_binning(wave, flux)
 
-        binnedwave = A*np.log(wave) + B
+        minIndex, maxIndex = self.processingTools.min_max_index(fluxOut, outerVal=0)
 
-        # Rebin wavelengths
-        for i in range(0,len(wave)):
+        return wlog, fluxOut, minIndex, maxIndex
+
+    def _vectorised_log_binning(self, wave, flux):
+        """ Vectorised code version of the self._original_log_binning (for improved speed since this is the most called
+        function in the script during training). This is complicated, but it has been tested to match the slower
+        looping method """
+
+        spec = np.array([wave, flux]).T
+        spec = spec[wave >= self.w0]
+        spec = spec[spec[:, 0] < self.w1]
+        wave, flux = spec.T
+
+        fluxOut = np.zeros(int(self.nw))
+        waveMiddle = wave[1:-1]
+        waveTake1Index = wave[:-2]
+        wavePlus1Index = wave[2:]
+        s0List = 0.5 * (waveTake1Index + waveMiddle)
+        s1List = 0.5 * (waveMiddle + wavePlus1Index)
+        s0First = 0.5 * (3 * wave[0] - wave[1])
+        s0Last = 0.5 * (wave[-2] + wave[-1])
+        s1First = 0.5 * (wave[0] + wave[1])
+        s1Last = 0.5 * (3 * wave[-1] - wave[-2])
+        s0List = np.concatenate([[s0First], s0List, [s0Last]])
+        s1List = np.concatenate([[s1First], s1List, [s1Last]])
+        s0LogList = np.log(s0List / self.w0) / self.dwlog + 1
+        s1LogList = np.log(s1List / self.w0) / self.dwlog + 1
+        dnuList = s1List - s0List
+
+        s0LogListInt = s0LogList.astype(int)
+        s1LogListInt = s1LogList.astype(int)
+        numOfJLoops = s1LogListInt - s0LogListInt
+        jIndexes = np.flatnonzero(numOfJLoops)
+        jIndexVals = s0LogListInt[jIndexes]
+        prependZero = jIndexVals[0] if jIndexVals[0] < 0 else False
+        if prependZero is not False:
+            jIndexVals[0] = 0
+            numOfJLoops[0] += prependZero
+        numOfJLoops = (numOfJLoops[jIndexes])[jIndexVals < self.nw]
+        fluxValList = ((flux * 1 / (s1LogList - s0LogList) * dnuList)[jIndexes])[jIndexVals < self.nw]
+        fluxValList = np.repeat(fluxValList, numOfJLoops)
+        minJ = min(jIndexVals)
+        maxJ = (max(jIndexVals)+numOfJLoops[-1]) if (max(jIndexVals)+numOfJLoops[-1] < self.nw) else self.nw
+        fluxOut[minJ:maxJ] = fluxValList[:(maxJ-minJ)]
+
+        return fluxOut
+
+    def _original_log_binning(self, wave, flux):
+        """ Rebin wavelengths: adapted from SNID apodize.f subroutine rebin() """
+        fluxOut = np.zeros(int(self.nw))
+
+        for i in range(0, len(wave)):
             if i == 0:
-                s0 = 0.5*(3*wave[i] - wave[i+1])
-                s1 = 0.5*(wave[i] + wave[i+1])
+                s0 = 0.5 * (3 * wave[i] - wave[i + 1])
+                s1 = 0.5 * (wave[i] + wave[i + 1])
             elif i == len(wave) - 1:
-                s0 = 0.5*(wave[i-1] + wave[i])
-                s1 = 0.5*(3*wave[i] - wave[i-1])
+                s0 = 0.5 * (wave[i - 1] + wave[i])
+                s1 = 0.5 * (3 * wave[i] - wave[i - 1])
             else:
-                s0 = 0.5 * (wave[i-1] + wave[i])
-                s1 = 0.5 * (wave[i] + wave[i+1])
+                s0 = 0.5 * (wave[i - 1] + wave[i])
+                s1 = 0.5 * (wave[i] + wave[i + 1])
 
-            s0log = np.log(s0/self.w0)/self.dwlog + 1
-            s1log = np.log(s1/self.w0)/self.dwlog + 1
-            dnu = s1-s0
+            s0log = np.log(s0 / self.w0) / self.dwlog + 1
+            s1log = np.log(s1 / self.w0) / self.dwlog + 1
+            dnu = s1 - s0
 
             for j in range(int(s0log), int(s1log)):
-                if j < 1 or j >= self.nw:
+                if j < 0 or j >= self.nw:
                     continue
-                alen = 1#min(s1log, j+1) - max(s0log, j)
-                fluxval = flux[i] * alen/(s1log-s0log) * dnu
-                fluxout[j] = fluxout[j] + fluxval
+                alen = 1  # min(s1log, j+1) - max(s0log, j)
+                fluxval = flux[i] * alen / (s1log - s0log) * dnu
+                fluxOut[j] = fluxOut[j] + fluxval
 
-    ##            print(j, range(int(s0log), int(s1log)), int(s0log), s0log, int(s1log), s1log)
-    ##            print(fluxout[j])
-    ##            print(j+1, s1log, j, s0log)
-    ##            print(min(s1log, j+1), max(s0log, j), alen, s1log-s0log)
-    ##            print('--------------------------')
-
-        minIndex, maxIndex = self.processingTools.min_max_index(fluxout, outerVal=0)
-
-        return wlog, fluxout, minIndex, maxIndex
+        return fluxOut
 
     def spline_fit(self, wave, flux, numSplinePoints, minindex, maxindex):
         continuum = np.zeros(int(self.nw)) + 1
         if (maxindex - minindex) > 5:
-            spline = UnivariateSpline(wave[minindex:maxindex+1], flux[minindex:maxindex+1], k=3)
+            spline = UnivariateSpline(wave[minindex:maxindex + 1], flux[minindex:maxindex + 1], k=3)
             splineWave = np.linspace(wave[minindex], wave[maxindex], num=numSplinePoints, endpoint=True)
             splinePoints = spline(splineWave)
 
             splineMore = UnivariateSpline(splineWave, splinePoints, k=3)
-            splinePointsMore = splineMore(wave[minindex:maxindex+1])
+            splinePointsMore = splineMore(wave[minindex:maxindex + 1])
 
-            continuum[minindex:maxindex+1] = splinePointsMore
+            continuum[minindex:maxindex + 1] = splinePointsMore
         else:
             print("WARNING: LESS THAN 6 POINTS IN SPECTRUM")
 
@@ -294,7 +331,7 @@ class PreProcessSpectrum(object):
         contRemovedFluxNorm = normalise_spectrum(contRemovedFlux - 1)
         contRemovedFluxNorm = zero_non_overlap_part(contRemovedFluxNorm, minIndex, maxIndex)
 
-        return contRemovedFluxNorm, splineFit-1
+        return contRemovedFluxNorm, splineFit - 1
 
     def mean_zero(self, flux, minindex, maxindex):
         """mean zero flux"""
@@ -310,13 +347,13 @@ class PreProcessSpectrum(object):
         percent = 0.05
         fluxout = flux + 0
 
-        nsquash = int(self.nw*percent)
+        nsquash = int(self.nw * percent)
         for i in range(0, nsquash):
-            arg = np.pi * i/(nsquash-1)
-            factor = 0.5*(1-np.cos(arg))
+            arg = np.pi * i / (nsquash - 1)
+            factor = 0.5 * (1 - np.cos(arg))
             if (minindex + i < self.nw) and (maxindex - i >= 0):
-                fluxout[minindex+i] = factor*fluxout[minindex+i]
-                fluxout[maxindex-i] = factor*fluxout[maxindex-i]
+                fluxout[minindex + i] = factor * fluxout[minindex + i]
+                fluxout[maxindex - i] = factor * fluxout[maxindex - i]
             else:
                 print("INVALID FLUX IN PREPROCESSING.PY APODIZE()")
                 print("MININDEX=%d, i=%d" % (minindex, i))
@@ -325,21 +362,22 @@ class PreProcessSpectrum(object):
         return fluxout
 
 
-if __name__=='__main__':
+if __name__ == '__main__':
     # Plot comparison of superfit galaxies and Bsnip galaxies
     from dash.array_tools import normalise_spectrum
     import matplotlib.pyplot as plt
+
     preProcess = PreProcessSpectrum(3500, 10000, 1024)
 
     for gal in ['E', 'S0', 'Sa', 'Sb', 'Sc', 'SB1', 'SB2', 'SB3', 'SB4', 'SB5', 'SB6']:
         sfReadSpectrum = ReadSpectrumFile('../templates/superfit_templates/gal/%s' % gal, 3500, 10000, 1024)
         sfWave, sfFlux = sfReadSpectrum.file_extension()
         sfWave, sfFlux = sfReadSpectrum.two_col_input_spectrum(sfWave, sfFlux, z=0)
-        #plt.plot(sfWave, sfFlux)
+        # plt.plot(sfWave, sfFlux)
         sfWave, sfFlux, sfMinIndex, sfMaxIndex = preProcess.log_wavelength(sfWave, sfFlux)
         plt.plot(sfWave, normalise_spectrum(sfFlux))
         sfFlux, continuum = preProcess.continuum_removal(sfWave, sfFlux, 13, sfMinIndex, sfMaxIndex)
-        #plt.plot(sfWave, continuum-1)
+        # plt.plot(sfWave, continuum-1)
 
         snidReadSpectrum = ReadSpectrumFile('../templates/bsnip_v7_snid_templates/kc%s.lnw' % gal, 3500, 10000, 1024)
         snidSpectrum = snidReadSpectrum.file_extension()
@@ -350,7 +388,7 @@ if __name__=='__main__':
 
         plt.title(gal)
         plt.plot(sfWave, sfFlux, label='superfit')
-        #plt.plot(snidWave, snidFlux, label='BSNIP')
-        plt.plot(sfWave, normalise_spectrum(sfFlux*(continuum-1)), label='superfit_continuumMultiply')
+        # plt.plot(snidWave, snidFlux, label='BSNIP')
+        plt.plot(sfWave, normalise_spectrum(sfFlux * (continuum - 1)), label='superfit_continuumMultiply')
         plt.legend()
         plt.show()

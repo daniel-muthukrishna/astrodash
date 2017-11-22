@@ -40,10 +40,10 @@ class PreProcessing(object):
             self.wave, self.flux, z = self.spectrum
         else:
             self.wave, self.flux = self.spectrum
+        self.flux = normalise_spectrum(self.flux)
         self.flux = limit_wavelength_range(self.wave, self.flux, minWave, maxWave)
         self.wDensity = (self.w1 - self.w0)/self.nw  # Average wavelength spacing
         wavelengthDensity = (max(self.wave) - min(self.wave)) / len(self.wave)
-
         filterSize = int(self.wDensity / wavelengthDensity * smooth / 2) * 2 + 1
         preFiltered = medfilt(self.flux, kernel_size=filterSize)
         wave, flux = self.readSpectrumFile.two_col_input_spectrum(self.wave, preFiltered, z)
