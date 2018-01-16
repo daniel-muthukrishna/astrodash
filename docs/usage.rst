@@ -17,6 +17,8 @@ There are two ways to open the graphical interface:
 
 (Where $INSTALL_DIR is the directory where DASH has been installed.)
 
+.. image:: GUI_Screenshot.png
+
 Once the GUI is open you may follow these steps:
 
 1. Select one of the four models by ticking a combination of the 'Known Redshift' and 'Classify Host' check boxes.
