@@ -5,6 +5,7 @@ Usage
 Graphical Interface
 +++++++++++++++++++
 There are two ways to open the graphical interface:
+
 1. Open a python interpreter and run the following:
 
 .. code-block:: python
@@ -13,6 +14,7 @@ There are two ways to open the graphical interface:
     dash.run_gui()
 
 **OR**
+
 2. Run the following in the terminal:
 
 .. code-block:: bash
