@@ -10,6 +10,8 @@ Two platforms exists: a python library that enables a user to classify
 several spectra (can classify thousands of spectra in seconds), and also a
 graphical interface that enables a user to view and classify a spectrum.
 
+.. image:: GUI_Screenshot.png
+
 
 .. toctree::
    :maxdepth: 2
