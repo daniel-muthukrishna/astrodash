@@ -17,6 +17,8 @@ graphical interface that enables a user to view and classify a spectrum.
 
    installation
    usage
+   example
+
 
 
 Contribute
