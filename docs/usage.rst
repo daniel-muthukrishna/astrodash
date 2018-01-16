@@ -25,8 +25,7 @@ There are two ways to open the graphical interface:
 
 Once the GUI is open you may follow these steps:
 
-1. Select one of the four models by ticking a combination of the 'Known Redshift' and 'Classify Host' check boxes.
-If Known Redshift is ticked, then the user must input a redshift. If it is unticked, then DASH will try to calculate the redshift.
+1. Select one of the four models by ticking a combination of the 'Known Redshift' and 'Classify Host' check boxes. If Known Redshift is ticked, then the user must input a redshift. If it is unticked, then DASH will try to calculate the redshift.
 
 2. OPTIONAL. Leave Min wave and Max wave unchanged, unless you want to limit the wavelength range of the input spectrum used for classification. (For example, you may choose to do this to remove bad parts of the spectrum, or to avoid dichroic jumps)
 
