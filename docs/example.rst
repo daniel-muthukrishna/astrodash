@@ -29,7 +29,7 @@ This example automatically classifies 10 spectra. The last line plots the fifth 
 
     # Classify all spectra
     classification = dash.Classify(filenames, knownRedshifts, classifyHost=False)
-    bestFits, redshifts, bestTypes, rejectionLabels, reliableFlags = classification.list_best_matches(n=5, saveFilename='ATEL_best_fits.txt')
+    bestFits, redshifts, bestTypes, rlapFlag, matchesFlag = classification.list_best_matches(n=5, saveFilename='ATEL_best_fits.txt')
 
     # Plot DES16C3bq
     classification.plot_with_gui(indexToPlot=4)

@@ -53,8 +53,8 @@ Use the following example code:
 
     import dash
 
-    classification = dash.Classify(filenames, knownRedshifts, classifyHost=False, knownZ=True, smooth=6, rlapScores=False)
-    bestFits, redshifts, bestTypes, rejectionLabels, reliableFlags = classification.list_best_matches(n=5, saveFilename='DASH_matches.txt')
+    classification = dash.Classify(filenames, redshifts, classifyHost=False, knownZ=True, smooth=6, rlapScores=True)
+    bestFits, redshifts, bestTypes, rlapFlag, matchesFlag = classification.list_best_matches(n=5, saveFilename='DASH_matches.txt')
     classification.plot_with_gui(indexToPlot=2)
 
 'filenames' is the only mandatory argument. It must be a list of strings of the supernova data files. Column seperated .dat, ASCII, or similarly formatted files are accepted. Single spectrum FITS files are also accepted.
