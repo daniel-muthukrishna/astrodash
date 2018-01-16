@@ -28,6 +28,7 @@ If you have an anaconda installation, this should already be preinstalled, but c
 
 
 Or, ONLY if you do not have anaconda and if you have python 3, it can be installed by running the following in the terminal:
+
 .. code-block:: bash
 
     pip3 install pyqt5
