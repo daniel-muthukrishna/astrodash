@@ -1,7 +1,9 @@
 # DASH
 Software to classify the type, age, redshift and host for any supernova spectra. Two platforms exists: a python library 
 that enables a user to classify several spectra (can classify thousands of spectra in seconds), and also a graphical
-interface that enables a user to view and classify a spectrum.
+interface that enables a user to view and classify a spectrum. 
+
+Documentation at: http://astrodash.readthedocs.io
 
 
 ## 1. Installation:
