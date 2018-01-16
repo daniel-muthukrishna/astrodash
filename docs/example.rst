@@ -24,7 +24,7 @@ This example automatically classifies 10 spectra. The last line plots the fifth 
         ]
 
     # Create filenames and knownRedshifts lists
-    filenames = [i[0]) for i in atel9570]
+    filenames = [i[0] for i in atel9570]
     knownRedshifts = [i[1] for i in atel9570]
 
     # Classify all spectra
