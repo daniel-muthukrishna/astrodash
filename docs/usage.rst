@@ -6,13 +6,17 @@ Graphical Interface
 +++++++++++++++++++
 There are two ways to open the graphical interface:
 1. Open a python interpreter and run the following:
+
 .. code-block:: python
+
     import dash
     dash.run_gui()
 
 **OR**
 2. Run the following in the terminal:
+
 .. code-block:: bash
+
     python $INSTALL_DIR/gui_main.py
 
 (Where $INSTALL_DIR is the directory where DASH has been installed.)
@@ -43,7 +47,9 @@ If Known Redshift is ticked, then the user must input a redshift. If it is untic
 Python Library
 ++++++++++++++
 Use the following example code:
+
 .. code-block:: python
+
     import dash
 
     classification = dash.Classify(filenames, knownRedshifts, classifyHost=False, knownZ=True, smooth=6, rlapScores=False)
