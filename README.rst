@@ -12,7 +12,8 @@ Documentation at: http://astrodash.readthedocs.io
 1. Installation
 ---------------
 
-In a terminal run: 
+In a terminal run:
+
 .. code-block:: bash
 
     pip install astrodash --upgrade
