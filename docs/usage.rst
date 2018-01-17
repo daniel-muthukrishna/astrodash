@@ -76,6 +76,6 @@ To view the best matches, the 'list_best_matches' method takes three optional ar
 
     :'n': (default=5) is the number of best matching classification bins to display for each spectrum.
 
-    'saveFilename' (default='DASH_matches.txt') dictates the name of the file in which to save the best matches. The saved file is the best way to view the best Matches from DASH. If this is a None type or an empty string, the best matches will not be saved to a file.
+    :'saveFilename': (default='DASH_matches.txt') dictates the name of the file in which to save the best matches. The saved file is the best way to view the best Matches from DASH. If this is a None type or an empty string, the best matches will not be saved to a file.
 
 The final line is optional. It plots the 3rd spectrum onto the graphical interface.
