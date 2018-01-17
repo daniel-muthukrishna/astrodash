@@ -8,7 +8,6 @@ interface that enables a user to view and classify a spectrum.
 Documentation at: http://astrodash.readthedocs.io
 
 
----------------
 1. Installation
 ---------------
 
