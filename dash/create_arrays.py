@@ -318,21 +318,21 @@ class CreateArrays(object):
         filenames = np.empty(0)
         typeNames = np.empty(0)
 
-        snTempList = TempList().temp_list(snTempFileList)[:3]
+        snTempList = TempList().temp_list(snTempFileList)
         galAndSnTemps = list(itertools.product(galTempList, snTempList))
 
-        # pool = mp.Pool(processes=40)
-        results = [self.combined_sn_gal_templates_to_arrays(snTemplateLocation, [sn], galTemplateLocation, [gal], snFractions) for gal, sn in galAndSnTemps]
-        # pool.close()
-        # pool.join()
-        #
-        # outputs = [p.get() for p in results]
-        # for out in outputs:
-        #     imagesPart, labelsPart, filenamesPart, typeNamesPart = out
-        #     images = np.append(images, imagesPart, axis=0)
-        #     labelsIndexes = np.append(labelsIndexes, labelsPart, axis=0)
-        #     filenames = np.append(filenames, filenamesPart)
-        #     typeNames = np.append(typeNames, typeNamesPart)
+        pool = mp.Pool()
+        results = [pool.apply_async(self.combined_sn_gal_templates_to_arrays, args=(snTemplateLocation, [sn], galTemplateLocation, [gal], snFractions)) for gal, sn in galAndSnTemps]
+        pool.close()
+        pool.join()
+
+        outputs = [p.get() for p in results]
+        for out in outputs:
+            imagesPart, labelsPart, filenamesPart, typeNamesPart = out
+            images = np.append(images, imagesPart, axis=0)
+            labelsIndexes = np.append(labelsIndexes, labelsPart, axis=0)
+            filenames = np.append(filenames, filenamesPart)
+            typeNames = np.append(typeNames, typeNamesPart)
 
         print("Completed Creating Arrays!")
 

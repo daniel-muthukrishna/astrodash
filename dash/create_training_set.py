@@ -42,8 +42,8 @@ class CreateTrainingSet(object):
         return arraysShuf, typeAmounts
 
     def sort_data(self):
-        trainPercentage = 1.0
-        testPercentage = 0.
+        trainPercentage = 0.9
+        testPercentage = 0.1
         validatePercentage = 0.
 
         arrays, typeAmounts = self.all_templates_to_arrays()
