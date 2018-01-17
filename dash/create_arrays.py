@@ -311,28 +311,28 @@ class CreateArrays(object):
             snFractions = [1.0]
         else:
             galTempList = TempList().temp_list(galTempFileList)
-            snFractions = [0.99, 0.98, 0.95, 0.93, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
+            snFractions = [0.99, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
 
         images = np.empty((0, int(self.nw)), np.float16)
         labelsIndexes = np.empty(0, np.uint16)
         filenames = np.empty(0)
         typeNames = np.empty(0)
 
-        snTempList = TempList().temp_list(snTempFileList)
+        snTempList = TempList().temp_list(snTempFileList)[:3]
         galAndSnTemps = list(itertools.product(galTempList, snTempList))
 
-        pool = mp.Pool()
-        results = [pool.apply_async(self.combined_sn_gal_templates_to_arrays, args=(snTemplateLocation, [sn], galTemplateLocation, [gal], snFractions)) for gal, sn in galAndSnTemps]
-        pool.close()
-        pool.join()
-
-        outputs = [p.get() for p in results]
-        for out in outputs:
-            imagesPart, labelsPart, filenamesPart, typeNamesPart = out
-            images = np.append(images, imagesPart, axis=0)
-            labelsIndexes = np.append(labelsIndexes, labelsPart, axis=0)
-            filenames = np.append(filenames, filenamesPart)
-            typeNames = np.append(typeNames, typeNamesPart)
+        # pool = mp.Pool(processes=40)
+        results = [self.combined_sn_gal_templates_to_arrays(snTemplateLocation, [sn], galTemplateLocation, [gal], snFractions) for gal, sn in galAndSnTemps]
+        # pool.close()
+        # pool.join()
+        #
+        # outputs = [p.get() for p in results]
+        # for out in outputs:
+        #     imagesPart, labelsPart, filenamesPart, typeNamesPart = out
+        #     images = np.append(images, imagesPart, axis=0)
+        #     labelsIndexes = np.append(labelsIndexes, labelsPart, axis=0)
+        #     filenames = np.append(filenames, filenamesPart)
+        #     typeNames = np.append(typeNames, typeNamesPart)
 
         print("Completed Creating Arrays!")
 

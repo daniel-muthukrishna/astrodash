@@ -1,0 +1,138 @@
+171117 CLi (revised 171121)
+
+
+DES17E1cjb  0.434 No clear result from superfit
+DES17E1bee  0.530 Combined with data from run032. SN Ia. Need to fit single epoch data.
+DES17E1cil  0.222 Not fitted with superfit
+DES17E1ciz  0.160 Not fitted with superfit
+DES17E1dtt  ?	   Not fitted with superfit
+DES17E1dtv  0.199 SN II?
+DES17E1dgs  0.344 Broad bumps, not fitted with superfit
+DES17E1bfv  ? 	   Not fitted with superfit
+DES16E1cyd  ?	   Not fitted with superfit
+DES17E1dgn  0.453 SN Ia near max
+DES15E1r    0.121 Broad bumps. Not analysed. Need to check if we have coadded earlier data.
+DES17E1ag   ?     Combined with data from run032, not fitted with superfit
+DES17E1cus  0.204 Not fitted with superfit
+
+DES17X3mr   0.166 Not fitted with superfit
+DES17X3dag  0.493 Broad bumps, no clear result from superfit
+DES17X3dgz  0.422 SN I?
+DES17X3ado  0.126 Not fitted with superfit
+DES17X3ai   0.638 Not fitted with superfit
+DES17X3av   0.349 Odd!
+DES17X3dub  0.123 SN II
+
+DES17E2dtp  0.523 Not fitted with superfit
+DES17E2bro  0.223 Combined with data from run032. SN at mixed phases. Not fitted with superfit.
+DES17E2ccj  0.225 Not fitted with superfit
+DES17E2dxi  0.440 Not fitted with superfit
+DES17E2bpa  0.646 Combined with data from run032. No clear result with superfit
+DES17E2aii  0.206 Not fitted with superfit
+
+DES17X1gg   0.984 AGN?
+DES17X1dwi  0.252 SN Ia at max
+DES17X1yf   ?     Star? Not fitted with superfit
+DES17X1ans  0.238 Combined with data from run032. Not fitted with superfit
+DES17X1cuy  0.549 SN Ia, a week past max?
+DES17X1bps  0.633 Not fitted with superfit
+DES17X1dyt  0.33  SN Ia, a week before max, redshift from SN
+DES17X1gi   0.494 AGN? Not fitted with superfit
+DES17X1diq  0.625 SN Ia?
+DES17X1dio  ?	   Not fitted with superfit
+DES17X1cva  0.629 No clear result with superfit
+DES17X1amf  0.92  Combined with data from run032, SLSN
+DES17X1blv  ?     Not fitted with superfit
+
+DES17X2bfi  0.338 Classified last run. Combined with data from run032
+DES17X2lv   0.729 Combined with data from run032. Not fitted with superfit
+DES17X2lb   1.379 AGN.
+DES17X2dwm  0.300 SN Ia, a few days past max
+DES17X2bef  ?	   Combined with data from run032
+DES17X2xm   0.302 Not fitted with superfit
+DES17X2bxs  0.177 No clear result with superfit
+DES17X2cvc  ?	   Not fitted with superfit
+DES17X2cvk  ?	   Not fitted with superfit
+DES17X2dto  0.513 No clear result with superfit
+DES17X2tk   0.090 Not fitted with superfit
+DES17X2bmz  0.257 Not fitted with superfit
+DES17X2dql  ?     Not fitted with superfit
+
+DES17C2pf   0.14  Classified in run033
+DES17C2cqr  ?	   Bumps and wiggles, no clear result with superfit
+DES17C2dih  ?     Not fitted with superfit
+DES17C2bgw  ?	   Not fitted with superfit
+DES17C2dgy  0.592 Not fitted with superfit
+DES17C2dhp  ?	   Not fitted with superfit
+DES17C2dhc  0.554 Not fitted with superfit
+DES17C2cqp  0.245 Not fitted with superfit
+DES17C2awx  ? 	   Not fitted with superfit
+DES17C2cqx  0.208 Not fitted with superfit
+DES17C2buw  0.108 Not fitted with superfit
+DES17C2os   0.923 AGN. Combined with data from run032
+DES17C2bad  0.223 Not fitted with superfit
+
+DES17C1wx   0.281 Not fitted with superfit
+DES17C1amk  0.199 No clear result with superfit
+DES17C1any  ?     Not fitted with superfit
+DES17C3cuk  0.593 Bumps and wiggles, no clear result with superfit
+DES17C1zq   0.086 Not fitted with superfit
+DES17C1cvf  0.37  Bumps and wiggles, no clear result with superfit
+DES17C1cxo  0.316 No clear result with superfit
+DES17C1cqf  0.329 No clear result with superfit
+DES17C1cqe  ?	   Broad bump at 8000 Angstroms. Not fitted with superfit
+DES17C1pi   ?     Combined with data from run032. Not fitted with superfit
+DES17C1azz  0.215 Not fitted with superfit
+DES17C1cpv  0.19  SN Ia, a few days post max. Redshift from SN.
+DES17C1bza  0.173 Not fitted with superfit
+DES17C1xs   0.338 Not fitted with superfit
+DES17C3doq  0.319 SN Ia, at max?
+DES17C1dsw  1     Not fitted with superfit
+DES17C1cul  0.464 SN fit failed
+DES17C1bzd  0.120 SN II?
+DES17C1bzt  0.315 No clear result with superfit
+
+DES17S1eon  ?     Not fitted with superfit
+DES17S1awe  0.253 Not fitted with superfit
+DES17S1emx  0.185 SN Ia? 91aa like
+DES17S1auo  1.32  AGN
+DES17S1lu   0.083 Coadded with data from run032. Already classified as a SN
+DES17S1cvm  0.642 No clear result with superfit
+DES17S1efb  ?	   Not fitted with superfit
+DES17S1wb   0.391 Not fitted with superfit
+DES17S1bzg  0.322 Not fitted with superfit
+DES17S1bra  0.271 Not fitted with superfit
+DES17S1duh  0.348 Not fitted with superfit
+DES17S1etp  0.150 Not fitted with superfit
+DES17S1chw  0.189 Not fitted with superfit
+DES17S1alw  ?     Not fitted with superfit
+DES17S1ekr  0.145 Not fitted with superfit
+DES17S1aeu  4.12  AGN?
+DES17S1bfk  0.415 Not fitted with superfit
+DES17S1arx  0.137 Not fitted with superfit
+
+DES17S2enl  ?     Not fitted with superfit
+DES17S2eno  ?	   Bumps and wiggles. Not fitted with superfit
+DES17S2lg   0.339 Coadded with data from run032. Already classified as a SN
+DES17S2aue  0.385 Not fitted with superfit
+DES17S2auj  0.348 Not fitted with superfit
+DES17S2enk  0.134 No clear result with superfit
+DES17S2bop  ?     Coadded with data from run032. Already classiefied as a SN
+DES17S2ebs  0.304 SN Ia at max
+DES17S2cud  ?	   Bumps and wiggles. Not fitted with superfit
+DES17S2ewj  ?	   Not fitted with superfit
+DES17S2dez  ?	   Blue. Not fitted with superfit
+
+DES17C2pf         Coadded with data from run032. Classified in run032
+DES17C3cuk  0.593 No clear result with superfit
+DES17C3eqr  ?     Not fitted with superfit
+DES17C3cgd  ?     Not fitted with superfit
+DES17C3dvp        SN Ia, two weeks aftr max
+DES17C3dw         Coadded with data from run032. Classified in run032
+DES17C3dxw  0.622 SN Ia?
+DES16C3eco  ?     Not fitted with superfit
+DES17C3dpu  ?	   Not fitted with superfit
+DES17C3edz  0.455 No clear result with superfit
+DES17C3elj  0.297 Not fitted with superfit
+DES17C3doq  0.320 SN Ia at max
+DES17C3dgt  0.571 No clear result with superfit
