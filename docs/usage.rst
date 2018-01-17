@@ -57,23 +57,25 @@ Use the following example code:
     bestFits, redshifts, bestTypes, rlapFlag, matchesFlag = classification.list_best_matches(n=5, saveFilename='DASH_matches.txt')
     classification.plot_with_gui(indexToPlot=2)
 
-'filenames' is the only mandatory argument. It must be a list of strings of the supernova data files. Column seperated .dat, ASCII, or similarly formatted files are accepted. Single spectrum FITS files are also accepted.
+dash.Classify() takes the following arguments:
 
-'knownRedshifts' is an optional argument, and is a list of floats corresponding the redshifts of each of the files listed in 'filenames'. If this argument is not included, then the redshift will be calculated by DASH.
+    :'filenames': is the only mandatory argument. It must be a list of strings of the supernova data files. Column seperated .dat, ASCII, or similarly formatted files are accepted. Single spectrum FITS files are also accepted.
 
-'classifyHost' is an optional argument (default=False). It specifies whether DASH should try to classify the host galaxy of the supernova data file.
+    :'knownRedshifts': is an optional argument, and is a list of floats corresponding the redshifts of each of the files listed in 'filenames'. If this argument is not included, then the redshift will be calculated by DASH.
 
-'knownZ' is an optional argument (default=True). It specifies whether DASH should try to calculate the redshift. If this is set to False, any redshift arguments given in knownRedshifts will be ignored.
+    :'classifyHost': is an optional argument (default=False). It specifies whether DASH should try to classify the host galaxy of the supernova data file.
 
-'smooth' is an optional argument (default=6). The higher this value, the more smoothing that is applied to the spectrum. This must be an integer greater than or equal to zero. If smooth=0, then no smoothing is applied.
+    :'knownZ': is an optional argument (default=True). It specifies whether DASH should try to calculate the redshift. If this is set to False, any redshift arguments given in knownRedshifts will be ignored.
 
-'rlapScores' is an optional argument (default=False). If this is set to True, then the rlap scores (as defined in SNID by Blondin & Tonry 2007) are calculated. This can be used as a secondary measure of confidence in the fit. Calculating the rlap scores is slow, and will increase the classification time.
+    :'smooth': is an optional argument (default=6). The higher this value, the more smoothing that is applied to the spectrum. This must be an integer greater than or equal to zero. If smooth=0, then no smoothing is applied.
+
+    :'rlapScores': is an optional argument (default=False). If this is set to True, then the rlap scores (as defined in SNID by Blondin & Tonry 2007) are calculated. This can be used as a secondary measure of confidence in the fit. Calculating the rlap scores is slow, and will increase the classification time.
 
 
 To view the best matches, the 'list_best_matches' method takes three optional arguments:
 
-'n' (default=5) is the number of best matching classification bins to display for each spectrum.
+    :'n': (default=5) is the number of best matching classification bins to display for each spectrum.
 
-'saveFilename' (default='DASH_matches.txt') dictates the name of the file in which to save the best matches. The saved file is the best way to view the best Matches from DASH. If this is a None type or an empty string, the best matches will not be saved to a file.
+    'saveFilename' (default='DASH_matches.txt') dictates the name of the file in which to save the best matches. The saved file is the best way to view the best Matches from DASH. If this is a None type or an empty string, the best matches will not be saved to a file.
 
-The final line is optional. It plots the 3rd spectrum on the graphical interface.
+The final line is optional. It plots the 3rd spectrum onto the graphical interface.
