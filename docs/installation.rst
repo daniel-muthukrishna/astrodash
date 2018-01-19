@@ -4,7 +4,8 @@ Installation
 
 Using pip
 ---------
-The easiest and preferred way to install DASH is with pip:
+The easiest and preferred way to install DASH (to ensure the latest stable version) is using pip:
+
 .. code-block:: bash
 
     pip install astrodash --upgrade
@@ -12,10 +13,10 @@ The easiest and preferred way to install DASH is with pip:
 From Source
 -----------
 Alternatively, the source code can be downloaded from GitHub by running the following command:
+
 .. code-block:: bash
 
     git clone https://github.com/daniel-muthukrishna/DASH.git
-
 
 Dependencies
 ------------
@@ -42,20 +43,11 @@ DASH can be run on Mac (tested on Sierra 10.12), most Linux distributions (teste
 
 1. Mac and Linux distributions:
 
-    DASH is available on both Python2 and Python3 distributions, and easily installed with
-
-        .. code-block:: bash
-
-            pip install astrodash
+    DASH is available on both Python2 and Python3 distributions, and is easily installed with pip.
 
 2. Windows:
 
-    Currently one of the primary dependencies, Tensorflow, is only available on Python 3 for Windows.
-    So DASH is available on Python 3 distributions. It can be installed with:
-
-        .. code-block:: bash
-
-            pip install astrodash
+    DASH is only available on Python 3 distributions on Windows (due to the availablity of one of the primary dependencies, Tensorflow). It can be installed with pip.
 
     If this fails, try first installing specutils with the following:
 
