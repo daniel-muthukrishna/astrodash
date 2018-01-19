@@ -4,12 +4,14 @@ Installation
 
 Using pip
 ---------
+The easiest and preferred way to install DASH is with pip:
 .. code-block:: bash
 
     pip install astrodash --upgrade
 
 From Source
 -----------
+Alternatively, the source code can be downloaded from GitHub by running the following command:
 .. code-block:: bash
 
     git clone https://github.com/daniel-muthukrishna/DASH.git
