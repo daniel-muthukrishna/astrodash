@@ -43,13 +43,13 @@ DASH can be run on Mac (tested on Sierra 10.12), most Linux distributions (teste
 
 1. Mac and Linux distributions:
 
-    DASH is available on both Python2 and Python3 distributions, and is easily installed with pip.
+    DASH is available on both Python 2 and Python 3 distributions, and can be installed using pip.
 
 2. Windows:
 
-    DASH is only available on Python 3 distributions on Windows (due to the availablity of one of the primary dependencies, Tensorflow). It can be installed with pip.
+    DASH is only available on Python 3 distributions on Windows and can be installed using pip.
 
-    If this fails, try first installing specutils with the following:
+    If the installation fails, try first installing specutils with the following:
 
         .. code-block:: bash
 
