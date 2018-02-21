@@ -1,6 +1,7 @@
 import os
 import numpy as np
 from specutils.io import read_fits
+import astropy.io.fits as afits
 from scipy.interpolate import interp1d, UnivariateSpline
 from dash.array_tools import normalise_spectrum, zero_non_overlap_part
 from dash.read_from_catalog import catalogDict
@@ -49,15 +50,26 @@ class ReadSpectrumFile(object):
 
     def read_fits_file(self):
         # filename = unicode(self.filename.toUtf8(), encoding="UTF-8")
-        spectrum = read_fits.read_fits_spectrum1d(self.filename)
-        if len(spectrum) > 1:
-            spectrum = spectrum[0]
         try:
-            wave = np.array(spectrum.wavelength)
-        except AttributeError:
-            wave = np.array(spectrum.dispersion)
-            print("No wavelength attribute in FITS File. Using 'dispersion' attribute instead")
-        flux = np.array(spectrum.flux)
+            spectrum = read_fits.read_fits_spectrum1d(self.filename)
+            if len(spectrum) > 1:
+                spectrum = spectrum[0]
+            try:
+                wave = np.array(spectrum.wavelength)
+                flux = np.array(spectrum.flux)
+            except AttributeError:
+                wave = np.array(spectrum.dispersion)
+                flux = np.array(spectrum.flux)
+                print("No wavelength attribute in FITS File. Using 'dispersion' attribute instead")
+        except:
+            print("here")
+            hdulist = afits.open(self.filename)
+            flux = hdulist[0].data
+            wave_start = hdulist[0].header['CRVAL1']
+            wave_step = hdulist[0].header['CD1_1']
+            wave_num = flux.shape[0]
+            wave = np.linspace(wave_start, wave_start + wave_step * wave_num, num=wave_num)
+
         flux[np.isnan(flux)] = 0  # convert nan's to zeros
 
         return wave, flux
