@@ -25,9 +25,9 @@ if __name__ == '__main__':
         f.write("Redshift: Zero\n")
         f.write("Redshift Range: 0 to 0.\n")
         f.write("Redshift Precision: 0.01\n")
-        f.write("Fraction of Training Set Used: 0.9\n")
+        f.write("Fraction of Training Set Used: 0.8\n")
         f.write("Training Amount: 50 x 500000\n")
-        f.write("Changed wavelength range to 3500 to 10000A\n")
+        f.write("Changed wavelength range to 3000 to 10000A\n")
         f.write("Set outer region to 0.5\n")
         dataFilenames.append(modelInfoFilename)
 
