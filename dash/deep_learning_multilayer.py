@@ -65,6 +65,7 @@ def train_model(dataDirName):
     a = []
     x, y_, keep_prob, y_conv = convnet_variables(imWidth, imWidthReduc, N, nLabels)
 
+
     with tf.Session() as sess: # config=tf.ConfigProto(inter_op_parallelism_threads=1, intra_op_parallelism_threads=1)) as sess:
         # TRAIN AND EVALUATE MODEL
         cross_entropy = tf.reduce_mean(-tf.reduce_sum(y_ * tf.log(y_conv + 1e-8), reduction_indices=[1]))

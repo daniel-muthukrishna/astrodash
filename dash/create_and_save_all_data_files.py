@@ -4,6 +4,7 @@ from dash.create_template_set import create_template_set_file
 from dash.deep_learning_multilayer import train_model
 import zipfile
 import os
+import glob
 import shutil
 import time
 
@@ -63,6 +64,13 @@ if __name__ == '__main__':
     with zipfile.ZipFile(modelZip, 'w') as myzip:
         for f in [dataFilenames[0:2]] + dataFilenames[3:]:
             myzip.write(f)
+
+    # Delete temporary memory mapping files
+    for filename in glob.glob('shuffled*.dat'):
+        os.remove(filename)
+    for filename in glob.glob('oversampled*.dat'):
+        os.remove(filename)
+
 
     # Delete data_files folder since they are now in the zip files
     # for filename in filenames:

@@ -136,18 +136,18 @@ class ArrayTools(object):
         self.nLabels = nLabels
         self.nw = nw
 
-    def shuffle_arrays(self, **kwargs):
+    def shuffle_arrays(self, memmapName='', **kwargs):
         """ Must take images and labels as arguments with the keyword specified.
         Can optionally take filenames and typeNames as arguments """
         arraySize = len(kwargs['labels'])
         kwargShuf = {}
         for key in kwargs:
             if key == 'images':
-                arrayShuf = np.zeros((arraySize, int(self.nw)), np.float16)
+                arrayShuf = np.memmap('shuffled_{}_{}.dat'.format(key, memmapName), dtype=np.float16, mode='w+', shape=(arraySize, int(self.nw)))
             elif key == 'labels':
-                arrayShuf = np.zeros(arraySize, np.uint16)
+                arrayShuf = np.memmap('shuffled_{}_{}.dat'.format(key, memmapName), dtype=np.uint16, mode='w+', shape=arraySize)
             else:
-                arrayShuf = np.empty(arraySize, dtype=object)
+                arrayShuf = np.memmap('shuffled_{}_{}.dat'.format(key, memmapName), dtype=object, mode='w+', shape=arraySize)
             kwargShuf[key] = arrayShuf
         idx = 0
         # Randomise order
@@ -204,18 +204,19 @@ class ArrayTools(object):
         print(np.array(overSampleAmount, int))
         print(overSampleArraySize, len(kwargs['labels']))
         kwargOverSampled = {}
+
         for key in kwargs:
             if key == 'images':
-                arrayOverSampled = np.zeros((overSampleArraySize, int(self.nw)), np.float16)
+                arrayOverSampled = np.memmap('oversampled_{}.dat'.format(key), dtype=np.float16, mode='w+', shape=(overSampleArraySize, int(self.nw)))
             elif key == 'labels':
-                arrayOverSampled = np.zeros(overSampleArraySize, np.uint16)
+                arrayOverSampled = np.memmap('oversampled_{}.dat'.format(key), dtype=np.uint16, mode='w+', shape=overSampleArraySize)
             else:
-                arrayOverSampled = np.empty(overSampleArraySize, dtype=object)
+                arrayOverSampled = np.memmap('oversampled_{}.dat'.format(key), dtype=object, mode='w+', shape=overSampleArraySize)
             kwargOverSampled[key] = arrayOverSampled
 
         counts1 = np.zeros(self.nLabels)
 
-        kwargShuf = self.shuffle_arrays(**kwargs)
+        kwargShuf = self.shuffle_arrays(memmapName='pre-oversample', **kwargs)
 
         print(len(kwargShuf['labels']))
         for i in range(len(kwargShuf['labels'])):
@@ -238,7 +239,7 @@ class ArrayTools(object):
         print(counts1)  #
 
         print("Before Shuffling")
-        kwargOverSampledShuf = self.shuffle_arrays(**kwargOverSampled)
+        kwargOverSampledShuf = self.shuffle_arrays(memmapName='oversampled', **kwargOverSampled)
         print("After Shuffling")
         return kwargOverSampledShuf
 
