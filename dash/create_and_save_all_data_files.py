@@ -24,7 +24,7 @@ if __name__ == '__main__':
         f.write("Classify Host: False\n")
         f.write("Redshift: Zero\n")
         f.write("Redshift Range: 0 to 0.8\n")
-        f.write("Redshift Precision: 0.05\n")
+        f.write("Num of Redshifts: 20\n")
         f.write("Fraction of Training Set Used: 0.8\n")
         f.write("Training Amount: 50 x 500000\n")
         f.write("Changed wavelength range to 3000 to 10000A\n")
@@ -39,7 +39,7 @@ if __name__ == '__main__':
     print("time spent: {0:.2f}".format(t2 - t1))
 
     # CREATE TRAINING SET FILES
-    trainingSetFilename = create_training_set_files(dataDirName, minZ=0, maxZ=0.8, redshiftPrecision=0.05, trainWithHost=True, classifyHost=False)
+    trainingSetFilename = create_training_set_files(dataDirName, minZ=0., maxZ=0.8, numOfRedshifts=20, trainWithHost=True, classifyHost=False)
     dataFilenames.append(trainingSetFilename)
     t3 = time.time()
     print("time spent: {0:.2f}".format(t3 - t2))

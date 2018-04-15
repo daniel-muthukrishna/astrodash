@@ -4,10 +4,9 @@ from dash.array_tools import normalise_spectrum, zero_non_overlap_part
 
 
 class InputSpectra(object):
-    def __init__(self, filename, minZ, maxZ, nTypes, minAge, maxAge, ageBinSize, w0, w1, nw, typeList, smooth, minWave, maxWave, hostList, nHostTypes):
+    def __init__(self, filename, z, nTypes, minAge, maxAge, ageBinSize, w0, w1, nw, typeList, smooth, minWave, maxWave, hostList, nHostTypes):
         self.filename = filename
-        self.minZ = minZ
-        self.maxZ = maxZ
+        self.z = z
         self.w0 = w0
         self.w1 = w1
         self.nw = nw
@@ -19,8 +18,6 @@ class InputSpectra(object):
         self.ageBinning = AgeBinning(self.minAge, self.maxAge, self.ageBinSize)
         self.numOfAgeBins = self.ageBinning.age_bin(self.maxAge) + 1
         self.nLabels = self.nTypes * self.numOfAgeBins * nHostTypes
-        self.redshiftPrecision = 1000
-        self.numOfRedshifts = (self.maxZ - self.minZ) * self.redshiftPrecision
         self.createLabels = CreateLabels(self.nTypes, self.minAge, self.maxAge, self.ageBinSize, self.typeList, hostList, nHostTypes)
         self.fileType = 'fits or twocolumn etc.' #Will use later on
         self.typeNamesList = self.createLabels.type_names_list()
@@ -38,23 +35,22 @@ class InputSpectra(object):
         readSpectra = ReadSpectra(self.w0, self.w1, self.nw, self.filename)
 
         #Undo it's previous redshift)
-        for z in np.linspace(self.minZ, self.maxZ, self.numOfRedshifts + 1):
-            wave, flux, minIndex, maxIndex, z = readSpectra.input_spectrum(z, self.smooth, self.minWave, self.maxWave)
-            nonzeroflux = flux[minIndex:maxIndex + 1]
-            newflux = normalise_spectrum(nonzeroflux)
-            newflux2 = np.concatenate((flux[0:minIndex], newflux, flux[maxIndex + 1:]))
-            images = np.append(images, np.array([newflux2]), axis=0)  # images.append(newflux2)
-            filenames.append(str(self.filename) + "_" + str(-z))
-            redshifts.append(-z)
-            minMaxIndexes.append((minIndex, maxIndex))
-            # # Add white noise to regions outside minIndex to maxIndex
-            # noise = np.zeros(self.nw)
-            # noise[0:minIndex] = np.random.uniform(0.0, 1.0, minIndex)
-            # noise[maxIndex:] = np.random.uniform(0.0, 1.0, self.nw - maxIndex)
-            #
-            # augmentedFlux = flux + noise
-            # augmentedFlux = normalise_spectrum(augmentedFlux)
-            # augmentedFlux = zero_non_overlap_part(augmentedFlux, minIndex, maxIndex)
+        wave, flux, minIndex, maxIndex, z = readSpectra.input_spectrum(self.z, self.smooth, self.minWave, self.maxWave)
+        nonzeroflux = flux[minIndex:maxIndex + 1]
+        newflux = normalise_spectrum(nonzeroflux)
+        newflux2 = np.concatenate((flux[0:minIndex], newflux, flux[maxIndex + 1:]))
+        images = np.append(images, np.array([newflux2]), axis=0)  # images.append(newflux2)
+        filenames.append(str(self.filename) + "_" + str(-z))
+        redshifts.append(-z)
+        minMaxIndexes.append((minIndex, maxIndex))
+        # # Add white noise to regions outside minIndex to maxIndex
+        # noise = np.zeros(self.nw)
+        # noise[0:minIndex] = np.random.uniform(0.0, 1.0, minIndex)
+        # noise[maxIndex:] = np.random.uniform(0.0, 1.0, self.nw - maxIndex)
+        #
+        # augmentedFlux = flux + noise
+        # augmentedFlux = normalise_spectrum(augmentedFlux)
+        # augmentedFlux = zero_non_overlap_part(augmentedFlux, minIndex, maxIndex)
 
 
         inputImages = np.array(images)

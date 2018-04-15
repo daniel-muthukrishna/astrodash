@@ -56,7 +56,7 @@ class Classify(object):
     def _get_images(self, filename, redshift):
         if redshift in list(catalogDict.keys()):
             redshift = 0
-        loadInputSpectra = LoadInputSpectra(filename, redshift, redshift, self.smooth, self.pars, self.minWave, self.maxWave, self.classifyHost)
+        loadInputSpectra = LoadInputSpectra(filename, redshift, self.smooth, self.pars, self.minWave, self.maxWave, self.classifyHost)
         inputImage, inputRedshift, typeNamesList, nw, nBins, inputMinMaxIndex = loadInputSpectra.input_spectra()
 
         return inputImage, typeNamesList, nw, nBins, inputMinMaxIndex, inputRedshift

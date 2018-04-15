@@ -13,7 +13,7 @@ def get_training_parameters(data_files='models_v04'):
 
 
 class LoadInputSpectra(object):
-    def __init__(self, inputFilename, minZ, maxZ, smooth, pars, minWave, maxWave, classifyHost):
+    def __init__(self, inputFilename, z, smooth, pars, minWave, maxWave, classifyHost):
         self.nw = pars['nw']
         nTypes, w0, w1, minAge, maxAge, ageBinSize, typeList = pars['nTypes'], pars['w0'], pars['w1'], pars['minAge'], \
                                                                pars['maxAge'], pars['ageBinSize'], pars['typeList']
@@ -24,7 +24,7 @@ class LoadInputSpectra(object):
         else:
             hostList, nHostTypes = None, 1
 
-        self.inputSpectra = InputSpectra(inputFilename, minZ, maxZ, nTypes, minAge, maxAge, ageBinSize, w0, w1, self.nw, typeList, smooth, minWave, maxWave, hostList, nHostTypes)
+        self.inputSpectra = InputSpectra(inputFilename, z, nTypes, minAge, maxAge, ageBinSize, w0, w1, self.nw, typeList, smooth, minWave, maxWave, hostList, nHostTypes)
 
         self.inputImages, self.inputFilenames, self.inputRedshifts, self.typeNamesList, self.inputMinMaxIndexes = self.inputSpectra.redshifting()
         self.nBins = len(self.typeNamesList)

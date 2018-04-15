@@ -244,7 +244,7 @@ class ArrayTools(object):
 
 
 class CreateArrays(object):
-    def __init__(self, w0, w1, nw, nTypes, minAge, maxAge, ageBinSize, typeList, minZ, maxZ, redshiftPrecision, hostTypes=None, nHostTypes=None):
+    def __init__(self, w0, w1, nw, nTypes, minAge, maxAge, ageBinSize, typeList, minZ, maxZ, numOfRedshifts, hostTypes=None, nHostTypes=None):
         self.w0 = w0
         self.w1 = w1
         self.nw = nw
@@ -255,7 +255,7 @@ class CreateArrays(object):
         self.typeList = typeList
         self.minZ = minZ
         self.maxZ = maxZ
-        self.numOfRedshifts = int((maxZ - minZ) * 1./redshiftPrecision)
+        self.numOfRedshifts = numOfRedshifts
         self.ageBinning = AgeBinning(minAge, maxAge, ageBinSize)
         self.numOfAgeBins = self.ageBinning.age_bin(maxAge-0.1) + 1
         self.nLabels = nTypes * self.numOfAgeBins * nHostTypes
@@ -279,7 +279,11 @@ class CreateArrays(object):
                         break
                     for snCoeff in snFractions:
                         galCoeff = 1 - snCoeff
-                        for z in np.linspace(self.minZ, self.maxZ, self.numOfRedshifts + 1):
+                        if self.numOfRedshifts == 1:
+                            redshifts = [self.minZ]
+                        else:
+                            redshifts = np.random.uniform(low=self.minZ, high=self.maxZ, size=self.numOfRedshifts)
+                        for z in redshifts:
                             tempWave, tempFlux, nCols, ages, tType, tMinIndex, tMaxIndex = readSpectra.sn_plus_gal_template(ageidx, snCoeff, galCoeff, z)
                             agesList.append(ages[ageidx])
                             if tMinIndex == tMaxIndex or not tempFlux.any():
