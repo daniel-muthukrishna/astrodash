@@ -14,8 +14,7 @@ from dash.create_arrays import ArrayTools
 
 def train_model(dataDirName):
     # Open training data files
-    scriptDirectory = os.path.dirname(os.path.abspath(__file__))
-    trainingSet = dataDirName + 'training_set.zip'
+    trainingSet = os.path.join(dataDirName, 'training_set.zip')
     extractedFolder = os.path.join(dataDirName, 'training_set')
     # zipRef = zipfile.ZipFile(trainingSet, 'r')
     # zipRef.extractall(extractedFolder)
@@ -26,7 +25,7 @@ def train_model(dataDirName):
     npyFiles = {}
     fileList = os.listdir(extractedFolder)
     for filename in fileList:
-        f = os.path.join(scriptDirectory, extractedFolder, filename)
+        f = os.path.join(extractedFolder, filename)
         if filename.endswith('.gz'):
             # # npyFiles[filename.strip('.npy.gz')] = gzip.GzipFile(f, 'r')
             # gzFile = gzip.open(f, "rb")
@@ -107,7 +106,7 @@ def train_model(dataDirName):
                 print(i, testTypeNames[i], typeNamesList[predictedIndex])
 
     # SAVE THE MODEL
-    saveFilename = dataDirName + "tensorflow_model.ckpt"
+    saveFilename = os.path.join(dataDirName, "tensorflow_model.ckpt")
     saver = tf.train.Saver()
     save_path = saver.save(sess, saveFilename)
     print("Model saved in file: %s" % save_path)

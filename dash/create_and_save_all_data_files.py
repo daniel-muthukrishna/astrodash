@@ -7,9 +7,12 @@ import os
 import shutil
 import time
 
+scriptDirectory = os.path.dirname(os.path.abspath(__file__))
+
+
 if __name__ == '__main__':
-    modelName = 'zeroZ_test_agnosticZ'
-    dataDirName = 'data_files_{0}/'.format(modelName)
+    modelName = 'agnosticZ'
+    dataDirName = os.path.join(scriptDirectory, 'data_files_{0}/'.format(modelName))
     dataFilenames = []
     if not os.path.exists(dataDirName):
         os.makedirs(dataDirName)

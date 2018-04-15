@@ -1,4 +1,5 @@
 import pickle
+import os
 
 
 def create_training_params_file(dataDirName):
@@ -17,7 +18,7 @@ def create_training_params_file(dataDirName):
         'galTypeList': ['E', 'S0', 'Sa', 'Sb', 'Sc', 'SB1', 'SB2', 'SB3', 'SB4', 'SB5', 'SB6']
     }
 
-    trainingParamsFilename = dataDirName + 'training_params.pickle'
+    trainingParamsFilename = os.path.join(dataDirName, 'training_params.pickle')
 
     # Saving the objects:
     with open(trainingParamsFilename, 'wb') as f:
