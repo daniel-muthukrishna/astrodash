@@ -147,18 +147,9 @@ class ReadSpectrumFile(object):
     def two_col_input_spectrum(self, wave, flux, z):
         wave, flux = self.processingTools.deredshift_spectrum(wave, flux, z)
 
-        if max(wave) >= self.w1:
-            for i in range(0, len(wave)):
-                if wave[i] >= self.w1:
-                    break
-            wave = wave[0:i]
-            flux = flux[0:i]
-        if min(wave) < self.w0:
-            for i in range(0, len(wave)):
-                if wave[i] >= self.w0:
-                    break
-            wave = wave[i:]
-            flux = flux[i:]
+        mask = (wave >= self.w0) & (wave < self.w1)
+        wave = wave[mask]
+        flux = flux[mask]
 
         fluxNorm = (flux - min(flux)) / (max(flux) - min(flux))
 
@@ -252,8 +243,8 @@ class PreProcessSpectrum(object):
         looping method """
 
         spec = np.array([wave, flux]).T
-        spec = spec[wave >= self.w0]
-        spec = spec[spec[:, 0] < self.w1]
+        mask = (wave >= self.w0) & (wave < self.w1)
+        spec = spec[mask]
         wave, flux = spec.T
 
         fluxOut = np.zeros(int(self.nw))
