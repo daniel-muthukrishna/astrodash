@@ -263,6 +263,11 @@ class CreateArrays(object):
         self.createLabels = CreateLabels(self.nTypes, self.minAge, self.maxAge, self.ageBinSize, self.typeList, hostTypes, nHostTypes)
         self.hostTypes = hostTypes
 
+        self.images = []
+        self.labelsIndexes = []
+        self.filenames = []
+        self.typeNames = []
+
     def combined_sn_gal_templates_to_arrays(self, snTemplateLocation, snTempList, galTemplateLocation, galTempList, snFractions):
         images = np.empty((0, int(self.nw)), np.float16)  # Number of pixels
         labelsIndexes = [] # labels = np.empty((0, self.nLabels), np.uint8)  # Number of labels (SN types)
@@ -309,6 +314,14 @@ class CreateArrays(object):
 
         return images, np.array(labelsIndexes).astype(int), np.array(filenames), np.array(typeNames)
 
+    def collect_results(self, result):
+        """Uses apply_async's callback to setup up a separate Queue for each process"""
+        imagesPart, labelsPart, filenamesPart, typeNamesPart = result
+        self.images.extend(imagesPart)
+        self.labelsIndexes.extend(labelsPart)
+        self.filenames.extend(filenamesPart)
+        self.typeNames.extend(typeNamesPart)
+
     def combined_sn_gal_arrays_multiprocessing(self, snTemplateLocation, snTempFileList, galTemplateLocation, galTempFileList):
         if galTemplateLocation is None or galTempFileList is None:
             galTempList = [None]
@@ -318,27 +331,20 @@ class CreateArrays(object):
             galTempList = TempList().temp_list(galTempFileList)
             snFractions = [0.99, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
 
-        images = np.empty((0, int(self.nw)), np.float16)
-        labelsIndexes = np.empty(0, np.uint16)
-        filenames = np.empty(0)
-        typeNames = np.empty(0)
-
         snTempList = TempList().temp_list(snTempFileList)
         galAndSnTemps = list(itertools.product(galTempList, snTempList))
 
         pool = mp.Pool()
-        results = [pool.apply_async(self.combined_sn_gal_templates_to_arrays, args=(snTemplateLocation, [sn], galTemplateLocation, [gal], snFractions)) for gal, sn in galAndSnTemps]
+        for gal, sn in galAndSnTemps:
+            pool.apply_async(self.combined_sn_gal_templates_to_arrays, args=(snTemplateLocation, [sn], galTemplateLocation, [gal], snFractions), callback=self.collect_results)
         pool.close()
         pool.join()
 
-        outputs = [p.get() for p in results]
-        for out in outputs:
-            imagesPart, labelsPart, filenamesPart, typeNamesPart = out
-            images = np.append(images, imagesPart, axis=0)
-            labelsIndexes = np.append(labelsIndexes, labelsPart, axis=0)
-            filenames = np.append(filenames, filenamesPart)
-            typeNames = np.append(typeNames, typeNamesPart)
+        self.images = np.array(self.images)
+        self.labelsIndexes = np.array(self.labelsIndexes)
+        self.filenames = np.array(self.filenames)
+        self.typeNames = np.array(self.typeNames)
 
         print("Completed Creating Arrays!")
 
-        return images, labelsIndexes.astype(int), filenames, typeNames
+        return self.images, self.labelsIndexes.astype(int), self.filenames, self.typeNames

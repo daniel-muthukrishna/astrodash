@@ -257,6 +257,9 @@ class RlapCalc(object):
         return r, lap, rlap, fom
 
     def rlap_label(self):
+        if not np.any(self.inputFlux):
+            return "No flux", True
+
         self.zAxis = self.get_redshift_axis(self.nw, self.dwlog)
         rlapList = []
         for i in range(len(self.templateNames)):
