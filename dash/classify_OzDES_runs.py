@@ -62,4 +62,4 @@ def main(runDirectory, atelTextFile, saveMatchesFilename):
 
 
 if __name__ == '__main__':
-    main(runDirectory='../templates/run035/', atelTextFile='wiki_atel_run035.txt', saveMatchesFilename='DASH_matches_run35.txt')
+    main(runDirectory='../templates/run034/', atelTextFile='wiki_atel_run034.txt', saveMatchesFilename='DASH_matches_run34.txt')

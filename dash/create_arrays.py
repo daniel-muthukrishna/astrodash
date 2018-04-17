@@ -190,74 +190,78 @@ class ArrayTools(object):
 
         return augmentedFlux
 
-    def over_sample_arrays(self, **kwargs):
+
+class OverSampling(ArrayTools):
+    def __init__(self, nLabels, nw, smote=False, **kwargs):
         """ Must take images and labels as arguments with the keyword specified.
         Can optionally take filenames and typeNames as arguments """
-        counts = self.count_labels(kwargs['labels'])
-        idx = 0
+        ArrayTools.__init__(self, nLabels, nw)
+        self.kwargs = kwargs
+
+        counts = self.count_labels(self.kwargs['labels'])
         print("Before OverSample")  #
         print(counts)  #
 
-        overSampleAmount = np.rint(self.div0(1 * max(counts), counts))  # ignore zeros in counts
-        overSampleArraySize = int(sum(np.array(overSampleAmount, int) * counts))
-        print(np.array(overSampleAmount, int) * counts)
-        print(np.array(overSampleAmount, int))
-        print(overSampleArraySize, len(kwargs['labels']))
-        kwargOverSampled = {}
+        self.overSampleAmount = np.rint(self.div0(1 * max(counts), counts))  # ignore zeros in counts
+        self.overSampleArraySize = int(sum(np.array(self.overSampleAmount, int) * counts))
+        print(np.array(self.overSampleAmount, int) * counts)
+        print(np.array(self.overSampleAmount, int))
+        print(self.overSampleArraySize, len(self.kwargs['labels']))
+        self.kwargOverSampled = {}
 
-        for key in kwargs:
+        for key in self.kwargs:
             if key == 'images':
-                arrayOverSampled = np.memmap('oversampled_{}.dat'.format(key), dtype=np.float16, mode='w+', shape=(overSampleArraySize, int(self.nw)))
+                arrayOverSampled = np.memmap('oversampled_{}.dat'.format(key), dtype=np.float16, mode='w+',
+                                             shape=(self.overSampleArraySize, int(self.nw)))
             elif key == 'labels':
-                arrayOverSampled = np.memmap('oversampled_{}.dat'.format(key), dtype=np.uint16, mode='w+', shape=overSampleArraySize)
+                arrayOverSampled = np.memmap('oversampled_{}.dat'.format(key), dtype=np.uint16, mode='w+',
+                                             shape=self.overSampleArraySize)
             else:
-                arrayOverSampled = np.memmap('oversampled_{}.dat'.format(key), dtype=object, mode='w+', shape=overSampleArraySize)
-            kwargOverSampled[key] = arrayOverSampled
+                arrayOverSampled = np.memmap('oversampled_{}.dat'.format(key), dtype=object, mode='w+',
+                                             shape=self.overSampleArraySize)
+            self.kwargOverSampled[key] = arrayOverSampled
 
-        counts1 = np.zeros(self.nLabels)
+        self.kwargShuf = self.shuffle_arrays(memmapName='pre-oversample', **self.kwargs)
+        print(len(self.kwargShuf['labels']))
 
-        kwargShuf = self.shuffle_arrays(memmapName='pre-oversample', **kwargs)
-        print(len(kwargShuf['labels']))
-
-        # TODO: Try parallelising this for speed boost. Or try out SMOTE instead
-        def oversample_mp(i, offset, r):
-            print(i, r, offset)
-            oversampled = {}
-            for key in kwargs:
+    def oversample_mp(self, i_in, offset_in, std_in, labelIndex_in):
+        print('oversampling', i_in, len(self.kwargShuf['labels']))
+        oversampled = {key: [] for key in self.kwargs}
+        repeatAmount = int(self.overSampleAmount[labelIndex_in])
+        for r in range(repeatAmount):
+            for key in self.kwargs:
                 if key == 'images':
-                    oversampled[key] = self.augment_data(kwargShuf[key][i], stdDevMean=0.05, stdDevStdDev=std)
+                    oversampled[key].append(self.augment_data(self.kwargShuf[key][i_in], stdDevMean=0.05, stdDevStdDev=std_in))
                 else:
-                    oversampled[key] = kwargShuf[key][i]
-            return oversampled, offset, r
+                    oversampled[key].append(self.kwargShuf[key][i_in])
+        return oversampled, offset_in, repeatAmount
 
-        def collect_results(result):
-            """Uses apply_async's callback to setup up a separate Queue for each process"""
-            oversampled, offset, r = result
-            for key in kwargs:
-                kwargOverSampled[key][offset + r] = oversampled[key]
+    def collect_results(self, result):
+        """Uses apply_async's callback to setup up a separate Queue for each process"""
+        oversampled_in, offset_in, repeatAmount = result
+        for key in self.kwargs:
+            rlength_array = np.array(oversampled_in[key])
+            self.kwargOverSampled[key][offset_in:repeatAmount+offset_in] = rlength_array[:]
 
+    def over_sample_arrays(self):
         offset = 0
         pool = mp.Pool()
-        for i in range(len(kwargShuf['labels'])):
-            labelIndex = kwargShuf['labels'][i]
-            offset += int(overSampleAmount[labelIndex])
-            if overSampleAmount[labelIndex] < 10:
+        for i in range(len(self.kwargShuf['labels'])):
+            labelIndex = self.kwargShuf['labels'][i]
+            if self.overSampleAmount[labelIndex] < 10:
                 std = 0.03
             else:
                 std = 0.05
-            for r in range(int(overSampleAmount[labelIndex])):
-                pool.apply_async(oversample_mp, args=(i, offset, r), callback=collect_results)
-                counts1[labelIndex] += 1
+            pool.apply_async(self.oversample_mp, args=(i, offset, std, labelIndex), callback=self.collect_results)
+            offset += int(self.overSampleAmount[labelIndex])
         pool.close()
         pool.join()
 
-        print("After OverSample")  #
-        print(counts1)  #
-
         print("Before Shuffling")
-        kwargOverSampledShuf = self.shuffle_arrays(memmapName='oversampled', **kwargOverSampled)
+        self.kwargOverSampledShuf = self.shuffle_arrays(memmapName='oversampled', **self.kwargOverSampled)
         print("After Shuffling")
-        return kwargOverSampledShuf
+
+        return self.kwargOverSampledShuf
 
 
 class CreateArrays(object):
@@ -349,7 +353,7 @@ class CreateArrays(object):
             snFractions = [0.99, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
 
         snTempList = TempList().temp_list(snTempFileList)
-        galAndSnTemps = list(itertools.product(galTempList, snTempList))
+        galAndSnTemps = list(itertools.product(galTempList, snTempList))[0:5]
 
         pool = mp.Pool()
         for gal, sn in galAndSnTemps:

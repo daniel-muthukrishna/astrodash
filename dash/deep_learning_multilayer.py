@@ -9,7 +9,7 @@ import gzip
 import time
 from dash.array_tools import labels_indexes_to_arrays
 from dash.model_statistics import calc_model_statistics
-from dash.create_arrays import ArrayTools
+from dash.create_arrays import OverSampling
 
 
 def train_model(dataDirName, overwrite=False):
@@ -60,8 +60,8 @@ def train_model(dataDirName, overwrite=False):
     nLabels = len(typeNamesList)
     N = 1024
 
-    arrayTools = ArrayTools(nLabels, N)
-    trainArrays = arrayTools.over_sample_arrays(images=trainImages, labels=trainLabels)
+    overSampling = OverSampling(nLabels, N, smote=False, images=trainImages, labels=trainLabels)
+    trainArrays = overSampling.over_sample_arrays()
     trainImages, trainLabels = trainArrays['images'], trainArrays['labels']
 
     # Set up the convolutional network architecture
