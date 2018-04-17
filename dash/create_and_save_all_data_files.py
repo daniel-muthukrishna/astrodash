@@ -12,7 +12,7 @@ scriptDirectory = os.path.dirname(os.path.abspath(__file__))
 
 
 if __name__ == '__main__':
-    modelName = 'zeroZ_smote'
+    modelName = 'zeroZ'
     dataDirName = os.path.join(scriptDirectory, 'data_files_{0}/'.format(modelName))
     dataFilenames = []
     if not os.path.exists(dataDirName):

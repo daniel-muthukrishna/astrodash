@@ -61,7 +61,7 @@ def train_model(dataDirName, overwrite=False):
     N = 1024
 
     overSampling = OverSampling(nLabels, N, images=trainImages, labels=trainLabels)
-    trainArrays = overSampling.over_sample_arrays(smote=True)
+    trainArrays = overSampling.over_sample_arrays(smote=False)
     trainImages, trainLabels = trainArrays['images'], trainArrays['labels']
 
     # Set up the convolutional network architecture
