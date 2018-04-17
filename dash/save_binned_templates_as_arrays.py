@@ -1,15 +1,15 @@
 import numpy as np
 import pickle
 import os
-from dash.create_arrays import TempList, AgeBinning
+from dash.create_arrays import AgeBinning, temp_list
 from dash.combine_sn_and_host import BinTemplate
 
 
 def create_sn_and_host_arrays(snTemplateDirectory, snTempFileList, galTemplateDirectory, galTempFileList, paramsFile):
     snTemplates = {}
     galTemplates = {}
-    snList = TempList().temp_list(snTempFileList)
-    galList = TempList().temp_list(galTempFileList)
+    snList = temp_list(snTempFileList)
+    galList = temp_list(galTempFileList)
     with open(paramsFile, 'rb') as f:
         pars = pickle.load(f)
     w0, w1, nw, snTypes, galTypes, minAge, maxAge, ageBinSize = pars['w0'], pars['w1'], pars['nw'], pars['typeList'], \

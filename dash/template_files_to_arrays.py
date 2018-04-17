@@ -1,5 +1,5 @@
 from dash.preprocessing import ReadSpectrumFile
-from dash.create_arrays import TempList
+from dash.create_arrays import temp_list
 import pickle
 import os
 import gzip
@@ -18,7 +18,7 @@ class SaveTemplateSpectra(object):
         return spectrum
 
     def template_spectra_to_list(self, tempFileList, templateDirectory):
-        tempList = TempList().temp_list(tempFileList)
+        tempList = temp_list(tempFileList)
         templates = []
         for filename in tempList:
             spectrum = self.read_template_file(templateDirectory+filename)

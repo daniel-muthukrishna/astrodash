@@ -92,20 +92,18 @@ class CreateLabels(object):
                         typeNamesList.append("{}: {}: {}".format(host, tType, ageLabel))
 
         return np.array(typeNamesList)
-        
 
-class TempList(object):
-    def temp_list(self, tempFileList):
-        f = open(tempFileList, 'rU')
 
-        fileList = f.readlines()
-        for i in range(0,len(fileList)):
-            fileList[i] = fileList[i].strip('\n')
+def temp_list(tempFileList):
+    f = open(tempFileList, 'rU')
 
-        f.close()
+    fileList = f.readlines()
+    for i in range(0,len(fileList)):
+        fileList[i] = fileList[i].strip('\n')
 
-        return fileList
-    
+    f.close()
+
+    return fileList
 
 class ReadSpectra(object):
 
@@ -349,10 +347,10 @@ class CreateArrays(object):
             galTemplateLocation = None
             snFractions = [1.0]
         else:
-            galTempList = TempList().temp_list(galTempFileList)
+            galTempList = temp_list(galTempFileList)
             snFractions = [0.99, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
 
-        snTempList = TempList().temp_list(snTempFileList)
+        snTempList = temp_list(snTempFileList)
         galAndSnTemps = list(itertools.product(galTempList, snTempList))[0:5]
 
         pool = mp.Pool()
