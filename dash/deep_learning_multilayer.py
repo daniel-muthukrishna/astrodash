@@ -1,4 +1,5 @@
 import os
+import shutil
 import numpy as np
 import itertools
 import tensorflow as tf
@@ -11,16 +12,21 @@ from dash.model_statistics import calc_model_statistics
 from dash.create_arrays import ArrayTools
 
 
-
-def train_model(dataDirName):
+def train_model(dataDirName, overwrite=False):
+    """  Train model. Unzip and overwrite exisiting training set if overwrite is True"""
     # Open training data files
     trainingSet = os.path.join(dataDirName, 'training_set.zip')
     extractedFolder = os.path.join(dataDirName, 'training_set')
     # zipRef = zipfile.ZipFile(trainingSet, 'r')
     # zipRef.extractall(extractedFolder)
     # zipRef.close()
-    if not os.path.exists(extractedFolder):
+    if os.path.exists(extractedFolder) and overwrite:
+        shutil.rmtree(extractedFolder, ignore_errors=True)
         os.system("unzip %s -d %s" % (trainingSet, extractedFolder))
+    elif not os.path.exists(extractedFolder):
+        os.system("unzip %s -d %s" % (trainingSet, extractedFolder))
+    else:
+        pass
 
     npyFiles = {}
     fileList = os.listdir(extractedFolder)
@@ -134,7 +140,7 @@ def train_model(dataDirName):
 
 if __name__ == '__main__':
     t1 = time.time()
-    savedFilenames = train_model('data_files/')
+    savedFilenames = train_model('data_files/', overwrite=False)
     t2 = time.time()
     print("time spent: {0:.2f}".format(t2 - t1))
 

@@ -198,7 +198,7 @@ class ArrayTools(object):
         print("Before OverSample")  #
         print(counts)  #
 
-        overSampleAmount = self.div0(1 * max(counts), counts)  # ignore zeros in counts
+        overSampleAmount = np.rint(self.div0(1 * max(counts), counts))  # ignore zeros in counts
         overSampleArraySize = int(sum(np.array(overSampleAmount, int) * counts))
         print(np.array(overSampleAmount, int) * counts)
         print(np.array(overSampleAmount, int))
@@ -217,23 +217,39 @@ class ArrayTools(object):
         counts1 = np.zeros(self.nLabels)
 
         kwargShuf = self.shuffle_arrays(memmapName='pre-oversample', **kwargs)
-
         print(len(kwargShuf['labels']))
+
+        # TODO: Try parallelising this for speed boost. Or try out SMOTE instead
+        def oversample_mp(i, offset, r):
+            print(i, r, offset)
+            oversampled = {}
+            for key in kwargs:
+                if key == 'images':
+                    oversampled[key] = self.augment_data(kwargShuf[key][i], stdDevMean=0.05, stdDevStdDev=std)
+                else:
+                    oversampled[key] = kwargShuf[key][i]
+            return oversampled, offset, r
+
+        def collect_results(result):
+            """Uses apply_async's callback to setup up a separate Queue for each process"""
+            oversampled, offset, r = result
+            for key in kwargs:
+                kwargOverSampled[key][offset + r] = oversampled[key]
+
+        offset = 0
+        pool = mp.Pool()
         for i in range(len(kwargShuf['labels'])):
             labelIndex = kwargShuf['labels'][i]
-
+            offset += int(overSampleAmount[labelIndex])
             if overSampleAmount[labelIndex] < 10:
                 std = 0.03
             else:
                 std = 0.05
             for r in range(int(overSampleAmount[labelIndex])):
-                for key in kwargs:
-                    if key == 'images':
-                        kwargOverSampled[key][idx] = self.augment_data(kwargShuf[key][i], stdDevMean=0.05, stdDevStdDev=std)
-                    else:
-                        kwargOverSampled[key][idx] = kwargShuf[key][i]
+                pool.apply_async(oversample_mp, args=(i, offset, r), callback=collect_results)
                 counts1[labelIndex] += 1
-                idx += 1
+        pool.close()
+        pool.join()
 
         print("After OverSample")  #
         print(counts1)  #
@@ -263,6 +279,7 @@ class CreateArrays(object):
         self.createLabels = CreateLabels(self.nTypes, self.minAge, self.maxAge, self.ageBinSize, self.typeList, hostTypes, nHostTypes)
         self.hostTypes = hostTypes
 
+        # TODO: Maybe do memory mapping for these arrays
         self.images = []
         self.labelsIndexes = []
         self.filenames = []
@@ -270,9 +287,9 @@ class CreateArrays(object):
 
     def combined_sn_gal_templates_to_arrays(self, snTemplateLocation, snTempList, galTemplateLocation, galTempList, snFractions):
         images = np.empty((0, int(self.nw)), np.float16)  # Number of pixels
-        labelsIndexes = [] # labels = np.empty((0, self.nLabels), np.uint8)  # Number of labels (SN types)
-        filenames = []  # np.empty(0)
-        typeNames = []  # np.empty(0)
+        labelsIndexes = []
+        filenames = []
+        typeNames = []
         agesList = []
 
         for j in range(len(galTempList)):
@@ -310,7 +327,7 @@ class CreateArrays(object):
                                 labelsIndexes.append(labelIndex) # labels = np.append(labels, np.array([label]), axis=0)
                                 filenames.append("{0}_{1}_{2}_{3}_snCoeff{4}_z{5}".format(snTempList[i], tType, str(ages[ageidx]), galTempList[j], snCoeff, (z)))
                                 typeNames.append(typeName)
-                print(snTempList[i], ageidx, nCols, galTempList[j], snCoeff)
+                print(snTempList[i], nCols, galTempList[j])
 
         return images, np.array(labelsIndexes).astype(int), np.array(filenames), np.array(typeNames)
 
@@ -336,7 +353,9 @@ class CreateArrays(object):
 
         pool = mp.Pool()
         for gal, sn in galAndSnTemps:
-            pool.apply_async(self.combined_sn_gal_templates_to_arrays, args=(snTemplateLocation, [sn], galTemplateLocation, [gal], snFractions), callback=self.collect_results)
+            pool.apply_async(self.combined_sn_gal_templates_to_arrays,
+                             args=(snTemplateLocation, [sn], galTemplateLocation, [gal], snFractions),
+                             callback=self.collect_results)
         pool.close()
         pool.join()
 
@@ -347,4 +366,4 @@ class CreateArrays(object):
 
         print("Completed Creating Arrays!")
 
-        return self.images, self.labelsIndexes.astype(int), self.filenames, self.typeNames
+        return self.images, self.labelsIndexes.astype(np.uint16), self.filenames, self.typeNames

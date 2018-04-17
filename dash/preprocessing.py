@@ -62,11 +62,13 @@ class ReadSpectrumFile(object):
                 flux = np.array(spectrum.flux)
                 print("No wavelength attribute in FITS File. Using 'dispersion' attribute instead")
         except:
-            print("here")
             hdulist = afits.open(self.filename)
             flux = hdulist[0].data
             wave_start = hdulist[0].header['CRVAL1']
-            wave_step = hdulist[0].header['CD1_1']
+            if 'CD1_1' in hdulist[0].header:
+                wave_step = hdulist[0].header['CD1_1']
+            else:
+                wave_step = hdulist[0].header['CDELT1']
             wave_num = flux.shape[0]
             wave = np.linspace(wave_start, wave_start + wave_step * wave_num, num=wave_num)
 
@@ -246,40 +248,46 @@ class PreProcessSpectrum(object):
         mask = (wave >= self.w0) & (wave < self.w1)
         spec = spec[mask]
         wave, flux = spec.T
+        try:
+            fluxOut = np.zeros(int(self.nw))
+            waveMiddle = wave[1:-1]
+            waveTake1Index = wave[:-2]
+            wavePlus1Index = wave[2:]
+            s0List = 0.5 * (waveTake1Index + waveMiddle)
+            s1List = 0.5 * (waveMiddle + wavePlus1Index)
+            s0First = 0.5 * (3 * wave[0] - wave[1])
+            s0Last = 0.5 * (wave[-2] + wave[-1])
+            s1First = 0.5 * (wave[0] + wave[1])
+            s1Last = 0.5 * (3 * wave[-1] - wave[-2])
+            s0List = np.concatenate([[s0First], s0List, [s0Last]])
+            s1List = np.concatenate([[s1First], s1List, [s1Last]])
+            s0LogList = np.log(s0List / self.w0) / self.dwlog + 1
+            s1LogList = np.log(s1List / self.w0) / self.dwlog + 1
+            dnuList = s1List - s0List
 
-        fluxOut = np.zeros(int(self.nw))
-        waveMiddle = wave[1:-1]
-        waveTake1Index = wave[:-2]
-        wavePlus1Index = wave[2:]
-        s0List = 0.5 * (waveTake1Index + waveMiddle)
-        s1List = 0.5 * (waveMiddle + wavePlus1Index)
-        s0First = 0.5 * (3 * wave[0] - wave[1])
-        s0Last = 0.5 * (wave[-2] + wave[-1])
-        s1First = 0.5 * (wave[0] + wave[1])
-        s1Last = 0.5 * (3 * wave[-1] - wave[-2])
-        s0List = np.concatenate([[s0First], s0List, [s0Last]])
-        s1List = np.concatenate([[s1First], s1List, [s1Last]])
-        s0LogList = np.log(s0List / self.w0) / self.dwlog + 1
-        s1LogList = np.log(s1List / self.w0) / self.dwlog + 1
-        dnuList = s1List - s0List
+            s0LogListInt = s0LogList.astype(int)
+            s1LogListInt = s1LogList.astype(int)
+            numOfJLoops = s1LogListInt - s0LogListInt
+            jIndexes = np.flatnonzero(numOfJLoops)
+            jIndexVals = s0LogListInt[jIndexes]
+            prependZero = jIndexVals[0] if jIndexVals[0] < 0 else False
+            if prependZero is not False:
+                jIndexVals[0] = 0
+                numOfJLoops[0] += prependZero
+            numOfJLoops = (numOfJLoops[jIndexes])[jIndexVals < self.nw]
+            fluxValList = ((flux * 1 / (s1LogList - s0LogList) * dnuList)[jIndexes])[jIndexVals < self.nw]
+            fluxValList = np.repeat(fluxValList, numOfJLoops)
+            minJ = min(jIndexVals)
+            maxJ = (max(jIndexVals)+numOfJLoops[-1]) if (max(jIndexVals)+numOfJLoops[-1] < self.nw) else self.nw
+            fluxOut[minJ:maxJ] = fluxValList[:(maxJ-minJ)]
 
-        s0LogListInt = s0LogList.astype(int)
-        s1LogListInt = s1LogList.astype(int)
-        numOfJLoops = s1LogListInt - s0LogListInt
-        jIndexes = np.flatnonzero(numOfJLoops)
-        jIndexVals = s0LogListInt[jIndexes]
-        prependZero = jIndexVals[0] if jIndexVals[0] < 0 else False
-        if prependZero is not False:
-            jIndexVals[0] = 0
-            numOfJLoops[0] += prependZero
-        numOfJLoops = (numOfJLoops[jIndexes])[jIndexVals < self.nw]
-        fluxValList = ((flux * 1 / (s1LogList - s0LogList) * dnuList)[jIndexes])[jIndexVals < self.nw]
-        fluxValList = np.repeat(fluxValList, numOfJLoops)
-        minJ = min(jIndexVals)
-        maxJ = (max(jIndexVals)+numOfJLoops[-1]) if (max(jIndexVals)+numOfJLoops[-1] < self.nw) else self.nw
-        fluxOut[minJ:maxJ] = fluxValList[:(maxJ-minJ)]
-
-        return fluxOut
+            return fluxOut
+        except Exception as e:
+            print(e)
+            print('wave', wave)
+            print('flux', flux)
+            print("########################################ERROR#######################################\n\n\n\n")
+            return np.zeros(len(flux))
 
     def _original_log_binning(self, wave, flux):
         """ Rebin wavelengths: adapted from SNID apodize.f subroutine rebin() """
