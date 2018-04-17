@@ -8,6 +8,11 @@ from dash.combine_sn_and_host import training_template_data
 from dash.preprocessing import ProcessingTools
 from dash.array_tools import zero_non_overlap_part, normalise_spectrum
 
+try:
+    from imblearn import over_sampling
+except ImportError:
+    IMBLEARN_EXISTS = False
+
 
 class AgeBinning(object):
     def __init__(self, minAge, maxAge, ageBinSize):
@@ -105,6 +110,7 @@ def temp_list(tempFileList):
 
     return fileList
 
+
 class ReadSpectra(object):
 
     def __init__(self, w0, w1, nw, snFilename, galFilename=None):
@@ -190,7 +196,7 @@ class ArrayTools(object):
 
 
 class OverSampling(ArrayTools):
-    def __init__(self, nLabels, nw, smote=False, **kwargs):
+    def __init__(self, nLabels, nw, **kwargs):
         """ Must take images and labels as arguments with the keyword specified.
         Can optionally take filenames and typeNames as arguments """
         ArrayTools.__init__(self, nLabels, nw)
@@ -241,7 +247,13 @@ class OverSampling(ArrayTools):
             rlength_array = np.array(oversampled_in[key])
             self.kwargOverSampled[key][offset_in:repeatAmount+offset_in] = rlength_array[:]
 
-    def over_sample_arrays(self):
+    def over_sample_arrays(self, smote=False):
+        if smote:
+            return self.smote_oversample()
+        else:
+            return self.minority_oversample_with_noise()
+
+    def minority_oversample_with_noise(self):
         offset = 0
         pool = mp.Pool()
         for i in range(len(self.kwargShuf['labels'])):
@@ -258,6 +270,14 @@ class OverSampling(ArrayTools):
         print("Before Shuffling")
         self.kwargOverSampledShuf = self.shuffle_arrays(memmapName='oversampled', **self.kwargOverSampled)
         print("After Shuffling")
+
+        return self.kwargOverSampledShuf
+
+    def smote_oversample(self):
+        sm = over_sampling.SMOTE(random_state=42, n_jobs=2)
+        images, labels = sm.fit_sample(X=self.kwargShuf['images'], y=self.kwargShuf['labels'])
+
+        self.kwargOverSampledShuf = self.shuffle_arrays(memmapName='oversampled', images=images, labels=labels)
 
         return self.kwargOverSampledShuf
 
@@ -351,7 +371,7 @@ class CreateArrays(object):
             snFractions = [0.99, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
 
         snTempList = temp_list(snTempFileList)
-        galAndSnTemps = list(itertools.product(galTempList, snTempList))[0:5]
+        galAndSnTemps = list(itertools.product(galTempList, snTempList))
 
         pool = mp.Pool()
         for gal, sn in galAndSnTemps:

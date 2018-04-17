@@ -1,7 +1,6 @@
 import numpy as np
 from scipy.fftpack import fft
 from dash.array_tools import mean_zero_spectra
-import matplotlib.pyplot as plt
 
 
 def cross_correlation(inputFlux, tempFlux, nw, tempMinMaxIndex):

@@ -60,17 +60,15 @@ def train_model(dataDirName, overwrite=False):
     nLabels = len(typeNamesList)
     N = 1024
 
-    overSampling = OverSampling(nLabels, N, smote=False, images=trainImages, labels=trainLabels)
-    trainArrays = overSampling.over_sample_arrays()
+    overSampling = OverSampling(nLabels, N, images=trainImages, labels=trainLabels)
+    trainArrays = overSampling.over_sample_arrays(smote=True)
     trainImages, trainLabels = trainArrays['images'], trainArrays['labels']
 
     # Set up the convolutional network architecture
-
     imWidth = 32  # Image size and width
     imWidthReduc = 8
     a = []
     x, y_, keep_prob, y_conv = convnet_variables(imWidth, imWidthReduc, N, nLabels)
-
 
     with tf.Session() as sess: # config=tf.ConfigProto(inter_op_parallelism_threads=1, intra_op_parallelism_threads=1)) as sess:
         # TRAIN AND EVALUATE MODEL

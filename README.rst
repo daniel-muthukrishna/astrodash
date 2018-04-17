@@ -185,5 +185,15 @@ This example automatically classifies 10 spectra. The last line plots the fifth 
 ------------
 Notes: Sometimes inaccurate results if redshift is unknown.
 
+6. Common Issues
+------------
+If you get an error like this:
+    `ImportError: /lib64/libc.so.6: version 'GLIBC_2.17' not found`
+which is often cause by older linux operating systems, try reinstalling tensorflow with:
+
+        .. code-block:: bash
+
+            conda install tensorflow
+
 
 
