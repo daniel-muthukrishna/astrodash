@@ -35,7 +35,7 @@ class CreateTrainingSet(object):
     def all_templates_to_arrays(self):
         images, labels, filenames, typeNames = self.createArrays.combined_sn_gal_arrays_multiprocessing(self.snidTemplateLocation, self.snidTempFileList, self.galTemplateLocation, self.galTempFileList)
 
-        arraysShuf = self.arrayTools.shuffle_arrays(images=images, labels=labels, filenames=filenames, typeNames=typeNames)
+        arraysShuf = self.arrayTools.shuffle_arrays(images=images, labels=labels, filenames=filenames, typeNames=typeNames, memmapName='all')
 
         typeAmounts = self.type_amounts(labels)
         

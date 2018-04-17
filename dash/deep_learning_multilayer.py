@@ -1,4 +1,5 @@
 import os
+import glob
 import shutil
 import numpy as np
 import itertools
@@ -63,6 +64,11 @@ def train_model(dataDirName, overwrite=False):
     overSampling = OverSampling(nLabels, N, images=trainImages, labels=trainLabels)
     trainArrays = overSampling.over_sample_arrays(smote=False)
     trainImages, trainLabels = trainArrays['images'], trainArrays['labels']
+
+    # Delete temporary memory mapping files
+    for filename in glob.glob('shuffled*.dat') + glob.glob('oversampled*.dat'):
+        if not os.path.samefile(filename, trainImages.filename, trainLabels.filename) and not os.path.samefile(filename, trainLabels.filename):
+            os.remove(filename)
 
     # Set up the convolutional network architecture
     imWidth = 32  # Image size and width

@@ -286,7 +286,7 @@ class OverSampling(ArrayTools):
         sm = over_sampling.SMOTE(random_state=42, n_jobs=30)
         images, labels = sm.fit_sample(X=self.kwargShuf['images'], y=self.kwargShuf['labels'])
 
-        self.kwargOverSampledShuf = self.shuffle_arrays(memmapName='oversampled', images=images, labels=labels)
+        self.kwargOverSampledShuf = self.shuffle_arrays(memmapName='oversampled_smote', images=images, labels=labels)
 
         return self.kwargOverSampledShuf
 
