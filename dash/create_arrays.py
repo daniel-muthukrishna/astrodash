@@ -274,7 +274,7 @@ class OverSampling(ArrayTools):
         return self.kwargOverSampledShuf
 
     def smote_oversample(self):
-        sm = over_sampling.SMOTE(random_state=42, n_jobs=2)
+        sm = over_sampling.SMOTE(random_state=42, n_jobs=30)
         images, labels = sm.fit_sample(X=self.kwargShuf['images'], y=self.kwargShuf['labels'])
 
         self.kwargOverSampledShuf = self.shuffle_arrays(memmapName='oversampled', images=images, labels=labels)
@@ -374,12 +374,16 @@ class CreateArrays(object):
         galAndSnTemps = list(itertools.product(galTempList, snTempList))
 
         pool = mp.Pool()
+        results = []
         for gal, sn in galAndSnTemps:
-            pool.apply_async(self.combined_sn_gal_templates_to_arrays,
-                             args=(snTemplateLocation, [sn], galTemplateLocation, [gal], snFractions),
-                             callback=self.collect_results)
+            results.append(pool.apply_async(self.combined_sn_gal_templates_to_arrays,
+                                           args=(snTemplateLocation, [sn], galTemplateLocation, [gal], snFractions)))
         pool.close()
         pool.join()
+
+        for i, result in enumerate(results):
+            self.collect_results(result.get())
+            print('combining results...', i, len(results))
 
         self.images = np.array(self.images)
         self.labelsIndexes = np.array(self.labelsIndexes)
