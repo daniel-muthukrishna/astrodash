@@ -2,7 +2,8 @@ import numpy as np
 from random import shuffle
 import multiprocessing as mp
 import itertools
-import time
+
+from dash.helpers import temp_list, div0
 from dash.sn_processing import PreProcessing
 from dash.combine_sn_and_host import training_template_data
 from dash.preprocessing import ProcessingTools
@@ -10,6 +11,7 @@ from dash.array_tools import zero_non_overlap_part, normalise_spectrum
 
 try:
     from imblearn import over_sampling
+    IMBLEARN_EXISTS = True
 except ImportError:
     IMBLEARN_EXISTS = False
 
@@ -99,18 +101,6 @@ class CreateLabels(object):
         return np.array(typeNamesList)
 
 
-def temp_list(tempFileList):
-    f = open(tempFileList, 'rU')
-
-    fileList = f.readlines()
-    for i in range(0,len(fileList)):
-        fileList[i] = fileList[i].strip('\n')
-
-    f.close()
-
-    return fileList
-
-
 class ReadSpectra(object):
 
     def __init__(self, w0, w1, nw, snFilename, galFilename=None):
@@ -172,13 +162,6 @@ class ArrayTools(object):
 
         return counts
 
-    def div0(self, a, b):
-        """ ignore / 0, div0( [-1, 0, 1], 0 ) -> [0, 0, 0] """
-        with np.errstate(divide='ignore', invalid='ignore'):
-            c = np.true_divide(a, b)
-            c[~ np.isfinite(c)] = 0  # -inf inf NaN
-        return c
-
     def augment_data(self, flux, stdDevMean=0.05, stdDevStdDev=0.05):
         minIndex, maxIndex = ProcessingTools().min_max_index(flux, outerVal=0.5)
         noise = np.zeros(self.nw)
@@ -206,7 +189,7 @@ class OverSampling(ArrayTools):
         print("Before OverSample")  #
         print(counts)  #
 
-        self.overSampleAmount = np.rint(self.div0(1 * max(counts), counts))  # ignore zeros in counts
+        self.overSampleAmount = np.rint(div0(1 * max(counts), counts))  # ignore zeros in counts
         self.overSampleArraySize = int(sum(np.array(self.overSampleAmount, int) * counts))
         print(np.array(self.overSampleAmount, int) * counts)
         print(np.array(self.overSampleAmount, int))
@@ -228,8 +211,7 @@ class OverSampling(ArrayTools):
         self.kwargShuf = self.shuffle_arrays(memmapName='pre-oversample', **self.kwargs)
         print(len(self.kwargShuf['labels']))
 
-    def oversample_mp(self, args):
-        i_in, offset_in, std_in, labelIndex_in = args
+    def oversample_mp(self, i_in, offset_in, std_in, labelIndex_in):
         print('oversampling', i_in, len(self.kwargShuf['labels']))
         oversampled = {key: [] for key in self.kwargs}
         repeatAmount = int(self.overSampleAmount[labelIndex_in])
@@ -255,19 +237,16 @@ class OverSampling(ArrayTools):
             return self.minority_oversample_with_noise()
 
     def minority_oversample_with_noise(self):
-        argsList = []
         offset = 0
+        pool = mp.Pool()
         for i in range(len(self.kwargShuf['labels'])):
             labelIndex = self.kwargShuf['labels'][i]
             if self.overSampleAmount[labelIndex] < 10:
                 std = 0.03
             else:
                 std = 0.05
-            argsList.append((i, offset, std, labelIndex))
+            pool.apply_async(self.oversample_mp, args=(i, offset, std, labelIndex), callback=self.collect_results)
             offset += int(self.overSampleAmount[labelIndex])
-
-        pool = mp.Pool()
-        results = pool.map_async(self.oversample_mp, argsList, callback=self.collect_results)
         pool.close()
         pool.join()
 
@@ -380,7 +359,7 @@ class CreateArrays(object):
             snFractions = [0.99, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
 
         snTempList = temp_list(snTempFileList)
-        galAndSnTemps = list(itertools.product(galTempList, snTempList))
+        galAndSnTemps = list(itertools.product(galTempList, snTempList))[0:5]
         argsList = []
         for gal, sn in galAndSnTemps:
             argsList.append((snTemplateLocation, [sn], galTemplateLocation, [gal], snFractions))

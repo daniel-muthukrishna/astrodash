@@ -1,7 +1,8 @@
 import numpy as np
 import pickle
 import os
-from dash.create_arrays import AgeBinning, temp_list
+from dash.create_arrays import AgeBinning
+from dash.helpers import temp_list
 from dash.combine_sn_and_host import BinTemplate
 
 

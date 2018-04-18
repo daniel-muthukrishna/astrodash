@@ -1,5 +1,5 @@
 from dash.preprocessing import ReadSpectrumFile
-from dash.create_arrays import temp_list
+from dash.helpers import temp_list
 import pickle
 import os
 import gzip

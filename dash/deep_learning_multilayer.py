@@ -67,7 +67,7 @@ def train_model(dataDirName, overwrite=False):
 
     # Delete temporary memory mapping files
     for filename in glob.glob('shuffled*.dat') + glob.glob('oversampled*.dat'):
-        if not os.path.samefile(filename, trainImages.filename, trainLabels.filename) and not os.path.samefile(filename, trainLabels.filename):
+        if not os.path.samefile(filename, trainImages.filename) and not os.path.samefile(filename, trainLabels.filename):
             os.remove(filename)
 
     # Set up the convolutional network architecture
