@@ -267,14 +267,13 @@ class OverSampling(ArrayTools):
             offset += int(self.overSampleAmount[labelIndex])
 
         pool = mp.Pool()
-        results = pool.map_async(self.oversample_mp, argsList)
+        results = pool.map_async(self.oversample_mp, argsList, callback=self.collect_results)
         pool.close()
         pool.join()
 
-        outputs = results.get()
-        for i, output in enumerate(outputs):
-            self.collect_results(output)
-            print('combining results...', i, len(outputs))
+        # for i, output in enumerate(outputs):
+        #     self.collect_results(output)
+        #     print('combining results...', i, len(outputs))
 
         print("Before Shuffling")
         self.kwargOverSampledShuf = self.shuffle_arrays(memmapName='oversampled', **self.kwargOverSampled)
