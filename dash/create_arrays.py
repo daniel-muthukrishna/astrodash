@@ -238,17 +238,18 @@ class OverSampling(ArrayTools):
 
     def minority_oversample_with_noise(self):
         offset = 0
-        pool = mp.Pool()
+        # pool = mp.Pool()
         for i in range(len(self.kwargShuf['labels'])):
             labelIndex = self.kwargShuf['labels'][i]
             if self.overSampleAmount[labelIndex] < 10:
                 std = 0.03
             else:
                 std = 0.05
-            pool.apply_async(self.oversample_mp, args=(i, offset, std, labelIndex), callback=self.collect_results)
+            # pool.apply_async(self.oversample_mp, args=(i, offset, std, labelIndex), callback=self.collect_results)
+            self.collect_results(self.oversample_mp(i, offset, std, labelIndex))
             offset += int(self.overSampleAmount[labelIndex])
-        pool.close()
-        pool.join()
+        # pool.close()
+        # pool.join()
 
         # for i, output in enumerate(outputs):
         #     self.collect_results(output)
@@ -359,7 +360,7 @@ class CreateArrays(object):
             snFractions = [0.99, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
 
         snTempList = temp_list(snTempFileList)
-        galAndSnTemps = list(itertools.product(galTempList, snTempList))[0:5]
+        galAndSnTemps = list(itertools.product(galTempList, snTempList))
         argsList = []
         for gal, sn in galAndSnTemps:
             argsList.append((snTemplateLocation, [sn], galTemplateLocation, [gal], snFractions))
