@@ -137,11 +137,11 @@ class ArrayTools(object):
         kwargShuf = {}
         for key in kwargs:
             if key == 'images':
-                arrayShuf = np.memmap('shuffled_{}_{}.dat'.format(key, memmapName), dtype=np.float16, mode='w+', shape=(arraySize, int(self.nw)))
+                arrayShuf = np.memmap('smote_shuffled_{}_{}.dat'.format(key, memmapName), dtype=np.float16, mode='w+', shape=(arraySize, int(self.nw)))
             elif key == 'labels':
-                arrayShuf = np.memmap('shuffled_{}_{}.dat'.format(key, memmapName), dtype=np.uint16, mode='w+', shape=arraySize)
+                arrayShuf = np.memmap('smote_shuffled_{}_{}.dat'.format(key, memmapName), dtype=np.uint16, mode='w+', shape=arraySize)
             else:
-                arrayShuf = np.memmap('shuffled_{}_{}.dat'.format(key, memmapName), dtype=object, mode='w+', shape=arraySize)
+                arrayShuf = np.memmap('smote_shuffled_{}_{}.dat'.format(key, memmapName), dtype=object, mode='w+', shape=arraySize)
             kwargShuf[key] = arrayShuf
         idx = 0
         # Randomise order
