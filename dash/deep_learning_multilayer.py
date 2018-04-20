@@ -116,11 +116,11 @@ def train_model(dataDirName, overwrite=False):
                 predictedIndex = np.argmax(yy[i])
                 print(i, testTypeNames[i], typeNamesList[predictedIndex])
 
-    # SAVE THE MODEL
-    saveFilename = os.path.join(dataDirName, "tensorflow_model.ckpt")
-    saver = tf.train.Saver()
-    save_path = saver.save(sess, saveFilename)
-    print("Model saved in file: %s" % save_path)
+        # SAVE THE MODEL
+        saveFilename = os.path.join(dataDirName, "tensorflow_model.ckpt")
+        saver = tf.train.Saver()
+        save_path = saver.save(sess, saveFilename)
+        print("Model saved in file: %s" % save_path)
 
     modelFilenames = [saveFilename + '.index', saveFilename + '.meta', saveFilename + '.data-00000-of-00001']
 
