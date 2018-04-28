@@ -153,6 +153,11 @@ class ReadSpectrumFile(object):
         wave = wave[mask]
         flux = flux[mask]
 
+        if not wave.any():
+            raise Exception("The spectrum {0} with redshift {1} is out of the wavelength range {2}A to {3}A, "
+                            "and cannot be classified. Please remove this object or change the input redshift of this"
+                            " spectrum.".format(self.filename, z, int(self.w0), int(self.w1)))
+
         fluxNorm = (flux - min(flux)) / (max(flux) - min(flux))
 
         return wave, fluxNorm

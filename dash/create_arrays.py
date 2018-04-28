@@ -13,6 +13,7 @@ try:
     from imblearn import over_sampling
     IMBLEARN_EXISTS = True
 except ImportError:
+    print("Need to install imblearn `pip install imblearn` to use smote.")
     IMBLEARN_EXISTS = False
 
 
