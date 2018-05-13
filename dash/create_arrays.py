@@ -136,6 +136,7 @@ class ArrayTools(object):
         Can optionally take filenames and typeNames as arguments """
         arraySize = len(kwargs['labels'])
         kwargShuf = {}
+        self.randnum = np.random.randint(10000)
         for key in kwargs:
             if key == 'images':
                 arrayShuf = np.memmap('shuffled_{}_{}_{}.dat'.format(key, memmapName, self.randnum), dtype=np.float16, mode='w+', shape=(arraySize, int(self.nw)))
