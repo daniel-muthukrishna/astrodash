@@ -12,7 +12,7 @@ scriptDirectory = os.path.dirname(os.path.abspath(__file__))
 
 
 if __name__ == '__main__':
-    modelName = 'zeroZ'
+    modelName = 'zeroZ_trainOnAll'
     dataDirName = os.path.join(scriptDirectory, 'data_files_{0}/'.format(modelName))
     dataFilenames = []
     if not os.path.exists(dataDirName):
@@ -28,8 +28,8 @@ if __name__ == '__main__':
         f.write("Classify Host: False\n")
         f.write("Redshift: Zero\n")
         f.write("Redshift Range: 0. to 0.\n")
-        f.write("Num of Redshifts: 50\n")
-        f.write("Fraction of Training Set Used: 0.\n")
+        f.write("Num of Redshifts: 1\n")
+        f.write("Fraction of Training Set Used: 1.0\n")
         f.write("Training Amount: 50 x 500000\n")
         f.write("Changed wavelength range to 3000 to 10000A\n")
         f.write("Set outer region to 0.5\n")
@@ -44,7 +44,7 @@ if __name__ == '__main__':
     print("time spent: {0:.2f}".format(t2 - t1))
 
     # CREATE TRAINING SET FILES
-    trainingSetFilename = create_training_set_files(dataDirName, minZ=0., maxZ=0., numOfRedshifts=1, trainWithHost=True, classifyHost=False)
+    trainingSetFilename = create_training_set_files(dataDirName, minZ=0., maxZ=0., numOfRedshifts=1, trainWithHost=True, classifyHost=False, trainFraction=1.0)
     dataFilenames.append(trainingSetFilename)
     t3 = time.time()
     print("time spent: {0:.2f}".format(t3 - t2))
