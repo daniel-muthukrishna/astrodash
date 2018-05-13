@@ -76,7 +76,11 @@ def train_model(dataDirName, overwrite=False):
     a = []
     x, y_, keep_prob, y_conv = convnet_variables(imWidth, imWidthReduc, N, nLabels)
 
-    with tf.Session() as sess: # config=tf.ConfigProto(inter_op_parallelism_threads=1, intra_op_parallelism_threads=1)) as sess:
+    config = tf.ConfigProto()
+    config.intra_op_parallelism_threads = 44
+    config.inter_op_parallelism_threads = 44
+
+    with tf.Session(config=config) as sess: # config=tf.ConfigProto(inter_op_parallelism_threads=1, intra_op_parallelism_threads=1)) as sess:
         # TRAIN AND EVALUATE MODEL
         cross_entropy = tf.reduce_mean(-tf.reduce_sum(y_ * tf.log(y_conv + 1e-8), reduction_indices=[1]))
         train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy)
@@ -144,7 +148,7 @@ def train_model(dataDirName, overwrite=False):
 
 if __name__ == '__main__':
     t1 = time.time()
-    savedFilenames = train_model('data_files/', overwrite=False)
+    savedFilenames = train_model('data_files_zeroZ/', overwrite=False)
     t2 = time.time()
     print("time spent: {0:.2f}".format(t2 - t1))
 

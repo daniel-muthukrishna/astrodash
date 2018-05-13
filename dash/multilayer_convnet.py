@@ -70,7 +70,7 @@ def convnet_variables(imWidth, imWidthReduc, N, ntypes):
     h_fc2 = Layer3.connect_layers(h_pool3, 64, 2)
 
     # READOUT LAYER
-    keep_prob, h_fc2_drop = Layer3.dropout(h_fc1)
+    keep_prob, h_fc2_drop = Layer3.dropout(h_fc2)
     W_fc3, b_fc3 = Layer3.readout_layer()
     y_conv = tf.nn.softmax(tf.matmul(h_fc2_drop, W_fc3) + b_fc3)
 
