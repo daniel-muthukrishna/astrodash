@@ -33,6 +33,7 @@ if __name__ == '__main__':
         f.write("Training Amount: 50 x 500000\n")
         f.write("Changed wavelength range to 3000 to 10000A\n")
         f.write("Set outer region to 0.5\n")
+        f.write("Added 3rd convolutional layer to neural network\n")
         dataFilenames.append(modelInfoFilename)
 
     # CREATE PARAMETERS PICKLE FILE
