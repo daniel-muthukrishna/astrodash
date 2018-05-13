@@ -12,7 +12,14 @@ scriptDirectory = os.path.dirname(os.path.abspath(__file__))
 
 
 if __name__ == '__main__':
-    modelName = 'zeroZ_trainOnAll'
+    modelName = 'zeroZ'
+    trainWithHost = True
+    classifyHost = False
+    trainFraction = 0.8
+    minZ = 0.
+    maxZ = 0.
+    numOfRedshifts = 1
+
     dataDirName = os.path.join(scriptDirectory, 'data_files_{0}/'.format(modelName))
     dataFilenames = []
     if not os.path.exists(dataDirName):
@@ -23,13 +30,13 @@ if __name__ == '__main__':
     with open(modelInfoFilename, "w") as f:
         f.write("Date Time: %s\n" % time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()))
         f.write("Directory: %s\n" % dataDirName)
-        f.write("Add Host: True\n")
+        f.write("Add Host: {}\n".format(trainWithHost))
         f.write("SN-Host fractions: [0.99, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]\n")
-        f.write("Classify Host: False\n")
+        f.write("Classify Host: {}\n".format(classifyHost))
         f.write("Redshift: Zero\n")
-        f.write("Redshift Range: 0. to 0.\n")
-        f.write("Num of Redshifts: 1\n")
-        f.write("Fraction of Training Set Used: 1.0\n")
+        f.write("Redshift Range: {} to {}\n".format(minZ, maxZ))
+        f.write("Num of Redshifts: {}\n".format(numOfRedshifts))
+        f.write("Fraction of Training Set Used: {}\n".format(numOfRedshifts))
         f.write("Training Amount: 50 x 500000\n")
         f.write("Changed wavelength range to 3000 to 10000A\n")
         f.write("Set outer region to 0.5\n")
@@ -44,7 +51,7 @@ if __name__ == '__main__':
     print("time spent: {0:.2f}".format(t2 - t1))
 
     # CREATE TRAINING SET FILES
-    trainingSetFilename = create_training_set_files(dataDirName, minZ=0., maxZ=0., numOfRedshifts=1, trainWithHost=True, classifyHost=False, trainFraction=1.0)
+    trainingSetFilename = create_training_set_files(dataDirName, minZ=minZ, maxZ=maxZ, numOfRedshifts=numOfRedshifts, trainWithHost=trainWithHost, classifyHost=classifyHost, trainFraction=trainFraction)
     dataFilenames.append(trainingSetFilename)
     t3 = time.time()
     print("time spent: {0:.2f}".format(t3 - t2))
