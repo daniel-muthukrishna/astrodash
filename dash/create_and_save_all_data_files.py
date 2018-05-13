@@ -12,13 +12,13 @@ scriptDirectory = os.path.dirname(os.path.abspath(__file__))
 
 
 if __name__ == '__main__':
-    modelName = 'zeroZ'
+    modelName = 'zeroZ_trainOnAll'
     trainWithHost = True
     classifyHost = False
-    trainFraction = 0.8
     minZ = 0.
     maxZ = 0.
     numOfRedshifts = 1
+    trainFraction = 1.0
 
     dataDirName = os.path.join(scriptDirectory, 'data_files_{0}/'.format(modelName))
     dataFilenames = []
@@ -45,13 +45,13 @@ if __name__ == '__main__':
 
     # CREATE PARAMETERS PICKLE FILE
     t1 = time.time()
-    trainingParamsFilename = create_training_params_file(dataDirName)
+    trainingParamsFilename = create_training_params_file(dataDirName)  # os.path.join(dataDirName, 'training_params.pickle')
     dataFilenames.append(trainingParamsFilename)
     t2 = time.time()
     print("time spent: {0:.2f}".format(t2 - t1))
 
     # CREATE TRAINING SET FILES
-    trainingSetFilename = create_training_set_files(dataDirName, minZ=minZ, maxZ=maxZ, numOfRedshifts=numOfRedshifts, trainWithHost=trainWithHost, classifyHost=classifyHost, trainFraction=trainFraction)
+    trainingSetFilename = create_training_set_files(dataDirName, minZ=minZ, maxZ=maxZ, numOfRedshifts=numOfRedshifts, trainWithHost=trainWithHost, classifyHost=classifyHost, trainFraction=trainFraction)  # os.path.join(dataDirName, 'training_set.zip')
     dataFilenames.append(trainingSetFilename)
     t3 = time.time()
     print("time spent: {0:.2f}".format(t3 - t2))
@@ -73,11 +73,11 @@ if __name__ == '__main__':
         for f in dataFilenames[0:2] + dataFilenames[3:]:
             myzip.write(f)
 
-    # Delete temporary memory mapping files
-    for filename in glob.glob('shuffled*.dat'):
-        os.remove(filename)
-    for filename in glob.glob('oversampled*.dat'):
-        os.remove(filename)
+    # # Delete temporary memory mapping files
+    # for filename in glob.glob('shuffled*.dat'):
+    #     os.remove(filename)
+    # for filename in glob.glob('oversampled*.dat'):
+    #     os.remove(filename)
 
     # Delete data_files folder since they are now in the zip files
     # for filename in filenames:
