@@ -145,14 +145,12 @@ class ArrayTools(object):
             else:
                 arrayShuf = np.memmap('shuffled_{}_{}_{}.dat'.format(key, memmapName, self.randnum), dtype=object, mode='w+', shape=arraySize)
             kwargShuf[key] = arrayShuf
-        idx = 0
+
         # Randomise order
-        indexShuf = list(range(arraySize))
-        shuffle(indexShuf)
-        for i in indexShuf:
-            for key in kwargs:
-                kwargShuf[key][idx] = kwargs[key][i]
-            idx += 1
+        p = np.random.permutation(len(kwargs['labels']))
+        for key in kwargs:
+            assert len(kwargs[key]) == arraySize
+            kwargShuf[key] = kwargs[key][p]
 
         return kwargShuf
 
