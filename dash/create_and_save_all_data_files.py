@@ -31,7 +31,7 @@ if __name__ == '__main__':
         f.write("Date Time: %s\n" % time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()))
         f.write("Directory: %s\n" % dataDirName)
         f.write("Add Host: {}\n".format(trainWithHost))
-        f.write("SN-Host fractions: [0.99, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]\n")
+        f.write("SN-Host fractions: [0.99, 0.98, 0.95, 0.93, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]\n")
         f.write("Classify Host: {}\n".format(classifyHost))
         f.write("Redshift: Zero\n")
         f.write("Redshift Range: {} to {}\n".format(minZ, maxZ))
