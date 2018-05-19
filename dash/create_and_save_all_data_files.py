@@ -12,7 +12,7 @@ scriptDirectory = os.path.dirname(os.path.abspath(__file__))
 
 
 if __name__ == '__main__':
-    modelName = 'zeroZ_trainOnAll'
+    modelName = 'zeroZ_trainOnAll_morehostfracs'
     trainWithHost = True
     classifyHost = False
     minZ = 0.

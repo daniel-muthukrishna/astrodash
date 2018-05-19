@@ -133,12 +133,17 @@ class RlapCalc(object):
         # plt.plot(self.zAxis, np.correlate(templateFlux, templateFlux, mode='Full')[::-1][512-shift:1536-shift]/max(np.correlate(templateFlux, templateFlux, mode='Full')))
 
         crossCorr = np.correlate(self.inputFlux, templateFlux, mode='Full')[::-1][int(self.nw/2):int(self.nw + self.nw/2)]/max(np.correlate(self.inputFlux, templateFlux, mode='Full'))
-        deltapeak, h = self._get_peaks(crossCorr)[0]
-        shift = int(deltapeak - self.nw / 2)
-        autoCorr = np.correlate(templateFlux, templateFlux, mode='Full')[::-1][int(self.nw/2)-shift:int(self.nw + self.nw/2)-shift]/max(np.correlate(templateFlux, templateFlux, mode='Full'))
 
-        aRandomFunction = crossCorr - autoCorr
-        rmsA = np.std(aRandomFunction)
+        try:
+            deltapeak, h = self._get_peaks(crossCorr)[0]
+            shift = int(deltapeak - self.nw / 2)
+            autoCorr = np.correlate(templateFlux, templateFlux, mode='Full')[::-1][int(self.nw/2)-shift:int(self.nw + self.nw/2)-shift]/max(np.correlate(templateFlux, templateFlux, mode='Full'))
+
+            aRandomFunction = crossCorr - autoCorr
+            rmsA = np.std(aRandomFunction)
+        except IndexError as err:
+            print("Error: Cross-correlation is zero, probably caused by empty spectrum.", err)
+            rmsA = 1
 
         return xCorr, rmsInput, rmsTemp, xCorrNorm, rmsXCorr, xCorrNormRearranged, rmsA
 

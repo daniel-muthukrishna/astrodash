@@ -357,7 +357,7 @@ class CreateArrays(object):
             snFractions = [1.0]
         else:
             galTempList = temp_list(galTempFileList)
-            snFractions = [0.99, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
+            snFractions = [0.99, 0.98, 0.95, 0.93, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
 
         snTempList = temp_list(snTempFileList)
         galAndSnTemps = list(itertools.product(galTempList, snTempList))
