@@ -292,7 +292,7 @@ class PreProcessSpectrum(object):
             print('wave', wave)
             print('flux', flux)
             print("########################################ERROR#######################################\n\n\n\n")
-            return np.zeros(len(flux))
+            return np.zeros(self.nw)
 
     def _original_log_binning(self, wave, flux):
         """ Rebin wavelengths: adapted from SNID apodize.f subroutine rebin() """
