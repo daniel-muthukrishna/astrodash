@@ -76,11 +76,7 @@ def train_model(dataDirName, overwrite=False):
     a = []
     x, y_, keep_prob, y_conv = convnet_variables(imWidth, imWidthReduc, N, nLabels)
 
-    config = tf.ConfigProto()
-    config.intra_op_parallelism_threads = 44
-    config.inter_op_parallelism_threads = 44
-
-    with tf.Session(config=config) as sess: # config=tf.ConfigProto(inter_op_parallelism_threads=1, intra_op_parallelism_threads=1)) as sess:
+    with tf.Session() as sess: # config=tf.ConfigProto(inter_op_parallelism_threads=1, intra_op_parallelism_threads=1)) as sess:
         # TRAIN AND EVALUATE MODEL
         cross_entropy = tf.reduce_mean(-tf.reduce_sum(y_ * tf.log(y_conv + 1e-8), reduction_indices=[1]))
         train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy)

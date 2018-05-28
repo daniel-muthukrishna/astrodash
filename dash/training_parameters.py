@@ -8,7 +8,7 @@ def create_training_params_file(dataDirName):
                      'Ib-norm', 'Ibn', 'IIb', 'Ib-pec', 'Ic-norm', 'Ic-broad',
                      'Ic-pec', 'IIP', 'IIL', 'IIn', 'II-pec'],
         'nTypes': 17,
-        'w0': 3000.,  # wavelength range in Angstroms
+        'w0': 3500.,  # wavelength range in Angstroms
         'w1': 10000.,
         'nw': 1024,  # number of wavelength bins
         'minAge': -20.,

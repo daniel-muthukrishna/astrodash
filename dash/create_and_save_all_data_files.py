@@ -12,7 +12,7 @@ scriptDirectory = os.path.dirname(os.path.abspath(__file__))
 
 
 if __name__ == '__main__':
-    modelName = 'zeroZ_trainOnAll_morehostfracs'
+    modelName = 'zeroZ_trainOnAll_w0-3000'
     trainWithHost = True
     classifyHost = False
     minZ = 0.
@@ -38,9 +38,9 @@ if __name__ == '__main__':
         f.write("Num of Redshifts: {}\n".format(numOfRedshifts))
         f.write("Fraction of Training Set Used: {}\n".format(numOfRedshifts))
         f.write("Training Amount: 50 x 500000\n")
-        f.write("Changed wavelength range to 3000 to 10000A\n")
+        f.write("Changed wavelength range to 3500 to 10000A\n")
         f.write("Set outer region to 0.5\n")
-        f.write("Added 3rd convolutional layer to neural network\n")
+        f.write("Using 2 convolutional layers in neural network\n")
         dataFilenames.append(modelInfoFilename)
 
     # CREATE PARAMETERS PICKLE FILE
