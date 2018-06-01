@@ -106,7 +106,7 @@ class BinTemplate(object):
 
     def _bin_gal_template(self):
         wave, flux = self.readSpectrumFile.two_col_input_spectrum(self.wave, self.flux, z=0)
-        flux = normalise_spectrum(flux)
+        # flux = normalise_spectrum(flux)
         binnedWave, binnedFlux, minIndex, maxIndex = self.preProcess.log_wavelength(wave, flux)
         contRemovedFlux, continuum = self.preProcess.continuum_removal(binnedWave, binnedFlux, self.numSplinePoints, minIndex, maxIndex)
         newFlux = contRemovedFlux * continuum  # Spectral features weighted by the continuum
