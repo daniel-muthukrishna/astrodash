@@ -12,13 +12,14 @@ scriptDirectory = os.path.dirname(os.path.abspath(__file__))
 
 
 if __name__ == '__main__':
-    modelName = 'zeroZ_trainOnAll_w0-3500'
+    modelName = 'new_zeroZ_classifyHost'
     trainWithHost = True
-    classifyHost = False
+    classifyHost = True
     minZ = 0.
     maxZ = 0.
     numOfRedshifts = 1
     trainFraction = 1.0
+    numTrainBatches = 2000000
 
     dataDirName = os.path.join(scriptDirectory, 'data_files_{0}/'.format(modelName))
     dataFilenames = []
@@ -37,7 +38,7 @@ if __name__ == '__main__':
         f.write("Redshift Range: {} to {}\n".format(minZ, maxZ))
         f.write("Num of Redshifts: {}\n".format(numOfRedshifts))
         f.write("Fraction of Training Set Used: {}\n".format(numOfRedshifts))
-        f.write("Training Amount: 50 x 500000\n")
+        f.write("Training Amount: 50 x {}\n".format(numTrainBatches))
         f.write("Changed wavelength range to 3500 to 10000A\n")
         f.write("Set outer region to 0.5\n")
         f.write("Using 2 convolutional layers in neural network\n")
@@ -57,7 +58,7 @@ if __name__ == '__main__':
     print("time spent: {0:.2f}".format(t3 - t2))
 
     # TRAIN TENSORFLOW MODEL
-    modelFilenames = train_model(dataDirName, overwrite=True)
+    modelFilenames = train_model(dataDirName, overwrite=True, numTrainBatches=numTrainBatches)
     dataFilenames.extend(modelFilenames)
     t4 = time.time()
     print("time spent: {0:.2f}".format(t4 - t3))

@@ -13,7 +13,7 @@ from dash.model_statistics import calc_model_statistics
 from dash.create_arrays import OverSampling
 
 
-def train_model(dataDirName, overwrite=False):
+def train_model(dataDirName, overwrite=False, numTrainBatches=500000):
     """  Train model. Unzip and overwrite exisiting training set if overwrite is True"""
     # Open training data files
     trainingSet = os.path.join(dataDirName, 'training_set.zip')
@@ -92,7 +92,7 @@ def train_model(dataDirName, overwrite=False):
 
         trainImagesCycle = itertools.cycle(trainImages)
         trainLabelsCycle = itertools.cycle(trainLabels)
-        for i in range(500000):
+        for i in range(numTrainBatches):
             batch_xs = np.array(list(itertools.islice(trainImagesCycle, 50 * i, 50 * i + 50)))
             batch_ys = labels_indexes_to_arrays(list(itertools.islice(trainLabelsCycle, 50 * i, 50 * i + 50)), nLabels)
             train_step.run(feed_dict={x: batch_xs, y_: batch_ys, keep_prob: 0.5})
@@ -144,7 +144,7 @@ def train_model(dataDirName, overwrite=False):
 
 if __name__ == '__main__':
     t1 = time.time()
-    savedFilenames = train_model('data_files_zeroZ/', overwrite=False)
+    savedFilenames = train_model('data_files_zeroZ/', overwrite=False, numTrainBatches=500000)
     t2 = time.time()
     print("time spent: {0:.2f}".format(t2 - t1))
 
