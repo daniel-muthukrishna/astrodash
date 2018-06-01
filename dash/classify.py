@@ -94,7 +94,7 @@ class Classify(object):
             for i in range(20):
                 host, name, age = classification_split(bestTypes[specNum][i])
                 if not self.knownZ:
-                    redshifts.append(self.calc_redshift(inputImages[i], name, age)[0], inputMinMaxIndexes[i])
+                    redshifts.append(self.calc_redshift(inputImages[i], name, age, inputMinMaxIndexes[i])[0])
                 prob = softmaxes[specNum][i]
                 bestMatchList.append((host, name, age, prob))
             bestMatchList = np.array(bestMatchList)
@@ -162,7 +162,6 @@ class Classify(object):
         templateFluxes = []
         templateMinMaxIndexes = []
         for i in range(numOfSubTemplates):
-            templateNames = []
             templateFluxes.append(snInfos[i][1])
             templateMinMaxIndexes.append((snInfos[i][2], snInfos[i][3]))
 
