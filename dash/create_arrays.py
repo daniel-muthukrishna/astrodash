@@ -1,3 +1,5 @@
+import os
+import glob
 import numpy as np
 from random import shuffle
 import multiprocessing as mp
@@ -292,7 +294,6 @@ class CreateArrays(object):
         self.createLabels = CreateLabels(self.nTypes, self.minAge, self.maxAge, self.ageBinSize, self.typeList, hostTypes, nHostTypes)
         self.hostTypes = hostTypes
 
-        # TODO: Maybe do memory mapping for these arrays
         self.images = []
         self.labelsIndexes = []
         self.filenames = []
@@ -300,11 +301,14 @@ class CreateArrays(object):
 
     def combined_sn_gal_templates_to_arrays(self, args):
         snTemplateLocation, snTempList, galTemplateLocation, galTempList, snFractions = args
-        images = np.empty((0, int(self.nw)), np.float16)  # Number of pixels
-        labelsIndexes = []
-        filenames = []
-        typeNames = []
-        agesList = []
+
+        randnum = np.random.randint(10000)
+        arraySize = len(galTempList) * len(snTempList) * 50 * len(snFractions) * self.numOfRedshifts
+        images = np.memmap('images_{}_{}.dat'.format(snTempList[0], randnum), dtype=np.float16, mode='w+', shape=(arraySize, int(self.nw)))
+        labelsIndexes = np.memmap('labels_{}_{}.dat'.format(snTempList[0], randnum), dtype=np.uint16, mode='w+', shape=arraySize)
+        filenames = np.memmap('filenames_{}_{}.dat'.format(snTempList[0], randnum), dtype=object, mode='w+', shape=arraySize)
+        typeNames = np.memmap('typeNames_{}_{}.dat'.format(snTempList[0], randnum), dtype=object, mode='w+', shape=arraySize)
+        nRows = 0
 
         for j in range(len(galTempList)):
             galFilename = galTemplateLocation + galTempList[j] if galTemplateLocation is not None else None
@@ -322,7 +326,6 @@ class CreateArrays(object):
                             redshifts = np.random.uniform(low=self.minZ, high=self.maxZ, size=self.numOfRedshifts)
                         for z in redshifts:
                             tempWave, tempFlux, nCols, ages, tType, tMinIndex, tMaxIndex = readSpectra.sn_plus_gal_template(ageidx, snCoeff, galCoeff, z)
-                            agesList.append(ages[ageidx])
                             if tMinIndex == tMaxIndex or not tempFlux.any():
                                 print("NO DATA for {} {} ageIdx:{} z>={}".format(galTempList[j], snTempList[i], ageidx, z))
                                 break
@@ -337,21 +340,22 @@ class CreateArrays(object):
                                 nonzeroflux = tempFlux[tMinIndex:tMaxIndex + 1]
                                 newflux = (nonzeroflux - min(nonzeroflux)) / (max(nonzeroflux) - min(nonzeroflux))
                                 newflux2 = np.concatenate((tempFlux[0:tMinIndex], newflux, tempFlux[tMaxIndex + 1:]))
-                                images = np.append(images, np.array([newflux2]), axis=0)
-                                labelsIndexes.append(labelIndex) # labels = np.append(labels, np.array([label]), axis=0)
-                                filenames.append("{0}_{1}_{2}_{3}_snCoeff{4}_z{5}".format(snTempList[i], tType, str(ages[ageidx]), galTempList[j], snCoeff, (z)))
-                                typeNames.append(typeName)
+                                images[nRows] = np.array([newflux2])
+                                labelsIndexes[nRows] = labelIndex
+                                filenames[nRows] = "{0}_{1}_{2}_{3}_snCoeff{4}_z{5}".format(snTempList[i], tType, str(ages[ageidx]), galTempList[j], snCoeff, (z))
+                                typeNames[nRows] = typeName
+                                nRows += 1
                 print(snTempList[i], nCols, galTempList[j])
 
-        return images, np.array(labelsIndexes).astype(int), np.array(filenames), np.array(typeNames)
+        return images, np.array(labelsIndexes).astype(int), np.array(filenames), np.array(typeNames), nRows
 
     def collect_results(self, result):
         """Uses apply_async's callback to setup up a separate Queue for each process"""
-        imagesPart, labelsPart, filenamesPart, typeNamesPart = result
-        self.images.extend(imagesPart)
-        self.labelsIndexes.extend(labelsPart)
-        self.filenames.extend(filenamesPart)
-        self.typeNames.extend(typeNamesPart)
+        imagesPart, labelsPart, filenamesPart, typeNamesPart, nRows = result
+        self.images.extend(imagesPart[0:nRows])
+        self.labelsIndexes.extend(labelsPart[0:nRows])
+        self.filenames.extend(filenamesPart[0:nRows])
+        self.typeNames.extend(typeNamesPart[0:nRows])
 
     def combined_sn_gal_arrays_multiprocessing(self, snTemplateLocation, snTempFileList, galTemplateLocation, galTempFileList):
         if galTemplateLocation is None or galTempFileList is None:
@@ -376,7 +380,7 @@ class CreateArrays(object):
         outputs = results.get()
         for i, output in enumerate(outputs):
             self.collect_results(output)
-            print('combining results...', i, len(outputs))
+            print('combining results...', output[-1], i, len(outputs))
 
         self.images = np.array(self.images)
         self.labelsIndexes = np.array(self.labelsIndexes)
@@ -384,5 +388,15 @@ class CreateArrays(object):
         self.typeNames = np.array(self.typeNames)
 
         print("Completed Creating Arrays!")
+
+        # Delete temporary memory mapping files
+        for filename in glob.glob('images_*.dat'):
+            os.remove(filename)
+        for filename in glob.glob('labels*.dat'):
+            os.remove(filename)
+        for filename in glob.glob('filenames_*.dat'):
+            os.remove(filename)
+        for filename in glob.glob('typeNames_*.dat'):
+            os.remove(filename)
 
         return self.images, self.labelsIndexes.astype(np.uint16), self.filenames, self.typeNames

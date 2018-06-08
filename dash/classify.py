@@ -144,6 +144,7 @@ class Classify(object):
                 rlapLabel = "No rlap"
         else:
             rlapLabel = "(NO_TEMPLATES)"
+            rlapWarningBool = "None"
 
         # import matplotlib
         # matplotlib.use('TkAgg')

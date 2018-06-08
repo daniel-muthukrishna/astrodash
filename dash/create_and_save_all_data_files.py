@@ -12,12 +12,12 @@ scriptDirectory = os.path.dirname(os.path.abspath(__file__))
 
 
 if __name__ == '__main__':
-    modelName = 'new_zeroZ_classifyHost'
+    modelName = 'new_agnosticZ'
     trainWithHost = True
-    classifyHost = True
+    classifyHost = False
     minZ = 0.
-    maxZ = 0.
-    numOfRedshifts = 1
+    maxZ = 0.8
+    numOfRedshifts = 50
     trainFraction = 1.0
     numTrainBatches = 2000000
 
