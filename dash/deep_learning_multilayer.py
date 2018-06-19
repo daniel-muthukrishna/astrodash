@@ -135,7 +135,7 @@ def train_model(dataDirName, overwrite=False, numTrainBatches=500000):
         print(e)
 
     try:
-        calc_model_statistics(saveFilename, testImages, testTypeNames, typeNamesList)
+        calc_model_statistics(saveFilename, testLabelsIndexes, testImages, testTypeNames, typeNamesList)
     except Exception as e:
         print(e)
 
