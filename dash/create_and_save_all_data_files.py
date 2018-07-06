@@ -17,9 +17,14 @@ if __name__ == '__main__':
     classifyHost = False
     minZ = 0.
     maxZ = 0.8
-    numOfRedshifts = 50
-    trainFraction = 1.0
+    redshiftDuringTraining = True
+    trainFraction = 1
     numTrainBatches = 2000000
+    # Do not change this unless we want to redshift before training.
+    numOfRedshifts = 1
+
+    if numOfRedshifts != 1:
+        redshiftDuringTraining = False
 
     dataDirName = os.path.join(scriptDirectory, 'data_files_{0}/'.format(modelName))
     dataFilenames = []
@@ -58,7 +63,7 @@ if __name__ == '__main__':
     print("time spent: {0:.2f}".format(t3 - t2))
 
     # TRAIN TENSORFLOW MODEL
-    modelFilenames = train_model(dataDirName, overwrite=True, numTrainBatches=numTrainBatches)
+    modelFilenames = train_model(dataDirName, overwrite=True, numTrainBatches=numTrainBatches, minZ=minZ, maxZ=maxZ, redshifting=redshiftDuringTraining)
     dataFilenames.extend(modelFilenames)
     t4 = time.time()
     print("time spent: {0:.2f}".format(t4 - t3))

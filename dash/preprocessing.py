@@ -358,10 +358,10 @@ class PreProcessSpectrum(object):
 
         return meanzeroflux
 
-    def apodize(self, flux, minindex, maxindex):
+    def apodize(self, flux, minindex, maxindex, outerVal=0):
         """apodize with 5% cosine bell"""
         percent = 0.05
-        fluxout = flux + 0
+        fluxout = np.copy(flux) - outerVal
 
         nsquash = int(self.nw * percent)
         for i in range(0, nsquash):
@@ -374,6 +374,10 @@ class PreProcessSpectrum(object):
                 print("INVALID FLUX IN PREPROCESSING.PY APODIZE()")
                 print("MININDEX=%d, i=%d" % (minindex, i))
                 break
+
+        if outerVal != 0:
+            fluxout = fluxout + outerVal
+            fluxout = zero_non_overlap_part(fluxout, minindex, maxindex, outerVal=outerVal)
 
         return fluxout
 

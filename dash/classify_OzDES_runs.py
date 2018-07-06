@@ -58,7 +58,7 @@ def main(runDirectory, atelTextFile, saveMatchesFilename):
         print("{0:17} | {1:5} | {2:8} | {3:10} | {4:6} | {5:10} | {6:10}".format('_'.join([filenames[i].split('/')[-1].split('_')[0], filenames[i].split('/')[-1].split('_')[3]]) , redshifts[i], bestTypes[i][0], bestTypes[i][1], bestTypes[i][2], matchesFlag[i].replace(' matches',''), wikiClassifications[i]))
 
     # Plot one of the matches
-    classification.plot_with_gui(indexToPlot=7)
+    classification.plot_with_gui(indexToPlot=0)
 
 
 if __name__ == '__main__':

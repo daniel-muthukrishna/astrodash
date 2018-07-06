@@ -77,7 +77,9 @@ setup(name='astrodash',
     # pip to create the appropriate form of executable for the target platform.
     entry_points={
         'console_scripts': [
-            'sample=dash:main'
+            'sample=dash:main',
+            'dash=dash:run_gui',
+            'astrodash=dash:run_gui'
         ],
     },
 )

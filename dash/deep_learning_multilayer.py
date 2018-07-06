@@ -11,9 +11,10 @@ import time
 from dash.array_tools import labels_indexes_to_arrays
 from dash.model_statistics import calc_model_statistics
 from dash.create_arrays import OverSampling
+from dash.helpers import redshift_binned_spectrum, calc_params_for_log_redshifting
 
 
-def train_model(dataDirName, overwrite=False, numTrainBatches=500000):
+def train_model(dataDirName, overwrite=False, numTrainBatches=500000, minZ=0, maxZ=0, redshifting=False):
     """  Train model. Unzip and overwrite exisiting training set if overwrite is True"""
     # Open training data files
     trainingSet = os.path.join(dataDirName, 'training_set.zip')
@@ -60,6 +61,7 @@ def train_model(dataDirName, overwrite=False, numTrainBatches=500000):
 
     nLabels = len(typeNamesList)
     N = 1024
+    nIndexes, dwlog, w0, w1, nw = calc_params_for_log_redshifting(dataDirName)
 
     overSampling = OverSampling(nLabels, N, images=trainImages, labels=trainLabels)
     trainArrays = overSampling.over_sample_arrays(smote=False)
@@ -95,6 +97,13 @@ def train_model(dataDirName, overwrite=False, numTrainBatches=500000):
         for i in range(numTrainBatches):
             batch_xs = np.array(list(itertools.islice(trainImagesCycle, 50 * i, 50 * i + 50)))
             batch_ys = labels_indexes_to_arrays(list(itertools.islice(trainLabelsCycle, 50 * i, 50 * i + 50)), nLabels)
+
+            # Redshift arrays
+            if redshifting is True:
+                redshifts = np.random.uniform(low=minZ, high=maxZ, size=len(batch_xs))
+                for i, z in enumerate(redshifts):
+                    batch_xs[i] = redshift_binned_spectrum(batch_xs[i], z, nIndexes, dwlog, w0, w1, nw, outerVal=0.5)
+
             train_step.run(feed_dict={x: batch_xs, y_: batch_ys, keep_prob: 0.5})
             if i % 100 == 0:
                 train_accuracy = accuracy.eval(feed_dict={x: batch_xs, y_: batch_ys, keep_prob: 1.0})
