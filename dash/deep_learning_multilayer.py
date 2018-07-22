@@ -101,8 +101,8 @@ def train_model(dataDirName, overwrite=False, numTrainBatches=500000, minZ=0, ma
             # Redshift arrays
             if redshifting is True:
                 redshifts = np.random.uniform(low=minZ, high=maxZ, size=len(batch_xs))
-                for i, z in enumerate(redshifts):
-                    batch_xs[i] = redshift_binned_spectrum(batch_xs[i], z, nIndexes, dwlog, w0, w1, nw, outerVal=0.5)
+                for j, z in enumerate(redshifts):
+                    batch_xs[j] = redshift_binned_spectrum(batch_xs[j], z, nIndexes, dwlog, w0, w1, nw, outerVal=0.5)
 
             train_step.run(feed_dict={x: batch_xs, y_: batch_ys, keep_prob: 0.5})
             if i % 100 == 0:

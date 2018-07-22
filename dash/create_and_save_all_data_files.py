@@ -42,6 +42,7 @@ if __name__ == '__main__':
         f.write("Redshift: Zero\n")
         f.write("Redshift Range: {} to {}\n".format(minZ, maxZ))
         f.write("Num of Redshifts: {}\n".format(numOfRedshifts))
+        f.write("Redshift During Training: {}\n".format(redshiftDuringTraining))
         f.write("Fraction of Training Set Used: {}\n".format(trainFraction))
         f.write("Training Amount: 50 x {}\n".format(numTrainBatches))
         f.write("Changed wavelength range to 3500 to 10000A\n")
