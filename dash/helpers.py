@@ -9,8 +9,8 @@ def calc_params_for_log_redshifting(dataDirName):
     with open(os.path.join(dataDirName, 'training_params.pickle'), 'rb') as f1:
         pars = pickle.load(f1)
     w0, w1, nw = pars['w0'], pars['w1'], pars['nw']
-
     n = np.arange(0, int(nw))
+
     dwlog = np.log(w1 / w0) / nw
     # wlog = w0 * np.exp(n * dwlog)
     # waveInterp = scipy.interpolate.interp1d(n, wlog)  # Will interpolate any value within wavelength given an index
@@ -22,12 +22,13 @@ def redshift_binned_spectrum(flux, z, nIndexes, dwlog, w0, w1, nw, outerVal=0.5)
     # assert len(flux) == nw
     redshiftedIndexes = nIndexes + np.log(1 + z) / dwlog
     indexesInRange = redshiftedIndexes[redshiftedIndexes > 0]
-    fluxInterp = scipy.interpolate.interp1d(indexesInRange, flux[redshiftedIndexes>0], kind='linear')
+    fluxInterp = scipy.interpolate.interp1d(indexesInRange, flux[redshiftedIndexes > 0], kind='linear')
 
-    maxWaveIndex = len(indexesInRange)
+    minWaveIndex = int(indexesInRange[0])
+
     fluxRedshifted = np.zeros(nw)
-    fluxRedshifted[0:maxWaveIndex] = fluxInterp(indexesInRange)
-    fluxRedshifted[maxWaveIndex:] = outerVal * np.ones(nw-maxWaveIndex)
+    fluxRedshifted[0:minWaveIndex] = outerVal * np.ones(minWaveIndex)
+    fluxRedshifted[minWaveIndex:] = fluxInterp(indexesInRange)[:nw-minWaveIndex]
 
     # Apodize edges
     preprocess = PreProcessSpectrum(w0, w1, nw)
