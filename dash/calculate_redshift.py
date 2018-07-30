@@ -27,7 +27,7 @@ def cross_correlation(inputFlux, tempFlux, nw, tempMinMaxIndex):
 
 
 def calc_redshift_from_crosscorr(crossCorr, nw, dwlog):
-    deltaPeak = np.argmax(abs(crossCorr))
+    deltaPeak = np.argmax(crossCorr)
 
     # z = np.exp(deltaPeak * dwlog) - 1 #equation 13 of Blondin)
     zAxisIndex = np.concatenate((np.arange(-nw / 2, 0), np.arange(0, nw / 2)))
@@ -56,14 +56,17 @@ def get_redshift(inputFlux, tempFlux, nw, dwlog, tempMinMaxIndex):
     return redshift, crossCorr
 
 
-def get_median_redshift(inputFlux, tempFluxes, nw, dwlog, inputMinMaxIndex, tempMinMaxIndexes, tempNames):
+def get_median_redshift(inputFlux, tempFluxes, nw, dwlog, inputMinMaxIndex, tempMinMaxIndexes, tempNames, outerVal=0.5):
     inputFlux = mean_zero_spectra(inputFlux, inputMinMaxIndex[0], inputMinMaxIndex[1], nw)
+    assert inputFlux[0] == 0.
 
     redshifts = []
     crossCorrs = {}
 
-    for i in range(len(tempFluxes)):
-        redshift, crossCorr = get_redshift(inputFlux, tempFluxes[i], nw, dwlog, tempMinMaxIndexes[i])
+    for i, tempFlux in enumerate(tempFluxes):
+        assert tempFlux[0] == outerVal
+
+        redshift, crossCorr = get_redshift(inputFlux, tempFlux-outerVal, nw, dwlog, tempMinMaxIndexes[i])
         redshifts.append(redshift)
         crossCorrs[tempNames[i]] = crossCorr
 

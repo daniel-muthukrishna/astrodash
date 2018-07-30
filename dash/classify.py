@@ -166,7 +166,7 @@ class Classify(object):
             templateFluxes.append(snInfos[i][1])
             templateMinMaxIndexes.append((snInfos[i][2], snInfos[i][3]))
 
-        redshift, crossCorr, medianName = get_median_redshift(inputFlux, templateFluxes, self.nw, self.dwlog, inputMinMaxIndex, templateMinMaxIndexes, templateNames)
+        redshift, crossCorr, medianName = get_median_redshift(inputFlux, templateFluxes, self.nw, self.dwlog, inputMinMaxIndex, templateMinMaxIndexes, templateNames, outerVal=0.5)
         print(redshift)
         if redshift is None:
             return 0, np.zeros(1024)

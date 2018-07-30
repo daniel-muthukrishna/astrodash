@@ -486,7 +486,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             templateFluxes.append(snInfos[i][1])
             templateMinMaxIndexes.append((snInfos[i][2], snInfos[i][3]))
 
-        redshift, crossCorrs, medianName = get_median_redshift(self.inputImageUnRedshifted, templateFluxes, self.nw, self.dwlog, self.inputMinMaxIndex, templateMinMaxIndexes, templateNames)
+        redshift, crossCorrs, medianName = get_median_redshift(self.inputImageUnRedshifted, templateFluxes, self.nw, self.dwlog, self.inputMinMaxIndex, templateMinMaxIndexes, templateNames, outerVal=0.5)
         if redshift is None:
             return 0, 0, ""
 
