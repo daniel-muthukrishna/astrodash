@@ -12,6 +12,9 @@ def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix'
     This function prints and plots the confusion matrix.
     Normalization can be applied by setting `normalize=True`.
     """
+
+    np.savetxt(os.path.join(fig_dir, 'confusion_matrix_raw_%s.csv' % name), cm)
+
     if normalize:
         cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
         print("Normalized confusion matrix")
@@ -43,10 +46,20 @@ def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix'
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
     plt.tight_layout()
-    plt.savefig(os.path.join(fig_dir, 'confusion_matrix_%s' % name))
+    plt.savefig(os.path.join(fig_dir, 'confusion_matrix_%s.pdf' % name))
 
 
-def calc_model_statistics(modelFilename, testLabels, testImages, testTypeNames, typeNamesList, typeNamesBroad=None):
+def get_aggregated_conf_matrix(aggregateIndexes, testLabels, predictedLabels):
+    testLabelsAggregated = np.digitize(testLabels, aggregateIndexes) - 1
+    predictedLabelsAggregated = np.digitize(predictedLabels, aggregateIndexes) - 1
+    confMatrixAggregated = tf.confusion_matrix(testLabelsAggregated, predictedLabelsAggregated).eval()
+    np.set_printoptions(precision=2)
+    print(confMatrixAggregated)
+
+    return confMatrixAggregated
+
+
+def calc_model_metrics(modelFilename, testLabels, testImages, testTypeNames, typeNamesList, snTypes=None, fig_dir='.'):
     tf.reset_default_graph()
     nw = len(testImages[0])
     nBins = len(typeNamesList)
@@ -69,19 +82,21 @@ def calc_model_statistics(modelFilename, testLabels, testImages, testTypeNames, 
         predictedLabels = np.array(predictedLabels)
         confMatrix = tf.confusion_matrix(testLabels, predictedLabels).eval()
 
-        if typeNamesBroad is not None:
-            broadTypeLabels = np.arange(0, nBins+1, int(nBins/len(typeNamesBroad)))
-            testLabelsBroad = np.digitize(testLabels, broadTypeLabels) - 1
-            predictedLabelsBroad = np.digitize(predictedLabels, broadTypeLabels) - 1
-            confMatrixBroad = tf.confusion_matrix(testLabelsBroad, predictedLabelsBroad).eval()
-            np.set_printoptions(precision=2)
-            print(confMatrixBroad)
-            plot_confusion_matrix(confMatrixBroad, classes=typeNamesBroad, normalize=True, title='Normalized confusion matrix', fig_dir='.', name='broad')
-            # plt.show()
+        # Aggregate age conf matrix
+        aggregateAgesIndexes = np.arange(0, nBins + 1, int(nBins / len(snTypes)))
+        confMatrixAggregateAges = get_aggregated_conf_matrix(aggregateAgesIndexes, testLabels, predictedLabels)
+        plot_confusion_matrix(confMatrixAggregateAges, classes=snTypes, normalize=True, title='Normalized confusion matrix', fig_dir=fig_dir, name='aggregate_ages')
+
+        # Aggregate age and subtypes conf matrix
+        aggregateSubtypesIndexes = np.array([0, 108, 180, 234, 306])
+        broadTypes = ['Ia', 'Ib', 'Ic', 'II']
+        confMatrixAggregateSubtypes = get_aggregated_conf_matrix(aggregateSubtypesIndexes, testLabels, predictedLabels)
+        plot_confusion_matrix(confMatrixAggregateSubtypes, classes=broadTypes, normalize=True, title='Normalized confusion matrix', fig_dir=fig_dir, name='aggregate_subtypes')
+        # plt.show()
 
     # np.set_printoptions(precision=2)
     # print(confMatrix)
-    # plot_confusion_matrix(confMatrix, classes=typeNamesList, normalize=True, title='Normalized confusion matrix', fig_dir='.', name='all')
+    # plot_confusion_matrix(confMatrix, classes=typeNamesList, normalize=True, title='Normalized confusion matrix', fig_dir=fig_dir, name='all')
 
     # ACTUAL ACCURACY, broadTYPE ACCURACY, AGE ACCURACY
     typeAndAgeCorrect = 0
@@ -140,18 +155,26 @@ def calc_model_statistics(modelFilename, testLabels, testImages, testTypeNames, 
     print("broadTypeAndNearAgeAccuracy : " + str(broadTypeAndNearAgeAccuracy))
 
 
-if __name__ == '__main__':
-    dirModel = "/Users/danmuth/PycharmProjects/DASH/dash/models_other/zeroZ/data_files_zeroZ_withHost_withNoise/"
+def main():
+    dirModel = "/Users/danmuth/PycharmProjects/astrodash/data_files_new_train80_zeroZ_traintestsplitbeforeCreateArrays/"
     modelFilename = dirModel + "tensorflow_model.ckpt"
+
+    fig_dir = os.path.join('..', 'Figures', 'zeroZ')
+    if not os.path.exists(fig_dir):
+        os.makedirs(fig_dir)
 
     with open(os.path.join(dirModel, "training_params.pickle"), 'rb') as f:
         pars = pickle.load(f)
-    typeNamesBroad = pars['typeList']
+    snTypes = pars['typeList']
 
-    dirTestSet = "/Users/danmuth/PycharmProjects/DASH/dash/models_other/zeroZ/data_files_zeroZ_withHost_withNoise/training_set/"
-    testImages = np.load(dirTestSet + 'testImages.npy', mmap_mode='r')
-    testLabels = np.load(dirTestSet + 'testLabels.npy', mmap_mode='r')
+    dirTestSet = "/Users/danmuth/PycharmProjects/astrodash/data_files_new_train80_zeroZ_traintestsplitbeforeCreateArrays/training_set/"
+    testImagesAll = np.load(dirTestSet + 'testImages.npy', mmap_mode='r')
+    testLabelsAll = np.load(dirTestSet + 'testLabels.npy', mmap_mode='r')
     typeNamesList = np.load(dirTestSet + 'typeNamesList.npy')
-    testTypeNames = np.load(dirTestSet + 'testTypeNames.npy')
+    testTypeNamesAll = np.load(dirTestSet + 'testTypeNames.npy')
 
-    calc_model_statistics(modelFilename, testLabels[:1000], testImages[:1000], testTypeNames[:1000], typeNamesList, typeNamesBroad)
+    calc_model_metrics(modelFilename, testLabelsAll[:1000], testImagesAll[:1000], testTypeNamesAll[:1000], typeNamesList, snTypes, fig_dir=fig_dir)
+
+
+if __name__ == '__main__':
+    main()

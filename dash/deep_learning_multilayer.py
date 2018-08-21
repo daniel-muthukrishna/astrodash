@@ -9,12 +9,12 @@ import zipfile
 import gzip
 import time
 from dash.array_tools import labels_indexes_to_arrays
-from dash.model_statistics import calc_model_statistics
+from dash.model_metrics import calc_model_metrics
 from dash.create_arrays import OverSampling
 from dash.helpers import redshift_binned_spectrum, calc_params_for_log_redshifting
 
 
-def train_model(dataDirName, overwrite=False, numTrainBatches=500000, minZ=0, maxZ=0, redshifting=False):
+def train_model(dataDirName, overwrite=False, numTrainBatches=500000, minZ=0., maxZ=0., redshifting=False):
     """  Train model. Unzip and overwrite exisiting training set if overwrite is True"""
     # Open training data files
     trainingSet = os.path.join(dataDirName, 'training_set.zip')
@@ -144,7 +144,7 @@ def train_model(dataDirName, overwrite=False, numTrainBatches=500000, minZ=0, ma
         print(e)
 
     try:
-        calc_model_statistics(saveFilename, testLabelsIndexes, testImages, testTypeNames, typeNamesList)
+        calc_model_metrics(saveFilename, testLabelsIndexes, testImages, testTypeNames, typeNamesList)
     except Exception as e:
         print(e)
 

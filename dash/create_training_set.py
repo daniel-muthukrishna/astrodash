@@ -36,8 +36,8 @@ class CreateTrainingSet(object):
 
         return counts
 
-    def all_templates_to_arrays(self, snTempFileList):
-        images, labels, filenames, typeNames = self.createArrays.combined_sn_gal_arrays_multiprocessing(self.snidTemplateLocation, snTempFileList, self.galTemplateLocation, self.galTempFileList)
+    def all_templates_to_arrays(self, snTempFileList, galTemplateLocation):
+        images, labels, filenames, typeNames = self.createArrays.combined_sn_gal_arrays_multiprocessing(self.snidTemplateLocation, snTempFileList, galTemplateLocation, self.galTempFileList)
 
         arraysShuf = self.arrayTools.shuffle_arrays(images=images, labels=labels, filenames=filenames, typeNames=typeNames, memmapName='all')
 
@@ -74,8 +74,8 @@ class CreateTrainingSet(object):
     def sort_data(self):
         trainListFileName, testListFileName = self.train_test_split()
 
-        arraysTrain, typeAmountsTrain = self.all_templates_to_arrays(trainListFileName)
-        arraysTest, typeAmountsTest = self.all_templates_to_arrays(testListFileName)
+        arraysTrain, typeAmountsTrain = self.all_templates_to_arrays(trainListFileName, self.galTemplateLocation)
+        arraysTest, typeAmountsTest = self.all_templates_to_arrays(testListFileName, None)
 
         trainImages, trainLabels, trainFilenames, trainTypeNames = arraysTrain['images'], arraysTrain['labels'], arraysTrain['filenames'], arraysTrain['typeNames']
         testImages, testLabels, testFilenames, testTypeNames = arraysTest['images'], arraysTest['labels'], arraysTest['filenames'], arraysTest['typeNames']
@@ -83,7 +83,7 @@ class CreateTrainingSet(object):
         # trainPercentage = self.trainFraction
         # testPercentage = 1.0 - self.trainFraction
         #
-        # arrays, typeAmounts = self.all_templates_to_arrays()
+        # arrays, typeAmounts = self.all_templates_to_arrays(self.snidTempFileList, self.galTemplateLocation)
         # images, labels, filenames, typeNames = arrays['images'], arrays['labels'], arrays['filenames'], arrays['typeNames']
         #
         # trainSize = int(trainPercentage * len(images))
