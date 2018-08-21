@@ -142,6 +142,7 @@ class Classify(object):
                     rlapLabel = "Good rlap: {0}".format(rlap)
             else:
                 rlapLabel = "No rlap"
+                rlapWarningBool = "None"
         else:
             rlapLabel = "(NO_TEMPLATES)"
             rlapWarningBool = "None"
