@@ -53,7 +53,7 @@ def calc_model_statistics(modelFilename, testLabels, testImages, testTypeNames, 
     imWidthReduc = 8
     imWidth = 32  # Image size and width
 
-    x, y_, keep_prob, y_conv = convnet_variables(imWidth, imWidthReduc, nw, nBins)
+    x, y_, keep_prob, y_conv, W, b = convnet_variables(imWidth, imWidthReduc, nw, nBins)
 
     saver = tf.train.Saver()
 

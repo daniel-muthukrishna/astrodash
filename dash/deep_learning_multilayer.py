@@ -76,7 +76,7 @@ def train_model(dataDirName, overwrite=False, numTrainBatches=500000, minZ=0, ma
     imWidth = 32  # Image size and width
     imWidthReduc = 8
     a = []
-    x, y_, keep_prob, y_conv = convnet_variables(imWidth, imWidthReduc, N, nLabels)
+    x, y_, keep_prob, y_conv, W, b = convnet_variables(imWidth, imWidthReduc, N, nLabels)
 
     with tf.Session() as sess: # config=tf.ConfigProto(inter_op_parallelism_threads=1, intra_op_parallelism_threads=1)) as sess:
         # TRAIN AND EVALUATE MODEL
@@ -153,7 +153,7 @@ def train_model(dataDirName, overwrite=False, numTrainBatches=500000, minZ=0, ma
 
 if __name__ == '__main__':
     t1 = time.time()
-    savedFilenames = train_model('data_files_zeroZ/', overwrite=False, numTrainBatches=500000)
+    savedFilenames = train_model('data_files_zeroZ/', overwrite=False, numTrainBatches=500000, redshifting=True, minZ=0, maxZ=0.8)
     t2 = time.time()
     print("time spent: {0:.2f}".format(t2 - t1))
 

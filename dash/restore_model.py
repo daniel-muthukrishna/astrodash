@@ -44,7 +44,7 @@ class RestoreModel(object):
         self.imWidthReduc = 8
         self.imWidth = 32 #Image size and width
 
-        self.x, self.y_, self.keep_prob, self.y_conv = convnet_variables(self.imWidth, self.imWidthReduc, self.nw, self.nBins)
+        self.x, self.y_, self.keep_prob, self.y_conv, self.W, self.b = convnet_variables(self.imWidth, self.imWidthReduc, self.nw, self.nBins)
 
         self.saver = tf.train.Saver()
 
@@ -54,7 +54,26 @@ class RestoreModel(object):
 
             softmax = self.y_conv.eval(feed_dict={self.x: self.inputImages, self.keep_prob: 1.0})
             # print(softmax)
-            
+
+            # dwlog = np.log(10000. / 3500.) / self.nw
+            # wlog = 3500. * np.exp(np.arange(0, self.nw) * dwlog)
+            #
+            # import matplotlib.pyplot as plt
+            # spec = np.loadtxt('spec91Tmax_2006cz.txt')
+            # weight = sess.run(self.W)[:, 23]
+            # # plt.scatter(np.arange(1024), self.inputImages[0], marker='.', c=weight, cmap=plt.get_cmap('seismic'))
+            # plt.scatter(wlog, spec, marker='.', c=weight, cmap=plt.get_cmap('seismic'))
+            # plt.colorbar()
+
+            # plt.imshow(sess.run(self.W)[:, 5].reshape([32,32]), cmap=plt.get_cmap('seismic'))
+            # for i, classval in enumerate(np.arange(5, 306, 18)):
+            #     plt.subplot(9, 2, i + 1)
+            #     weight = sess.run(self.W)[:, classval]
+            #     plt.title("{}, {}".format(i, classval))
+            #     plt.imshow(weight.reshape([32, 32]), cmap=plt.get_cmap('seismic'))
+            #     frame1 = plt.gca()
+            #     frame1.axes.get_xaxis().set_visible(False)
+            #     frame1.axes.get_yaxis().set_visible(False)
         return softmax
 
     def reset(self):

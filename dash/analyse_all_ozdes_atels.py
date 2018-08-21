@@ -46,7 +46,7 @@ def main(spectraDir, atelTextFile, saveMatchesFilename):
             print(row.Name)
 
     # Classify and print the best matches
-    classification = dash.Classify(filenames, knownRedshifts, classifyHost=False, rlapScores=True, smooth=6, knownZ=True)
+    classification = dash.Classify(filenames, knownRedshifts, classifyHost=False, rlapScores=True, smooth=6, knownZ=True, data_files='models_v04')
     bestFits, redshifts, bestTypes, rlapFlag, matchesFlag = classification.list_best_matches(n=5, saveFilename=saveMatchesFilename)
 
     print("{0:17} | {1:5} | {2:8} | {3:10} | {4:6} | {5:10} | {6:10}".format("Name", "  z  ", "DASH_Fit", "  Age ", "Prob.", "Flag", "Wiki Fit"))
@@ -58,7 +58,7 @@ def main(spectraDir, atelTextFile, saveMatchesFilename):
 
 
 if __name__=='__main__':
-    main(spectraDir='/Users/danmuth/PycharmProjects/DASH/templates/OzDES_data/transients_all/',
-         atelTextFile='/Users/danmuth/PycharmProjects/DASH/templates/OzDES_data/all_atels.txt',
+    main(spectraDir='/Users/danmuth/PycharmProjects/astrodash/templates/OzDES_data/transients_all/',
+         atelTextFile='/Users/danmuth/PycharmProjects/astrodash/templates/OzDES_data/all_atels.txt',
          saveMatchesFilename='DASH_matches_all_atels.txt')
 

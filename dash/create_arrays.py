@@ -109,10 +109,9 @@ class ReadSpectra(object):
         self.w1 = w1
         self.nw = nw
         self.snFilename = snFilename
+        self.galFilename = galFilename
         if galFilename is None:
             self.data = PreProcessing(snFilename, w0, w1, nw)
-        else:
-            self.galFilename = galFilename
 
     def sn_plus_gal_template(self, snAgeIdx, snCoeff, galCoeff, z):
         wave, flux, minIndex, maxIndex, nCols, ages, tType = training_template_data(snAgeIdx, snCoeff, galCoeff, z, self.snFilename, self.galFilename, self.w0, self.w1, self.nw)
@@ -292,12 +291,6 @@ class CreateArrays(object):
         self.createLabels = CreateLabels(self.nTypes, self.minAge, self.maxAge, self.ageBinSize, self.typeList, hostTypes, nHostTypes)
         self.hostTypes = hostTypes
 
-        # TODO: Maybe do memory mapping for these arrays
-        self.images = []
-        self.labelsIndexes = []
-        self.filenames = []
-        self.typeNames = []
-
     def combined_sn_gal_templates_to_arrays(self, args):
         snTemplateLocation, snTempList, galTemplateLocation, galTempList, snFractions = args
         images = np.empty((0, int(self.nw)), np.float16)  # Number of pixels
@@ -354,6 +347,12 @@ class CreateArrays(object):
         self.typeNames.extend(typeNamesPart)
 
     def combined_sn_gal_arrays_multiprocessing(self, snTemplateLocation, snTempFileList, galTemplateLocation, galTempFileList):
+        # TODO: Maybe do memory mapping for these arrays
+        self.images = []
+        self.labelsIndexes = []
+        self.filenames = []
+        self.typeNames = []
+
         if galTemplateLocation is None or galTempFileList is None:
             galTempList = [None]
             galTemplateLocation = None
