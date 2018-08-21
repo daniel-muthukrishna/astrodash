@@ -1,9 +1,12 @@
 import pickle
 import numpy as np
-from dash.create_arrays import AgeBinning, CreateLabels, ArrayTools, CreateArrays
 import zipfile
 import gzip
 import os
+import random
+import copy
+from dash.create_arrays import AgeBinning, CreateLabels, ArrayTools, CreateArrays
+from dash.helpers import temp_list
 
 
 class CreateTrainingSet(object):
@@ -33,8 +36,8 @@ class CreateTrainingSet(object):
 
         return counts
 
-    def all_templates_to_arrays(self):
-        images, labels, filenames, typeNames = self.createArrays.combined_sn_gal_arrays_multiprocessing(self.snidTemplateLocation, self.snidTempFileList, self.galTemplateLocation, self.galTempFileList)
+    def all_templates_to_arrays(self, snTempFileList):
+        images, labels, filenames, typeNames = self.createArrays.combined_sn_gal_arrays_multiprocessing(self.snidTemplateLocation, snTempFileList, self.galTemplateLocation, self.galTempFileList)
 
         arraysShuf = self.arrayTools.shuffle_arrays(images=images, labels=labels, filenames=filenames, typeNames=typeNames, memmapName='all')
 
@@ -42,35 +45,63 @@ class CreateTrainingSet(object):
         
         return arraysShuf, typeAmounts
 
+    def train_test_split(self):
+        """
+        Split training set before creating arrays.
+        Maybe should change this to include ages in train/test split instead of just SN files.
+        """
+        snTempFileList = copy.copy(self.snidTempFileList)
+        fileList = temp_list(snTempFileList)
+        random.Random(42).shuffle(fileList)
+
+        trainSize = int(self.trainFraction * len(fileList))
+        dirName = os.path.dirname(self.snidTempFileList)
+        trainListFileName = os.path.join(dirName, 'train_templist.txt')
+        testListFileName = os.path.join(dirName, 'test_templist.txt')
+
+        # Save train set file list
+        with open(trainListFileName, 'w') as f:
+            for line in fileList[:trainSize]:
+                f.write("%s\n" % line)
+
+        # Save test set file list
+        with open(testListFileName, 'w') as f:
+            for line in fileList[trainSize:]:
+                f.write("%s\n" % line)
+
+        return trainListFileName, testListFileName
+
     def sort_data(self):
-        trainPercentage = self.trainFraction
-        testPercentage = 1.0 - self.trainFraction
-        validatePercentage = 0.
+        trainListFileName, testListFileName = self.train_test_split()
 
-        arrays, typeAmounts = self.all_templates_to_arrays()
-        images, labels, filenames, typeNames = arrays['images'], arrays['labels'], arrays['filenames'], arrays['typeNames']
+        arraysTrain, typeAmountsTrain = self.all_templates_to_arrays(trainListFileName)
+        arraysTest, typeAmountsTest = self.all_templates_to_arrays(testListFileName)
 
-        trainSize = int(trainPercentage * len(images))
-        testSize = int(testPercentage * len(images))
+        trainImages, trainLabels, trainFilenames, trainTypeNames = arraysTrain['images'], arraysTrain['labels'], arraysTrain['filenames'], arraysTrain['typeNames']
+        testImages, testLabels, testFilenames, testTypeNames = arraysTest['images'], arraysTest['labels'], arraysTest['filenames'], arraysTest['typeNames']
 
-        trainImages = images[:trainSize]
-        testImages = images[trainSize: trainSize + testSize]
-        validateImages = images[trainSize + testSize:]
-        trainLabels = labels[:trainSize]
-        testLabels = labels[trainSize: trainSize + testSize]
-        validateLabels = labels[trainSize + testSize:]
-        trainFilenames = filenames[:trainSize]
-        testFilenames = filenames[trainSize: trainSize + testSize]
-        validateFilenames = filenames[trainSize + testSize:]
-        trainTypeNames = typeNames[:trainSize]
-        testTypeNames = typeNames[trainSize: trainSize + testSize]
-        validateTypeNames = typeNames[trainSize + testSize:]
+        # trainPercentage = self.trainFraction
+        # testPercentage = 1.0 - self.trainFraction
+        #
+        # arrays, typeAmounts = self.all_templates_to_arrays()
+        # images, labels, filenames, typeNames = arrays['images'], arrays['labels'], arrays['filenames'], arrays['typeNames']
+        #
+        # trainSize = int(trainPercentage * len(images))
+        # testSize = int(testPercentage * len(images))
+        #
+        # trainImages = images[:trainSize]
+        # testImages = images[trainSize: trainSize + testSize]
+        # trainLabels = labels[:trainSize]
+        # testLabels = labels[trainSize: trainSize + testSize]
+        # trainFilenames = filenames[:trainSize]
+        # testFilenames = filenames[trainSize: trainSize + testSize]
+        # trainTypeNames = typeNames[:trainSize]
+        # testTypeNames = typeNames[trainSize: trainSize + testSize]
 
         typeAmounts = self.type_amounts(trainLabels)
 
         return ((trainImages, trainLabels, trainFilenames, trainTypeNames),
                 (testImages, testLabels, testFilenames, testTypeNames),
-                (validateImages, validateLabels, validateFilenames, validateTypeNames),
                 typeAmounts)
 
 
@@ -98,11 +129,7 @@ class SaveTrainingSet(object):
         self.testLabels = self.sortData[1][1]
         self.testFilenames = self.sortData[1][2]
         self.testTypeNames = self.sortData[1][3]
-        self.validateImages = self.sortData[2][0]
-        self.validateLabels = self.sortData[2][1]
-        self.validateFilenames = self.sortData[2][2]
-        self.validateTypeNames = self.sortData[2][3]
-        self.typeAmounts = self.sortData[3]
+        self.typeAmounts = self.sortData[2]
 
         self.typeNamesList = self.createLabels.type_names_list()
 
