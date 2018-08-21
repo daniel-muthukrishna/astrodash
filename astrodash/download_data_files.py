@@ -1,7 +1,7 @@
 import os
 import sys
 import shutil
-from dash.unzip_data_files import unzip_data_files
+from astrodash.unzip_data_files import unzip_data_files
 
 
 def download_file(filename, urlpath, printStatus, scriptDirectory):

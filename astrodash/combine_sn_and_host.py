@@ -1,7 +1,7 @@
 import os
 from scipy.signal import medfilt
-from dash.preprocessing import ReadSpectrumFile, ProcessingTools, PreProcessSpectrum
-from dash.array_tools import zero_non_overlap_part, normalise_spectrum
+from astrodash.preprocessing import ReadSpectrumFile, ProcessingTools, PreProcessSpectrum
+from astrodash.array_tools import zero_non_overlap_part, normalise_spectrum
 
 
 class CombineSnAndHost(object):

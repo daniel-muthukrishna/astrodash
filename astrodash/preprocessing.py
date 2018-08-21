@@ -3,8 +3,8 @@ import numpy as np
 from specutils.io import read_fits
 import astropy.io.fits as afits
 from scipy.interpolate import interp1d, UnivariateSpline
-from dash.array_tools import normalise_spectrum, zero_non_overlap_part
-from dash.read_from_catalog import catalogDict
+from astrodash.array_tools import normalise_spectrum, zero_non_overlap_part
+from astrodash.read_from_catalog import catalogDict
 try:
     import pandas as pd
     USE_PANDAS = True
@@ -384,7 +384,7 @@ class PreProcessSpectrum(object):
 
 if __name__ == '__main__':
     # Plot comparison of superfit galaxies and Bsnip galaxies
-    from dash.array_tools import normalise_spectrum
+    from astrodash.array_tools import normalise_spectrum
     import matplotlib.pyplot as plt
 
     preProcess = PreProcessSpectrum(3500, 10000, 1024)

@@ -1,6 +1,6 @@
 import numpy as np
-from dash.create_arrays import *
-from dash.array_tools import normalise_spectrum, zero_non_overlap_part
+from astrodash.create_arrays import *
+from astrodash.array_tools import normalise_spectrum, zero_non_overlap_part
 
 
 class InputSpectra(object):

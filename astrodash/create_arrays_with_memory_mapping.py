@@ -5,11 +5,11 @@ from random import shuffle
 import multiprocessing as mp
 import itertools
 
-from dash.helpers import temp_list, div0
-from dash.sn_processing import PreProcessing
-from dash.combine_sn_and_host import training_template_data
-from dash.preprocessing import ProcessingTools
-from dash.array_tools import zero_non_overlap_part, normalise_spectrum
+from astrodash.helpers import temp_list, div0
+from astrodash.sn_processing import PreProcessing
+from astrodash.combine_sn_and_host import training_template_data
+from astrodash.preprocessing import ProcessingTools
+from astrodash.array_tools import zero_non_overlap_part, normalise_spectrum
 
 try:
     from imblearn import over_sampling

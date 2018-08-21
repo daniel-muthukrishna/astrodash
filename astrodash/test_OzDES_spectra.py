@@ -1,6 +1,6 @@
 import os
 import numpy as np
-import dash
+import astrodash
 
 directoryPath = '/Users/dmuthukrishna/Documents/OzDES_data/ATEL_9742_Run26'
 
@@ -26,7 +26,7 @@ atel9742 = [
 filenames = [os.path.join(directoryPath, i[0]) for i in atel9742]
 knownRedshifts = [i[1] for i in atel9742]
 
-classification = dash.Classify(filenames, knownRedshifts)
+classification = astrodash.Classify(filenames, knownRedshifts)
 bestFits, bestTypes = classification.list_best_matches(n=1)
 print(bestFits)
 np.savetxt('Run26_fits.txt', bestFits, fmt='%s')

@@ -5,8 +5,8 @@ import gzip
 import os
 import random
 import copy
-from dash.create_arrays import AgeBinning, CreateLabels, ArrayTools, CreateArrays
-from dash.helpers import temp_list
+from astrodash.create_arrays import AgeBinning, CreateLabels, ArrayTools, CreateArrays
+from astrodash.helpers import temp_list
 
 
 class CreateTrainingSet(object):

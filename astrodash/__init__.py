@@ -1,16 +1,16 @@
 import sys
-from dash.download_data_files import download_all_files
+from astrodash.download_data_files import download_all_files
 
 download_all_files('v04')
 
 try:
     from PyQt5 import QtGui
-    from dash.gui_main import MainApp
+    from astrodash.gui_main import MainApp
 except ImportError:
     print("Warning: You will need to install 'PyQt5' if you want to use the graphical interface. " \
           "Using the automatic library will continue to work.")
 
-from dash.classify import Classify
+from astrodash.classify import Classify
 
 
 def main():

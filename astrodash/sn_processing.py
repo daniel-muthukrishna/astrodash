@@ -2,8 +2,8 @@
 import sys
 from scipy.signal import medfilt
 import numpy as np
-from dash.preprocessing import ReadSpectrumFile, PreProcessSpectrum, ProcessingTools
-from dash.array_tools import normalise_spectrum, zero_non_overlap_part
+from astrodash.preprocessing import ReadSpectrumFile, PreProcessSpectrum, ProcessingTools
+from astrodash.array_tools import normalise_spectrum, zero_non_overlap_part
 
 
 def limit_wavelength_range(wave, flux, minWave, maxWave):

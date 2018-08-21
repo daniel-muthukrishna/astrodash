@@ -1,8 +1,8 @@
 import os
 import pickle
 import tensorflow as tf
-from dash.input_spectra import *
-from dash.multilayer_convnet import convnet_variables
+from astrodash.input_spectra import *
+from astrodash.multilayer_convnet import convnet_variables
 
 
 def get_training_parameters(data_files='models_v04'):

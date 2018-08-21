@@ -1,4 +1,4 @@
-import dash
+import astrodash
 import numpy as np
 
 wave = np.arange(2500, 10000, 2)
@@ -8,7 +8,7 @@ filename = np.array([wave, flux])
 # filename = 'osc-SN2002er-10'
 redshift = 0
 
-classification = dash.Classify([filename], [redshift], classifyHost=False, knownZ=True, smooth=6, rlapScores=True)
+classification = astrodash.Classify([filename], [redshift], classifyHost=False, knownZ=True, smooth=6, rlapScores=True)
 bestFits, redshifts, bestTypes, rlapFlag, matchesFlag = classification.list_best_matches(n=5)
 
 print(bestFits)

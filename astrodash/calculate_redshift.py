@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.fftpack import fft
-from dash.array_tools import mean_zero_spectra
+from astrodash.array_tools import mean_zero_spectra
 
 
 def cross_correlation(inputFlux, tempFlux, nw, tempMinMaxIndex):

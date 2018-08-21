@@ -1,6 +1,6 @@
 import numpy as np
 import os
-from dash.combine_sn_and_host import CombineSnAndHost
+from astrodash.combine_sn_and_host import CombineSnAndHost
 
 scriptDirectory = os.path.dirname(os.path.abspath(__file__))
 

@@ -2,8 +2,8 @@ from scipy.fftpack import fft
 from scipy.signal import argrelmax
 import numpy as np
 from scipy.stats import chisquare, pearsonr
-from dash.restore_model import get_training_parameters
-from dash.array_tools import mean_zero_spectra
+from astrodash.restore_model import get_training_parameters
+from astrodash.array_tools import mean_zero_spectra
 # import matplotlib
 # matplotlib.use('TkAgg')
 # import matplotlib.pyplot as plt

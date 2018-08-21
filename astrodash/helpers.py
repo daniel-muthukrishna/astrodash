@@ -2,7 +2,7 @@ import os
 import pickle
 import numpy as np
 import scipy.interpolate
-from dash.preprocessing import PreProcessSpectrum
+from astrodash.preprocessing import PreProcessSpectrum
 
 
 def calc_params_for_log_redshifting(dataDirName):

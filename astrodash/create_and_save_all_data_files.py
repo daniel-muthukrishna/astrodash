@@ -1,7 +1,7 @@
-from dash.training_parameters import create_training_params_file
-from dash.create_training_set import create_training_set_files
-from dash.create_template_set import create_template_set_file
-from dash.deep_learning_multilayer import train_model
+from astrodash.training_parameters import create_training_params_file
+from astrodash.create_training_set import create_training_set_files
+from astrodash.create_template_set import create_template_set_file
+from astrodash.deep_learning_multilayer import train_model
 import zipfile
 import os
 import glob

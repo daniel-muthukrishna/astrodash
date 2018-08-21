@@ -1,7 +1,7 @@
 import time
 t0 = time.time()
 import os
-import dash
+import astrodash
 import pandas as pd
 import numpy as np
 import scipy
@@ -76,7 +76,7 @@ for (snid, name, field, z, specType, filename) in ozdesList:
         # shutil.copy2(directory+filename, './copiedFiles')
 t1 = time.time()
 print("Time spent reading files: {0:.2f}".format(t1 - t0))
-classification = dash.Classify(filenames, knownRedshifts, classifyHost=False, smooth=7, knownZ=True)
+classification = astrodash.Classify(filenames, knownRedshifts, classifyHost=False, smooth=7, knownZ=True)
 bestFits, redshifts, bestTypes, rejectionLabels, reliableFlags = classification.list_best_matches(n=5)
 t2 = time.time()
 print("Time spent classifying: {0:.2f}".format(t2 - t1))

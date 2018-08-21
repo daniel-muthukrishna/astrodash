@@ -4,14 +4,14 @@ import shutil
 import numpy as np
 import itertools
 import tensorflow as tf
-from dash.multilayer_convnet import convnet_variables
+from astrodash.multilayer_convnet import convnet_variables
 import zipfile
 import gzip
 import time
-from dash.array_tools import labels_indexes_to_arrays
-from dash.model_metrics import calc_model_metrics
-from dash.create_arrays import OverSampling
-from dash.helpers import redshift_binned_spectrum, calc_params_for_log_redshifting
+from astrodash.array_tools import labels_indexes_to_arrays
+from astrodash.model_metrics import calc_model_metrics
+from astrodash.create_arrays import OverSampling
+from astrodash.helpers import redshift_binned_spectrum, calc_params_for_log_redshifting
 
 
 def train_model(dataDirName, overwrite=False, numTrainBatches=500000, minZ=0., maxZ=0., redshifting=False):

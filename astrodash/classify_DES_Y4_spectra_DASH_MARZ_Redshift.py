@@ -1,5 +1,5 @@
 import os
-import dash
+import astrodash
 
 directory = r'/home/daniel/Documents/DES_Y4_Spectra/'
 
@@ -22,7 +22,7 @@ directory = r'/home/daniel/Documents/DES_Y4_Spectra/'
 filenames = [os.path.join(directory, i[0]) for i in atels]
 knownRedshifts = [i[1] for i in atels]
 
-classification = dash.Classify(filenames, knownRedshifts)
+classification = astrodash.Classify(filenames, knownRedshifts)
 bestFits, bestTypes, rejectionLabels = classification.list_best_matches(n=5)
 
 # SAVE BEST MATCHES

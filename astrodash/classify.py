@@ -2,16 +2,16 @@ import os
 import sys
 import pickle
 import numpy as np
-from dash.download_data_files import download_all_files
-from dash.restore_model import LoadInputSpectra, BestTypesListSingleRedshift, get_training_parameters, classification_split
-from dash.false_positive_rejection import RlapCalc, combined_prob
-from dash.read_binned_templates import load_templates, get_templates
-from dash.calculate_redshift import get_median_redshift
-from dash.read_from_catalog import catalogDict
+from astrodash.download_data_files import download_all_files
+from astrodash.restore_model import LoadInputSpectra, BestTypesListSingleRedshift, get_training_parameters, classification_split
+from astrodash.false_positive_rejection import RlapCalc, combined_prob
+from astrodash.read_binned_templates import load_templates, get_templates
+from astrodash.calculate_redshift import get_median_redshift
+from astrodash.read_from_catalog import catalogDict
 
 try:
     from PyQt5 import QtGui
-    from dash.gui_main import MainApp
+    from astrodash.gui_main import MainApp
 except ImportError:
     print("Warning: You will need to install 'PyQt5' if you want to use the graphical interface. "
           "Using the automatic library will continue to work.")

@@ -1,5 +1,5 @@
-from dash.preprocessing import ReadSpectrumFile
-from dash.helpers import temp_list
+from astrodash.preprocessing import ReadSpectrumFile
+from astrodash.helpers import temp_list
 import pickle
 import os
 import gzip

@@ -1,9 +1,9 @@
 import numpy as np
 import pickle
 import os
-from dash.create_arrays import AgeBinning
-from dash.helpers import temp_list
-from dash.combine_sn_and_host import BinTemplate
+from astrodash.create_arrays import AgeBinning
+from astrodash.helpers import temp_list
+from astrodash.combine_sn_and_host import BinTemplate
 
 
 def create_sn_and_host_arrays(snTemplateDirectory, snTempFileList, galTemplateDirectory, galTempFileList, paramsFile):

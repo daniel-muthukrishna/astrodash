@@ -4,13 +4,13 @@ import numpy as np
 from PyQt5 import QtGui
 from PyQt5.QtCore import QThread, pyqtSignal
 import pyqtgraph as pg
-from dash.design import Ui_MainWindow
-from dash.restore_model import LoadInputSpectra, BestTypesListSingleRedshift, get_training_parameters, classification_split
-from dash.create_arrays import AgeBinning
-from dash.read_binned_templates import load_templates, get_templates, combined_sn_and_host_data
-from dash.false_positive_rejection import combined_prob, RlapCalc
-from dash.calculate_redshift import get_median_redshift, get_redshift_axis
-from dash.read_from_catalog import catalogDict
+from astrodash.design import Ui_MainWindow
+from astrodash.restore_model import LoadInputSpectra, BestTypesListSingleRedshift, get_training_parameters, classification_split
+from astrodash.create_arrays import AgeBinning
+from astrodash.read_binned_templates import load_templates, get_templates, combined_sn_and_host_data
+from astrodash.false_positive_rejection import combined_prob, RlapCalc
+from astrodash.calculate_redshift import get_median_redshift, get_redshift_axis
+from astrodash.read_from_catalog import catalogDict
 
 
 class MainApp(QtGui.QMainWindow, Ui_MainWindow):

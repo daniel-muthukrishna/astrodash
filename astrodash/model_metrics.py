@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import itertools
 import numpy as np
 import tensorflow as tf
-from dash.multilayer_convnet import convnet_variables
+from astrodash.multilayer_convnet import convnet_variables
 
 
 def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix', cmap=plt.cm.RdBu, fig_dir='.', name=''):

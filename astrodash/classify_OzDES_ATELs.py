@@ -1,5 +1,5 @@
 import os
-import dash
+import astrodash
 
 directoryPath = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../templates/OzDES_data/')
 
@@ -81,7 +81,7 @@ atels = [
 filenames = [os.path.join(directoryPath, i[0]) for i in atels]
 knownRedshifts = [i[1] for i in atels]
 
-classification = dash.Classify(filenames, knownRedshifts, classifyHost=False, smooth=5, knownZ=True)
+classification = astrodash.Classify(filenames, knownRedshifts, classifyHost=False, smooth=5, knownZ=True)
 bestFits, redshifts, bestTypes, rejectionLabels, reliableFlags = classification.list_best_matches(n=5)
 
 # SAVE BEST MATCHES
