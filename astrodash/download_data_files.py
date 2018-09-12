@@ -39,7 +39,7 @@ def download_all_files(zipVersion):
 
     saveFilenames = ['models_{0}.zip'.format(zipVersion)]
 
-    urlpaths = ["https://github.com/daniel-muthukrishna/DASH/blob/master/dash/models_{0}.zip?raw=true".format(zipVersion)]
+    urlpaths = ["https://github.com/daniel-muthukrishna/astrodash/blob/master/astrodash/models_{0}.zip?raw=true".format(zipVersion)]
 
     printStatuses = ["Downloading data files from {0}... \nThis download contains the Tensorflow models trained using deep learning. \n"
                      "The file to be downloaded is ~200MB. However, this is a one time download, and will only occur\n"
