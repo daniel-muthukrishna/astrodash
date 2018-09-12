@@ -5,7 +5,7 @@ from astrodash.input_spectra import *
 from astrodash.multilayer_convnet import convnet_variables
 
 
-def get_training_parameters(data_files='models_v04'):
+def get_training_parameters(data_files='models_v05'):
     scriptDirectory = os.path.dirname(os.path.abspath(__file__))
     with open(os.path.join(scriptDirectory, data_files, "models/zeroZ/training_params.pickle"), 'rb') as f:
         pars = pickle.load(f)

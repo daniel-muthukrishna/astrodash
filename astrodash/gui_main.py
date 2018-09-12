@@ -14,7 +14,7 @@ from astrodash.read_from_catalog import catalogDict
 
 
 class MainApp(QtGui.QMainWindow, Ui_MainWindow):
-    def __init__(self, parent=None, inputFilename="DefaultFilename", data_files='models_v04'):
+    def __init__(self, parent=None, inputFilename="DefaultFilename", data_files='models_v05'):
         super(MainApp, self).__init__(parent)
         self.setupUi(self)
 

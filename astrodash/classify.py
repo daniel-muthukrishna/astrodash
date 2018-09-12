@@ -18,7 +18,7 @@ except ImportError:
 
 
 class Classify(object):
-    def __init__(self, filenames=[], redshifts=[], smooth=6, minWave=3500, maxWave=10000, classifyHost=False, knownZ=True, rlapScores=True, data_files='models_v04'):
+    def __init__(self, filenames=[], redshifts=[], smooth=6, minWave=3500, maxWave=10000, classifyHost=False, knownZ=True, rlapScores=True, data_files='models_v05'):
         """ Takes a list of filenames and corresponding redshifts for supernovae.
         Files should contain a single spectrum, and redshifts should be a list of corresponding redshift floats
         """
