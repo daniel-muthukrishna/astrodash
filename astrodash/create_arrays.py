@@ -134,6 +134,9 @@ class ArrayTools(object):
         """ Must take images and labels as arguments with the keyword specified.
         Can optionally take filenames and typeNames as arguments """
         arraySize = len(kwargs['labels'])
+        if arraySize == 0:
+            return kwargs
+
         kwargShuf = {}
         self.randnum = np.random.randint(10000)
         for key in kwargs:
@@ -292,19 +295,18 @@ class CreateArrays(object):
         self.hostTypes = hostTypes
 
     def combined_sn_gal_templates_to_arrays(self, args):
-        snTemplateLocation, snTempList, galTemplateLocation, galTempList, snFractions = args
+        snTemplateLocation, snTempList, galTemplateLocation, galTempList, snFractions, ageIndexes = args
         images = np.empty((0, int(self.nw)), np.float16)  # Number of pixels
         labelsIndexes = []
         filenames = []
         typeNames = []
-        agesList = []
 
-        for j in range(len(galTempList)):
-            galFilename = galTemplateLocation + galTempList[j] if galTemplateLocation is not None else None
-            for i in range(0, len(snTempList)):
+        for j, gal in enumerate(galTempList):
+            galFilename = galTemplateLocation + gal if galTemplateLocation is not None else None
+            for i, sn in enumerate(snTempList):
                 nCols = 15
-                readSpectra = ReadSpectra(self.w0, self.w1, self.nw, snTemplateLocation + snTempList[i], galFilename)
-                for ageidx in range(0, 1000):
+                readSpectra = ReadSpectra(self.w0, self.w1, self.nw, snTemplateLocation + sn, galFilename)
+                for ageidx in ageIndexes[sn]:
                     if ageidx >= nCols:
                         break
                     for snCoeff in snFractions:
@@ -315,7 +317,6 @@ class CreateArrays(object):
                             redshifts = np.random.uniform(low=self.minZ, high=self.maxZ, size=self.numOfRedshifts)
                         for z in redshifts:
                             tempWave, tempFlux, nCols, ages, tType, tMinIndex, tMaxIndex = readSpectra.sn_plus_gal_template(ageidx, snCoeff, galCoeff, z)
-                            agesList.append(ages[ageidx])
                             if tMinIndex == tMaxIndex or not tempFlux.any():
                                 print("NO DATA for {} {} ageIdx:{} z>={}".format(galTempList[j], snTempList[i], ageidx, z))
                                 break
@@ -361,11 +362,21 @@ class CreateArrays(object):
             galTempList = temp_list(galTempFileList)
             snFractions = [0.99, 0.98, 0.95, 0.93, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
 
-        snTempList = temp_list(snTempFileList)
+        if isinstance(snTempFileList, dict):
+            snTempList = list(snTempFileList.keys())
+            ageIndexesDict = snTempFileList
+        else:
+            snTempList = temp_list(snTempFileList)
+            ageIndexesDict = None
+
         galAndSnTemps = list(itertools.product(galTempList, snTempList))
         argsList = []
         for gal, sn in galAndSnTemps:
-            argsList.append((snTemplateLocation, [sn], galTemplateLocation, [gal], snFractions))
+            if ageIndexesDict is not None:
+                ageIdxDict = {k: ageIndexesDict[k] for k in (sn,)}
+            else:
+                ageIdxDict = {k: range(0, 1000) for k in (sn,)}
+            argsList.append((snTemplateLocation, [sn], galTemplateLocation, [gal], snFractions, ageIdxDict))
 
         pool = mp.Pool()
         results = pool.map_async(self.combined_sn_gal_templates_to_arrays, argsList)

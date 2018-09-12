@@ -12,13 +12,13 @@ scriptDirectory = os.path.dirname(os.path.abspath(__file__))
 
 
 if __name__ == '__main__':
-    modelName = 'new_agnosticZ'
+    modelName = 'testingZeroZ'
     trainWithHost = True
     classifyHost = False
     minZ = 0.
-    maxZ = 0.8
+    maxZ = 0.
     redshiftDuringTraining = True
-    trainFraction = 1
+    trainFraction = 0.8
     numTrainBatches = 2000000
     # Do not change this unless we want to redshift before training.
     numOfRedshifts = 1

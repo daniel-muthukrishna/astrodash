@@ -5,8 +5,11 @@ import gzip
 import os
 import random
 import copy
+from collections import OrderedDict
 from astrodash.create_arrays import AgeBinning, CreateLabels, ArrayTools, CreateArrays
 from astrodash.helpers import temp_list
+
+random.seed(42)
 
 
 class CreateTrainingSet(object):
@@ -37,6 +40,15 @@ class CreateTrainingSet(object):
         return counts
 
     def all_templates_to_arrays(self, snTempFileList, galTemplateLocation):
+        """
+        Parameters
+        ----------
+        snTempFileList : list or dictionary
+        galTemplateLocation
+
+        Returns
+        -------
+        """
         images, labels, filenames, typeNames = self.createArrays.combined_sn_gal_arrays_multiprocessing(self.snidTemplateLocation, snTempFileList, galTemplateLocation, self.galTempFileList)
 
         arraysShuf = self.arrayTools.shuffle_arrays(images=images, labels=labels, filenames=filenames, typeNames=typeNames, memmapName='all')
@@ -52,33 +64,73 @@ class CreateTrainingSet(object):
         """
         snTempFileList = copy.copy(self.snidTempFileList)
         fileList = temp_list(snTempFileList)
-        random.Random(42).shuffle(fileList)
+        snAndAgeIdxDict = OrderedDict()
+        spectraList = []
 
-        trainSize = int(self.trainFraction * len(fileList))
-        dirName = os.path.dirname(self.snidTempFileList)
-        trainListFileName = os.path.join(dirName, 'train_templist.txt')
-        testListFileName = os.path.join(dirName, 'test_templist.txt')
+        # SPLIT BY SPECTRA
+        # Get number of spectra per file
+        for i, sn in enumerate(fileList):
+            with open(os.path.join(self.snidTemplateLocation, sn), 'r') as FileObj:
+                for lineNum, line in enumerate(FileObj):
+                    # Read Header Info
+                    if lineNum == 0:
+                        header = (line.strip('\n')).split(' ')
+                        header = [x for x in header if x != '']
+                        numAges, nwx, w0x, w1x, mostKnots, tname, dta, ttype, ittype, itstype = header
+                        numAges, mostKnots = map(int, (numAges, mostKnots))
+                    elif lineNum == mostKnots + 2:
+                        ages = np.array(line.split()[1:]).astype(float)
+                        agesIndexesInRange = np.where((ages >= self.minAge) & (ages <= self.maxAge))[0]
+                        snAndAgeIdxDict[sn] = agesIndexesInRange
+                        for ageIdx in agesIndexesInRange:
+                            spectraList.append((sn, ageIdx))
 
-        # Save train set file list
-        with open(trainListFileName, 'w') as f:
-            for line in fileList[:trainSize]:
-                f.write("%s\n" % line)
+        # Split train/test
+        random.shuffle(spectraList)
+        trainSize = int(self.trainFraction * len(spectraList))
+        trainSpectra = spectraList[:trainSize]
+        testSpectra = spectraList[trainSize:]
 
-        # Save test set file list
-        with open(testListFileName, 'w') as f:
-            for line in fileList[trainSize:]:
-                f.write("%s\n" % line)
+        trainDict, testDict = OrderedDict(), OrderedDict()
+        for k, v in trainSpectra:
+            trainDict.setdefault(k, []).append(v)
+        for k, v in testSpectra:
+            testDict.setdefault(k, []).append(v)
 
-        return trainListFileName, testListFileName
+        # # SPLIT BY FILENAME INSTEAD OF BY SPECTRA
+        # random.Random(42).shuffle(fileList)
+        #
+        # trainSize = int(self.trainFraction * len(fileList))
+        # dirName = os.path.dirname(self.snidTempFileList)
+        # trainListFileName = os.path.join(dirName, 'train_templist.txt')
+        # testListFileName = os.path.join(dirName, 'test_templist.txt')
+        #
+        # # Save train set file list
+        # with open(trainListFileName, 'w') as f:
+        #     for line in fileList[:trainSize]:
+        #         f.write("%s\n" % line)
+        #
+        # # Save test set file list
+        # with open(testListFileName, 'w') as f:
+        #     for line in fileList[trainSize:]:
+        #         f.write("%s\n" % line)
+        print("trainDict", trainDict)
+        print("testDict", testDict)
+        return trainDict, testDict
 
     def sort_data(self):
-        trainListFileName, testListFileName = self.train_test_split()
+        if self.trainFraction == 1.0:
+            arrays, typeAmounts = self.all_templates_to_arrays(self.snidTempFileList, self.galTemplateLocation)
+            trainImages, trainLabels, trainFilenames, trainTypeNames = arrays['images'], arrays['labels'], arrays['filenames'], arrays['typeNames']
+            testImages, testLabels, testFilenames, testTypeNames = trainImages[-1:], trainLabels[-1:], trainFilenames[-1:], trainTypeNames[-1:]
+        else:
+            trainDict, testDict = self.train_test_split()
 
-        arraysTrain, typeAmountsTrain = self.all_templates_to_arrays(trainListFileName, self.galTemplateLocation)
-        arraysTest, typeAmountsTest = self.all_templates_to_arrays(testListFileName, None)
+            arraysTrain, typeAmountsTrain = self.all_templates_to_arrays(trainDict, self.galTemplateLocation)
+            trainImages, trainLabels, trainFilenames, trainTypeNames = arraysTrain['images'], arraysTrain['labels'], arraysTrain['filenames'], arraysTrain['typeNames']
 
-        trainImages, trainLabels, trainFilenames, trainTypeNames = arraysTrain['images'], arraysTrain['labels'], arraysTrain['filenames'], arraysTrain['typeNames']
-        testImages, testLabels, testFilenames, testTypeNames = arraysTest['images'], arraysTest['labels'], arraysTest['filenames'], arraysTest['typeNames']
+            arraysTest, typeAmountsTest = self.all_templates_to_arrays(testDict, None)
+            testImages, testLabels, testFilenames, testTypeNames = arraysTest['images'], arraysTest['labels'], arraysTest['filenames'], arraysTest['typeNames']
 
         # trainPercentage = self.trainFraction
         # testPercentage = 1.0 - self.trainFraction
@@ -201,3 +253,24 @@ def create_training_set_files(dataDirName, minZ=0, maxZ=0, numOfRedshifts=80, tr
 
 if __name__ == '__main__':
     trainingSetFilename = create_training_set_files('data_files/', minZ=0, maxZ=0, numOfRedshifts=80, trainWithHost=False, classifyHost=False, trainFraction=0.8)
+
+
+# # Split by filename instead of by spectra
+# snTempFileList = copy.copy(self.snidTempFileList)
+# fileList = temp_list(snTempFileList)
+# random.Random(42).shuffle(fileList)
+#
+# trainSize = int(self.trainFraction * len(fileList))
+# dirName = os.path.dirname(self.snidTempFileList)
+# trainListFileName = os.path.join(dirName, 'train_templist.txt')
+# testListFileName = os.path.join(dirName, 'test_templist.txt')
+#
+# # Save train set file list
+# with open(trainListFileName, 'w') as f:
+#     for line in fileList[:trainSize]:
+#         f.write("%s\n" % line)
+#
+# # Save test set file list
+# with open(testListFileName, 'w') as f:
+#     for line in fileList[trainSize:]:
+#         f.write("%s\n" % line)

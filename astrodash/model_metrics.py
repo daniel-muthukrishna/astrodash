@@ -7,7 +7,7 @@ import tensorflow as tf
 from astrodash.multilayer_convnet import convnet_variables
 
 
-def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix', cmap=plt.cm.RdBu, fig_dir='.', name=''):
+def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix', cmap=plt.cm.RdBu, fig_dir='.', name='', fontsize_labels=15, fontsize_matrix=18):
     """
     This function prints and plots the confusion matrix.
     Normalization can be applied by setting `normalize=True`.
@@ -31,20 +31,21 @@ def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix'
     fig = plt.figure(figsize=(15, 12))
     plt.imshow(cm, interpolation='nearest', cmap=cmap, vmin=-1, vmax=1)
     plt.title(title)
-    plt.colorbar()
+    cb = plt.colorbar()
+    cb.ax.set_yticklabels(cb.ax.get_yticklabels(), fontsize=fontsize_labels)
     tick_marks = np.arange(len(classes))
-    plt.xticks(tick_marks, classes, rotation=90)
-    plt.yticks(tick_marks, classes)
+    plt.xticks(tick_marks, classes, rotation=90, fontsize=fontsize_labels)
+    plt.yticks(tick_marks, classes, fontsize=fontsize_labels)
 
     fmt = '.2f' if normalize else 'd'
     thresh = cm.max() / 2.
     for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
         plt.text(j, i, format(abs(cm[i, j]), fmt), horizontalalignment="center",
-                 color="white" if abs(cm[i, j]) > thresh else "black")
+                 color="white" if abs(cm[i, j]) > thresh else "black", fontsize=fontsize_matrix)
 
     plt.tight_layout()
-    plt.ylabel('True label')
-    plt.xlabel('Predicted label')
+    plt.ylabel('True label', fontsize=fontsize_matrix)
+    plt.xlabel('Predicted label', fontsize=fontsize_matrix)
     plt.tight_layout()
     plt.savefig(os.path.join(fig_dir, 'confusion_matrix_%s.pdf' % name))
 
@@ -85,18 +86,21 @@ def calc_model_metrics(modelFilename, testLabels, testImages, testTypeNames, typ
         # Aggregate age conf matrix
         aggregateAgesIndexes = np.arange(0, nBins + 1, int(nBins / len(snTypes)))
         confMatrixAggregateAges = get_aggregated_conf_matrix(aggregateAgesIndexes, testLabels, predictedLabels)
-        plot_confusion_matrix(confMatrixAggregateAges, classes=snTypes, normalize=True, title='Normalized confusion matrix', fig_dir=fig_dir, name='aggregate_ages')
+        classnames = np.copy(snTypes)
+        if confMatrixAggregateAges.shape[0] < len(classnames):
+            classnames = classnames[:-1]
+        plot_confusion_matrix(confMatrixAggregateAges, classes=classnames, normalize=True, title='Normalized confusion matrix', fig_dir=fig_dir, name='aggregate_ages', fontsize_labels=15, fontsize_matrix=16)
 
         # Aggregate age and subtypes conf matrix
         aggregateSubtypesIndexes = np.array([0, 108, 180, 234, 306])
         broadTypes = ['Ia', 'Ib', 'Ic', 'II']
         confMatrixAggregateSubtypes = get_aggregated_conf_matrix(aggregateSubtypesIndexes, testLabels, predictedLabels)
-        plot_confusion_matrix(confMatrixAggregateSubtypes, classes=broadTypes, normalize=True, title='Normalized confusion matrix', fig_dir=fig_dir, name='aggregate_subtypes')
+        plot_confusion_matrix(confMatrixAggregateSubtypes, classes=broadTypes, normalize=True, title='Normalized confusion matrix', fig_dir=fig_dir, name='aggregate_subtypes', fontsize_labels=30, fontsize_matrix=30)
         # plt.show()
 
-    # np.set_printoptions(precision=2)
-    # print(confMatrix)
-    # plot_confusion_matrix(confMatrix, classes=typeNamesList, normalize=True, title='Normalized confusion matrix', fig_dir=fig_dir, name='all')
+    np.set_printoptions(precision=2)
+    print(confMatrix)
+    plot_confusion_matrix(confMatrix, classes=typeNamesList, normalize=True, title='Normalized confusion matrix', fig_dir=fig_dir, name='all', fontsize_labels=4, fontsize_matrix=1)
 
     # ACTUAL ACCURACY, broadTYPE ACCURACY, AGE ACCURACY
     typeAndAgeCorrect = 0
@@ -156,10 +160,10 @@ def calc_model_metrics(modelFilename, testLabels, testImages, testTypeNames, typ
 
 
 def main():
-    dirModel = "/Users/danmuth/PycharmProjects/astrodash/data_files_new_train80_zeroZ_traintestsplitbeforeCreateArrays/"
+    dirModel = "/Users/danmuth/PycharmProjects/astrodash/astrodash/models_v04/data_files_train80_splitspectra_zeroZ/"
     modelFilename = dirModel + "tensorflow_model.ckpt"
 
-    fig_dir = os.path.join('..', 'Figures', 'zeroZ')
+    fig_dir = os.path.join('..', 'Figures', 'zeroZ_train80_splitspectra')
     if not os.path.exists(fig_dir):
         os.makedirs(fig_dir)
 
@@ -167,13 +171,13 @@ def main():
         pars = pickle.load(f)
     snTypes = pars['typeList']
 
-    dirTestSet = "/Users/danmuth/PycharmProjects/astrodash/data_files_new_train80_zeroZ_traintestsplitbeforeCreateArrays/training_set/"
+    dirTestSet = "/Users/danmuth/PycharmProjects/astrodash/astrodash/models_v04/data_files_train80_splitspectra_zeroZ/training_set/"
     testImagesAll = np.load(dirTestSet + 'testImages.npy', mmap_mode='r')
     testLabelsAll = np.load(dirTestSet + 'testLabels.npy', mmap_mode='r')
     typeNamesList = np.load(dirTestSet + 'typeNamesList.npy')
     testTypeNamesAll = np.load(dirTestSet + 'testTypeNames.npy')
 
-    calc_model_metrics(modelFilename, testLabelsAll[:1000], testImagesAll[:1000], testTypeNamesAll[:1000], typeNamesList, snTypes, fig_dir=fig_dir)
+    calc_model_metrics(modelFilename, testLabelsAll[:50000], testImagesAll[:50000], testTypeNamesAll[:50000], typeNamesList, snTypes, fig_dir=fig_dir)
 
 
 if __name__ == '__main__':
