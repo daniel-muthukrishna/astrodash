@@ -9,7 +9,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(name='astrodash',
-    version='1.0.2',
+    version='1.0.4',
     description='Deep Learning for Automated Spectral Classification of Supernovae',
     long_description=long_description,
     url='https://github.com/daniel-muthukrishna/DASH',
@@ -77,9 +77,8 @@ setup(name='astrodash',
     # pip to create the appropriate form of executable for the target platform.
     entry_points={
         'console_scripts': [
-            'sample=dash:main',
-            'dash=dash:run_gui',
-            'astrodash=dash:run_gui'
+            'sample=astrodash:main',
+            'astrodash=astrodash:run_gui'
         ],
     },
 )

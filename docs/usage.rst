@@ -4,18 +4,26 @@ Usage
 
 Graphical Interface
 +++++++++++++++++++
-There are two ways to open the graphical interface:
+There are three ways to open the graphical interface:
 
-1. Open a python interpreter and run the following:
+1. Run the following in the terminal:
 
-.. code-block:: python
+.. code-block:: bash
 
-    import dash
-    dash.run_gui()
+    astrodash
 
 **OR**
 
-2. Run the following in the terminal:
+2. Open a python interpreter and run the following:
+
+.. code-block:: python
+
+    import astrodash
+    astrodash.run_gui()
+
+**OR**
+
+3. Run the following in the terminal:
 
 .. code-block:: bash
 
@@ -51,9 +59,9 @@ Use the following example code:
 
 .. code-block:: python
 
-    import dash
+    import astrodash
 
-    classification = dash.Classify(filenames, knownRedshifts, classifyHost=False, knownZ=True, smooth=6, rlapScores=False)
+    classification = astrodash.Classify(filenames, knownRedshifts, classifyHost=False, knownZ=True, smooth=6, rlapScores=False)
     bestFits, redshifts, bestTypes, rejectionLabels, reliableFlags = classification.list_best_matches(n=5, saveFilename='DASH_matches.txt')
     classification.plot_with_gui(indexToPlot=2)
 

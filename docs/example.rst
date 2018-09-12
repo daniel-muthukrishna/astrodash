@@ -8,7 +8,7 @@ This example automatically classifies 10 spectra. The last line plots the fifth 
 
 .. code-block:: python
 
-    import dash
+    import astrodash
 
     atel9570 = [
         ('DES16C3bq_C3_combined_160925_v10_b00.dat', 0.237),
@@ -28,7 +28,7 @@ This example automatically classifies 10 spectra. The last line plots the fifth 
     knownRedshifts = [i[1] for i in atel9570]
 
     # Classify all spectra
-    classification = dash.Classify(filenames, knownRedshifts, classifyHost=False)
+    classification = astrodash.Classify(filenames, knownRedshifts, classifyHost=False)
     bestFits, redshifts, bestTypes, rlapFlag, matchesFlag = classification.list_best_matches(n=5, saveFilename='ATEL_best_fits.txt')
 
     # Plot DES16C2aiy (5th spectrum)

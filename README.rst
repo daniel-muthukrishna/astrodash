@@ -41,18 +41,26 @@ Or, ONLY if you do not have anaconda and if you have python 3, it can be install
 
 3.1 Graphical Interface
 +++++++++++++++++++++++
-There are two ways to open the graphical interface:
+There are three ways to open the graphical interface:
 
-1. Open a python interpreter and run the following:
+1. Run the following in the terminal:
 
-.. code-block:: python
+.. code-block:: bash
 
-    import dash
-    dash.run_gui()
+    astrodash
 
 **OR**
 
-2. Run the following in the terminal:
+2. Open a python interpreter and run the following:
+
+.. code-block:: python
+
+    import astrodash
+    astrodash.run_gui()
+
+**OR**
+
+3. Run the following in the terminal:
 
 .. code-block:: bash
 
@@ -88,13 +96,13 @@ Use the following example code:
 
 .. code-block:: python
 
-    import dash
+    import astrodash
 
-    classification = dash.Classify(filenames, knownRedshifts, classifyHost=False, knownZ=True, smooth=6, rlapScores=False)
+    classification = astrodash.Classify(filenames, knownRedshifts, classifyHost=False, knownZ=True, smooth=6, rlapScores=False)
     bestFits, redshifts, bestTypes, rejectionLabels, reliableFlags = classification.list_best_matches(n=5, saveFilename='DASH_matches.txt')
     classification.plot_with_gui(indexToPlot=2)
 
-dash.Classify() takes the following arguments:
+astrodash.Classify() takes the following arguments:
 
     :filenames: is the only mandatory argument. It must be a list of strings of the supernova data files. Column seperated .dat, ASCII, or similarly formatted files are accepted. Single spectrum FITS files are also accepted.
 
@@ -155,7 +163,7 @@ This example automatically classifies 10 spectra. The last line plots the fifth 
 
 .. code-block:: python
 
-    import dash
+    import astrodash
 
     atel9570 = [
         ('DES16C3bq_C3_combined_160925_v10_b00.dat', 0.237),
@@ -175,7 +183,7 @@ This example automatically classifies 10 spectra. The last line plots the fifth 
     knownRedshifts = [i[1] for i in atel9570]
 
     # Classify all spectra
-    classification = dash.Classify(filenames, knownRedshifts, classifyHost=False)
+    classification = astrodash.Classify(filenames, knownRedshifts, classifyHost=False)
     bestFits, redshifts, bestTypes, rlapFlag, matchesFlag = classification.list_best_matches(n=5, saveFilename='ATEL_best_fits.txt')
 
     # Plot DES16C3bq
