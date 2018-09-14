@@ -19,7 +19,7 @@ In a terminal run:
 
 2. Dependencies
 ---------------
-Using pip to install DASH will automatically install the mandatory dependencies: numpy, scipy, specutils, pyqtgraph, and tensorflow.
+Using pip to install DASH will automatically install the mandatory dependencies: numpy, scipy, pyqtgraph, and tensorflow.
 
 PyQt5 is the final dependency, and is optional. It is only required if you would like to use the graphical interface.
 If you have an anaconda installation, this should already be preinstalled, but can otherwise be simply installed by running the following in the terminal:
