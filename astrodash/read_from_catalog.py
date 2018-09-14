@@ -29,7 +29,7 @@ def read_osc_input(filename, template=False):
         if data.shape[0] == 3:
             wave, flux, fluxerr = data
         elif data.shape[0] == 2:
-            wave, flux, fluxerr = data
+            wave, flux = data
         else:
             raise Exception("Error reading the given OSC input: {}. Check data at {}".format(filename, urlSpectrum))
 

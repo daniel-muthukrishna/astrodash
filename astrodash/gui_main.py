@@ -306,7 +306,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             self.set_plot_redshift(self.bestRedshift)
             self.plot_cross_corr()
             self.progressBar.setValue(100)
-            QtGui.QMessageBox.information(self, "Done!", "Finished Fitting Input Spectrum")
+            # QtGui.QMessageBox.information(self, "Done!", "Finished Fitting Input Spectrum")
 
     def best_broad_type(self):
         bestMatchList = []

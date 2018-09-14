@@ -27,11 +27,12 @@ def cross_correlation(inputFlux, tempFlux, nw, tempMinMaxIndex):
 
 
 def calc_redshift_from_crosscorr(crossCorr, nw, dwlog):
-    deltaPeak = np.argmax(crossCorr)
+    # Find max peak while ignoring peaks that lead to negative redshifts
+    deltaPeak = np.argmax(crossCorr[:int(nw/2)+1])
 
     # z = np.exp(deltaPeak * dwlog) - 1 #equation 13 of Blondin)
     zAxisIndex = np.concatenate((np.arange(-nw / 2, 0), np.arange(0, nw / 2)))
-    if deltaPeak < nw / 2:
+    if deltaPeak <= nw / 2:
         z = (np.exp(abs(zAxisIndex) * dwlog) - 1)[deltaPeak]
     else:
         z = -(np.exp(abs(zAxisIndex) * dwlog) - 1)[deltaPeak]
