@@ -1,6 +1,6 @@
 import os
+import sys
 import numpy as np
-from specutils.io import read_fits
 import astropy.io.fits as afits
 from scipy.interpolate import interp1d, UnivariateSpline
 from astrodash.array_tools import normalise_spectrum, zero_non_overlap_part
@@ -51,6 +51,9 @@ class ReadSpectrumFile(object):
     def read_fits_file(self):
         # filename = unicode(self.filename.toUtf8(), encoding="UTF-8")
         try:
+            if 'specutils' not in sys.modules:
+                from specutils.io import read_fits
+
             spectrum = read_fits.read_fits_spectrum1d(self.filename)
             if len(spectrum) > 1:
                 spectrum = spectrum[0]
@@ -61,7 +64,7 @@ class ReadSpectrumFile(object):
                 wave = np.array(spectrum.dispersion)
                 flux = np.array(spectrum.flux)
                 print("No wavelength attribute in FITS File. Using 'dispersion' attribute instead")
-        except:
+        except Exception as e:
             hdulist = afits.open(self.filename)
             flux = hdulist[0].data
             wave_start = hdulist[0].header['CRVAL1']

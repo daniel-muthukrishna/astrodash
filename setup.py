@@ -9,7 +9,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(name='astrodash',
-    version='1.0.5',
+    version='1.0.6',
     description='Deep Learning for Automated Spectral Classification of Supernovae',
     long_description=long_description,
     url='https://github.com/daniel-muthukrishna/DASH',
@@ -50,7 +50,7 @@ setup(name='astrodash',
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['numpy', 'scipy', 'specutils', 'tensorflow', 'pyqtgraph', 'astropy'],
+    install_requires=['numpy', 'scipy', 'tensorflow', 'pyqtgraph', 'astropy'],
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,
