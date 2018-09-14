@@ -71,12 +71,12 @@ def create_sn_and_host_arrays(snTemplateDirectory, snTempFileList, galTemplateDi
 
 def save_templates():
     scriptDirectory = os.path.dirname(os.path.abspath(__file__))
-    parameterFile = 'models_v05/models/zeroZ/training_params.pickle'
+    parameterFile = 'models_v06/models/zeroZ/training_params.pickle'
     snTemplateDirectory = os.path.join(scriptDirectory, "../templates/training_set/")
     snTempFileList = snTemplateDirectory + 'templist.txt'
     galTemplateDirectory = os.path.join(scriptDirectory, "../templates/superfit_templates/gal/")
     galTempFileList = galTemplateDirectory + 'gal.list'
-    saveFilename = 'models_v05/models/sn_and_host_templates.npz'
+    saveFilename = 'models_v06/models/sn_and_host_templates.npz'
 
     snTemplates, galTemplates = create_sn_and_host_arrays(snTemplateDirectory, snTempFileList, galTemplateDirectory, galTempFileList, parameterFile)
 

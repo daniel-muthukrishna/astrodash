@@ -1,7 +1,7 @@
 import sys
 from astrodash.download_data_files import download_all_files
 
-download_all_files('v05')
+download_all_files('v06')
 
 try:
     from PyQt5 import QtGui

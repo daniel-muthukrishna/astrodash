@@ -50,7 +50,7 @@ def download_all_files(zipVersion):
 
 
 if __name__ == '__main__':
-    download_all_files('v05')
+    download_all_files('v06')
 
 
 
