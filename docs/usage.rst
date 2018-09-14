@@ -87,3 +87,15 @@ To view the best matches, the 'list_best_matches' method takes three optional ar
     :saveFilename: (default='DASH_matches.txt') dictates the name of the file in which to save the best matches. The saved file is the best way to view the best Matches from DASH. If this is a None type or an empty string, the best matches will not be saved to a file.
 
 The final line is optional. It plots the 3rd spectrum onto the graphical interface.
+
+
+Usage with open supernova catalogs
+++++++++++++++++++++++++++++++++++
+DASH currently allows input spectra directly from the `Open Supernova Catalog <https://sne.space/>`.
+Setting the filename in the format:
+
+.. osc-name-ageIndex. E.g. osc-sn2002er-10
+
+where name is the 'name' of a supernova object (e.g. sn2002er) and 'ageIndex' is an integer index of the spectrum you wish to use from the open supernova catalog (e.g. 10).
+
+You may input this format into the graphical interface or as a string in the list of filenames in the python interface.

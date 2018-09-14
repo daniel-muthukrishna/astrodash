@@ -6,7 +6,9 @@ from astropy.time import Time
 
 
 def read_osc_input(filename, template=False):
-    """ self.filename in the form osc-name-ageIndex. E.g. osc-sn2002er-10"""
+    """ self.filename in the form osc-name-ageIndex. E.g. osc-sn2002er-10
+    TODO: Do error checking if input is invalid
+    """
     osc, objName, ageIdx = filename.split('-')
 
     def read_json(url):
@@ -23,7 +25,14 @@ def read_osc_input(filename, template=False):
         urlSpectrum = "https://api.sne.space/" + objName + "/spectra/time+data?item={0}".format(ageIdx)
         data = read_json(urlSpectrum)
         data = data[next(iter(data))]['spectra'][0][1]
-        wave, flux = np.array(list(map(list, zip(*data)))).astype(np.float)
+        data = np.array(list(map(list, zip(*data)))).astype(np.float)
+        if data.shape[0] == 3:
+            wave, flux, fluxerr = data
+        elif data.shape[0] == 2:
+            wave, flux, fluxerr = data
+        else:
+            raise Exception("Error reading the given OSC input: {}. Check data at {}".format(filename, urlSpectrum))
+
         return wave, flux, redshift
 
     elif template is True:
@@ -62,3 +71,7 @@ def read_osc_input(filename, template=False):
 
 # filename must start with catalog key followed by '-'. E.g. osc-OTHERINFO
 catalogDict = {'osc': read_osc_input}
+
+
+if __name__ == '__main__':
+    read_osc_input('osc-sn2002er-10')
