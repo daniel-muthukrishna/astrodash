@@ -46,7 +46,7 @@ def main(spectraDir, atelTextFile, saveMatchesFilename):
             print(row.Name)
 
     # Classify and print the best matches
-    classification = astrodash.Classify(filenames, knownRedshifts, classifyHost=False, rlapScores=False, smooth=6, knownZ=False, data_files='models_v05')
+    classification = astrodash.Classify(filenames, knownRedshifts, classifyHost=False, rlapScores=True, smooth=6, knownZ=True, data_files='models_v05')
     bestFits, redshifts, bestTypes, rlapFlag, matchesFlag = classification.list_best_matches(n=5, saveFilename=saveMatchesFilename)
 
     print("{0:17} | {1:5} | {2:8} | {3:10} | {4:6} | {5:10} | {6:10}".format("Name", "  z  ", "DASH_Fit", "  Age ", "Prob.", "Flag", "Wiki Fit"))
@@ -54,7 +54,7 @@ def main(spectraDir, atelTextFile, saveMatchesFilename):
         print("{0:17} | {1:5} | {2:8} | {3:10} | {4:6} | {5:10} | {6:10}".format('_'.join([filenames[i].split('/')[-1].split('_')[0], filenames[i].split('/')[-1].split('_')[3]]) , redshifts[i], bestTypes[i][0], bestTypes[i][1], bestTypes[i][2], matchesFlag[i].replace(' matches',''), wikiClassifications[i]))
 
     # Plot one of the matches
-    classification.plot_with_gui(indexToPlot=7)
+    classification.plot_with_gui(indexToPlot=5)
 
 
 if __name__=='__main__':

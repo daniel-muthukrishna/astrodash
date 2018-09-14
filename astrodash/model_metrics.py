@@ -32,7 +32,7 @@ def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix'
     plt.imshow(cm, interpolation='nearest', cmap=cmap, vmin=-1, vmax=1)
     plt.title(title)
     cb = plt.colorbar()
-    cb.ax.set_yticklabels(cb.ax.get_yticklabels(), fontsize=fontsize_labels)
+    cb.ax.set_yticklabels(cb.ax.get_yticklabels(), fontsize=16)
     tick_marks = np.arange(len(classes))
     plt.xticks(tick_marks, classes, rotation=90, fontsize=fontsize_labels)
     plt.yticks(tick_marks, classes, fontsize=fontsize_labels)
@@ -44,8 +44,8 @@ def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix'
                  color="white" if abs(cm[i, j]) > thresh else "black", fontsize=fontsize_matrix)
 
     plt.tight_layout()
-    plt.ylabel('True label', fontsize=fontsize_matrix)
-    plt.xlabel('Predicted label', fontsize=fontsize_matrix)
+    plt.ylabel('True label', fontsize=18)
+    plt.xlabel('Predicted label', fontsize=18)
     plt.tight_layout()
     plt.savefig(os.path.join(fig_dir, 'confusion_matrix_%s.pdf' % name))
 
@@ -89,18 +89,18 @@ def calc_model_metrics(modelFilename, testLabels, testImages, testTypeNames, typ
         classnames = np.copy(snTypes)
         if confMatrixAggregateAges.shape[0] < len(classnames):
             classnames = classnames[:-1]
-        plot_confusion_matrix(confMatrixAggregateAges, classes=classnames, normalize=True, title='Normalized confusion matrix', fig_dir=fig_dir, name='aggregate_ages', fontsize_labels=15, fontsize_matrix=16)
+        plot_confusion_matrix(confMatrixAggregateAges, classes=classnames, normalize=True, title='', fig_dir=fig_dir, name='aggregate_ages', fontsize_labels=15, fontsize_matrix=16)
 
         # Aggregate age and subtypes conf matrix
         aggregateSubtypesIndexes = np.array([0, 108, 180, 234, 306])
         broadTypes = ['Ia', 'Ib', 'Ic', 'II']
         confMatrixAggregateSubtypes = get_aggregated_conf_matrix(aggregateSubtypesIndexes, testLabels, predictedLabels)
-        plot_confusion_matrix(confMatrixAggregateSubtypes, classes=broadTypes, normalize=True, title='Normalized confusion matrix', fig_dir=fig_dir, name='aggregate_subtypes', fontsize_labels=30, fontsize_matrix=30)
+        plot_confusion_matrix(confMatrixAggregateSubtypes, classes=broadTypes, normalize=True, title='', fig_dir=fig_dir, name='aggregate_subtypes', fontsize_labels=30, fontsize_matrix=30)
         # plt.show()
 
     np.set_printoptions(precision=2)
     print(confMatrix)
-    plot_confusion_matrix(confMatrix, classes=typeNamesList, normalize=True, title='Normalized confusion matrix', fig_dir=fig_dir, name='all', fontsize_labels=4, fontsize_matrix=1)
+    plot_confusion_matrix(confMatrix, classes=typeNamesList, normalize=True, title='', fig_dir=fig_dir, name='all', fontsize_labels=2, fontsize_matrix=1)
 
     # ACTUAL ACCURACY, broadTYPE ACCURACY, AGE ACCURACY
     typeAndAgeCorrect = 0
@@ -160,7 +160,7 @@ def calc_model_metrics(modelFilename, testLabels, testImages, testTypeNames, typ
 
 
 def main():
-    dirModel = "/Users/danmuth/PycharmProjects/astrodash/astrodash/models_v04/data_files_train80_splitspectra_zeroZ/"
+    dirModel = "/Users/danmuth/PycharmProjects/astrodash/data_files_train80_splitspectra_zeroZ/"
     modelFilename = dirModel + "tensorflow_model.ckpt"
 
     fig_dir = os.path.join('..', 'Figures', 'zeroZ_train80_splitspectra')
@@ -171,7 +171,7 @@ def main():
         pars = pickle.load(f)
     snTypes = pars['typeList']
 
-    dirTestSet = "/Users/danmuth/PycharmProjects/astrodash/astrodash/models_v04/data_files_train80_splitspectra_zeroZ/training_set/"
+    dirTestSet = "/Users/danmuth/PycharmProjects/astrodash/data_files_train80_splitspectra_zeroZ/training_set/"
     testImagesAll = np.load(dirTestSet + 'testImages.npy', mmap_mode='r')
     testLabelsAll = np.load(dirTestSet + 'testLabels.npy', mmap_mode='r')
     typeNamesList = np.load(dirTestSet + 'typeNamesList.npy')
