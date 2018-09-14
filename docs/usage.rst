@@ -94,7 +94,7 @@ Usage with open supernova catalogs
 DASH currently allows input spectra directly from the `Open Supernova Catalog <https://sne.space/>`.
 Setting the filename in the format:
 
-.. osc-name-ageIndex. E.g. osc-sn2002er-10
+    osc-name-ageIndex. E.g. osc-sn2002er-10
 
 where name is the 'name' of a supernova object (e.g. sn2002er) and 'ageIndex' is an integer index of the spectrum you wish to use from the open supernova catalog (e.g. 10).
 
