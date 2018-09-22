@@ -31,7 +31,10 @@ There are three ways to open the graphical interface:
 
 (Where $INSTALL_DIR is the directory where DASH has been installed.)
 
+If you want to quickly get started, try using an online spectrum from the open supernova catalog, by typeing something like 'osc-sn2002er-10' in the 'Select File' field, then click 'Re-fit'!
+
 .. image:: GUI_Screenshot.png
+
 
 Once the GUI is open you may follow these steps:
 
