@@ -2,7 +2,7 @@
 Example
 =======
 
-Example script classifying some spectra from OzDES Run025/ATEL9570:
+Example script classifying some spectra from the Open Supernova Catalog and some from OzDES ATEL9570:
 
 This example automatically classifies 4 spectra. The last line plots the second spectrum on the GUI.
 
@@ -21,7 +21,7 @@ This example automatically classifies 4 spectra. The last line plots the second 
     knownRedshifts = [i[1] for i in example]
 
     # Classify all spectra
-    classification = astrodash.Classify(filenames, knownRedshifts, classifyHost=False)
+    classification = astrodash.Classify(filenames, knownRedshifts, classifyHost=False, knownZ=True, smooth=6)
     bestFits, redshifts, bestTypes, rlapFlag, matchesFlag = classification.list_best_matches(n=5, saveFilename='example_best_fits.txt')
 
     # Plot sn2002ey from open supernova catalog (2nd spectrum)
