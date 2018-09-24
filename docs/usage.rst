@@ -4,32 +4,38 @@ Usage
 
 Graphical Interface
 +++++++++++++++++++
-There are three ways to open the graphical interface:
-
-1. Run the following in the terminal:
+The best way to run the graphical interface is to simply run the following in the terminal:
 
 .. code-block:: bash
 
     astrodash
 
-**OR**
+You can optionally classify a spectrum by giving a spectrum filepath, or an open supernova catalog spectrum as an argument:
 
-2. Open a python interpreter and run the following:
+.. code-block:: bash
+
+    astrodash osc-sn2002er-10
+
+If the redshift is known, you can give this as an argument too:
+
+.. code-block:: bash
+
+    astrodash example_spectrum.dat 0.2
+
+You may also select to classify the host spectrum along with the supernova:
+
+.. code-block:: bash
+
+    astrodash example_spectrum.dat 0.2 --classify_host
+
+
+The Graphical interface can also be run from a python interface with:
 
 .. code-block:: python
 
     import astrodash
     astrodash.run_gui()
 
-**OR**
-
-3. Run the following in the terminal:
-
-.. code-block:: bash
-
-    python $INSTALL_DIR/gui_main.py
-
-(Where $INSTALL_DIR is the directory where DASH has been installed.)
 
 If you want to quickly get started, try using an online spectrum from the open supernova catalog, by typeing something like 'osc-sn2002er-10' in the 'Select File' field, then click 'Re-fit'!
 
