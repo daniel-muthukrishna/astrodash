@@ -12,7 +12,7 @@ This example automatically classifies 4 spectra. The last line plots the second 
 
     example = [
         ('osc-sn2002er-10', 0.0),
-        ('osc-2001ey-4', 0.0),
+        ('osc-2013fs-8', 0.0),
         ('DES16C3bq_C3_combined_160925_v10_b00.dat', 0.237),
         ('DES16E2aoh_E2_combined_160925_v10_b00.dat', 0.403)]
 
