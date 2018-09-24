@@ -14,19 +14,19 @@ You can optionally classify a spectrum by giving a spectrum filepath, or an open
 
 .. code-block:: bash
 
-    astrodash osc-sn2002er-10
+    astrodash -f osc-sn2002er-10
 
 If the redshift is known, you can give this as an argument too:
 
 .. code-block:: bash
 
-    astrodash example_spectrum.dat 0.2
+    astrodash -f example_spectrum.dat -z 0.2
 
 You may also select to classify the host spectrum along with the supernova:
 
 .. code-block:: bash
 
-    astrodash example_spectrum.dat 0.2 --classify_host
+    astrodash -f example_spectrum.dat -z 0.2 --classify_host
 
 
 The Graphical interface can also be run from a python interface with:

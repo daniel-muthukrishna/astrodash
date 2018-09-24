@@ -24,10 +24,10 @@ def main():
 
 def run_gui():
     parser = argparse.ArgumentParser()
-    parser.add_argument('filepath', type=str, help='Optional: Spectrum filepath', action='store_true')
-    parser.add_argument('redshift', type=float, help='Optional: Spectrum redshift', action='store_true')
-    parser.add_argument('--classify_host', type=bool, help='Optional: Classify Host', action='store_true')
-    parser.add_argument('smooth', type=bool, help='Optional: Smooth spectrum', action='store_true')
+    parser.add_argument('-f', "--filepath", type=str, help='Spectrum filepath (str)')
+    parser.add_argument('-z', "--redshift", type=float, help='Spectrum redshift (float)')
+    parser.add_argument('-g', "--classify_host", help='Classify Host', action='store_true')
+    parser.add_argument('-s', "--smooth", type=int, help='Smooth spectrum (int)')
     args = parser.parse_args()
 
     app = QtGui.QApplication(sys.argv)
@@ -54,8 +54,10 @@ def run_gui():
     if args.smooth is not None:
         form.lineEditSmooth.setText(str(args.smooth))
 
-    form.select_tensorflow_model()
-    form.fit_spectra()
+    if args.filepath is not None:
+        form.lineEditInputFilename.setText(filepath)
+        form.select_tensorflow_model()
+        form.fit_spectra()
     form.show()
     app.exec_()
 

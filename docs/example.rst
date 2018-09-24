@@ -2,17 +2,17 @@
 Example
 =======
 
-Example script classifying some spectra from the Open Supernova Catalog and some from OzDES ATEL9570:
+Example script classifying some spectra from the Open Supernova Catalog (OSC) and some from OzDES ATEL9570:
 
-This example automatically classifies 4 spectra. The last line plots the second spectrum on the GUI.
+This example automatically classifies 4 spectra. The last line plots the second spectrum on the GUI. The redshift of the OSC objects is taken from the OSC automatically no matter what redshift value the user inputs.
 
 .. code-block:: python
 
     import astrodash
 
     example = [
-        ('osc-sn2002er-10', 0.0),
-        ('osc-sn2013fs-8', 0.0),
+        ('osc-sn2002er-10', 'osc'),
+        ('osc-sn2013fs-8', 'osc'),
         ('DES16C3bq_C3_combined_160925_v10_b00.dat', 0.237),
         ('DES16E2aoh_E2_combined_160925_v10_b00.dat', 0.403)]
 

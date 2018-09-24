@@ -273,6 +273,15 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         if not isinstance(self.inputFilename, (list, np.ndarray)) and not hasattr(self.inputFilename, 'read') and not os.path.isfile(self.inputFilename) and self.inputFilename.split('-')[0] not in list(catalogDict.keys()):   # Not an array and not a file-handle and not a file and not a catalog input
             QtGui.QMessageBox.critical(self, "Error", "File not found!")
             return
+        try:
+            if self.inputFilename.split('-')[0] in list(catalogDict.keys()):
+                knownZ = 0
+                self.bestRedshift = 0
+                self.bestRedshiftErr = None
+                self.lineEditKnownZ.setText("")
+        except Exception as e:
+            pass  # Not an Open Supernova catalog object. Make this neater in future.
+
         if self.checkBoxRlap.isChecked():
             self.getRlapScores = True
         else:
