@@ -9,7 +9,7 @@ filename = np.array([wave, flux])
 redshift = 0
 
 classification = astrodash.Classify([filename], [redshift], classifyHost=False, knownZ=True, smooth=6, rlapScores=True)
-bestFits, redshifts, bestTypes, rlapFlag, matchesFlag = classification.list_best_matches(n=5)
+bestFits, redshifts, bestTypes, rlapFlag, matchesFlag, redshiftErrs = classification.list_best_matches(n=5)
 
 print(bestFits)
 

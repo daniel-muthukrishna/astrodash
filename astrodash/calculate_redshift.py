@@ -75,12 +75,17 @@ def get_median_redshift(inputFlux, tempFluxes, nw, dwlog, inputMinMaxIndex, temp
         medianIndex = np.argsort(redshifts)[len(redshifts)//2]
         medianRedshift = redshifts[medianIndex]
         medianName = tempNames[medianIndex]
+        try:
+            stdRedshift = np.std(redshifts)
+        except Exception as e:
+            print("Error calculating redshift error. See calculate_redshift.py.", e)
+            stdRedshift = None
     else:
-        return None, None, None
+        return None, None, None, None
 
     if len(redshifts) >= 10:
         redshiftError = np.std(redshifts)
     else:
         pass # redshiftError = 1/rlap * kz
 
-    return medianRedshift, crossCorrs, medianName
+    return medianRedshift, crossCorrs, medianName, stdRedshift

@@ -82,7 +82,7 @@ filenames = [os.path.join(directoryPath, i[0]) for i in atels]
 knownRedshifts = [i[1] for i in atels]
 
 classification = astrodash.Classify(filenames, knownRedshifts, classifyHost=False, smooth=5, knownZ=False)
-bestFits, redshifts, bestTypes, rejectionLabels, reliableFlags = classification.list_best_matches(n=5)
+bestFits, redshifts, bestTypes, rejectionLabels, reliableFlags, redshiftErrs = classification.list_best_matches(n=5)
 
 # SAVE BEST MATCHES
 print(bestFits)

@@ -46,12 +46,24 @@ def main(spectraDir, atelTextFile, saveMatchesFilename):
             print(row.Name)
 
     # Classify and print the best matches
-    classification = astrodash.Classify(filenames, knownRedshifts, classifyHost=False, rlapScores=True, smooth=6, knownZ=True, data_files='models_v06')
-    bestFits, redshifts, bestTypes, rlapFlag, matchesFlag = classification.list_best_matches(n=5, saveFilename=saveMatchesFilename)
+    classification = astrodash.Classify(filenames, knownRedshifts, classifyHost=False, rlapScores=True, smooth=16, knownZ=True, data_files='models_v06')
+    bestFits, redshifts, bestTypes, rlapFlag, matchesFlag, redshiftErrs = classification.list_best_matches(n=5, saveFilename=saveMatchesFilename)
 
-    print("{0:17} | {1:5} | {2:8} | {3:10} | {4:6} | {5:10} | {6:10}".format("Name", "  z  ", "DASH_Fit", "  Age ", "Prob.", "Flag", "Wiki Fit"))
+    # print("{0:17} | {1:5} | {2:8} | {3:10} | {4:6} | {5:10} | {6:10}".format("Name", "  z  ", "DASH_Fit", "  Age ", "Prob.", "Flag", "Wiki Fit"))
+    # for i in range(len(filenames)):
+    #     print("{0:17} | {1:5} | {2:8} | {3:10} | {4:6} | {5:10} | {6:10}".format('_'.join([filenames[i].split('/')[-1].split('_')[0], filenames[i].split('/')[-1].split('_')[3]]) , redshifts[i], bestTypes[i][0], bestTypes[i][1], bestTypes[i][2], matchesFlag[i].replace(' matches',''), wikiClassifications[i]))
+    #
+    print("{0:17} | {1:5} | {2:10} | {3:8} | {4:10} | {5:6} | {6:10} | {6:10} ".format("Name", "  z  ", "ATel Classification", "DASH_Class", "  Age ", "Prob.", "Flag", "Best fit"))
     for i in range(len(filenames)):
-        print("{0:17} | {1:5} | {2:8} | {3:10} | {4:6} | {5:10} | {6:10}".format('_'.join([filenames[i].split('/')[-1].split('_')[0], filenames[i].split('/')[-1].split('_')[3]]) , redshifts[i], bestTypes[i][0], bestTypes[i][1], bestTypes[i][2], matchesFlag[i].replace(' matches',''), wikiClassifications[i]))
+        print("{0:17} | {1:5} | {2:10} | {3:8} | {4:10} | {5:6} | {6:10} | {6:10} ".format('_'.join([filenames[i].split('/')[-1].split('_')[0], filenames[i].split('/')[-1].split('_')[3]]), redshifts[i],  wikiClassifications[i], bestTypes[i][0], bestTypes[i][1], bestTypes[i][2], matchesFlag[i].replace(' matches','')), bestFits[i][0])
+
+    # print("{0:17} | {1:5} | {2:10} | {3:8} | {4:10} | {5:6} | {6:10} | {6:10} ".format("Name", "  z  ", "ATel Classification", "DASH_Class", "  Age ", "Prob.", "Flag", "Best fit"))
+    # for i in np.arange(len(filenames)-1, -1, -1):
+    #     name = filenames[i].split('/')[-1].split('_')[0]
+    #     dashName, dashAge, dashProb = bestFits[i][0][1:4]
+    #     print("\hline {0} & {1} & {2} & {3} ({4}) & {5} & {6} & \checkmark\\\\".format(
+    #         name, round(redshifts[i], 3), wikiClassifications[i], dashName, dashAge, round(float(dashProb), 3), matchesFlag[i].replace(' matches','')))
+    #
 
     # Plot one of the matches
     classification.plot_with_gui(indexToPlot=5)

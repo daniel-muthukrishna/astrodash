@@ -149,7 +149,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.snAge = str(self.comboBoxAge.currentText())
         self.hostName = str(self.comboBoxHost.currentText())
 
-        self.redshift, self.crossCorrs, self.medianName = self.calc_redshift(self.snName, self.snAge)
+        self.redshift, self.crossCorrs, self.medianName, self.redshiftErr = self.calc_redshift(self.snName, self.snAge)
         self.set_template_sub_index(self.medianName)
         self.templatePlotFlux, self.templatePlotName, self.templateMinMaxIndex = self.get_template_info()
         self.plot_cross_corr()
@@ -259,6 +259,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             try:
                 knownZ = float(self.lineEditKnownZ.text())
                 self.bestRedshift = knownZ
+                self.bestRedshiftErr = None
             except ValueError:
                 QtGui.QMessageBox.critical(self, "Error", "Enter Known Redshift")
                 return
@@ -319,7 +320,10 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.labelBestHostType.setText(host)
         if host == "":
             self.labelBestHostType.setFixedWidth(0)
-        self.labelBestRedshift.setText(str(self.bestRedshift))
+        if self.bestRedshiftErr is None:
+            self.labelBestRedshift.setText(str(self.bestRedshift))
+        else:
+            self.labelBestRedshift.setText("{} {} {}".format(str(self.bestRedshift), "±", self.bestRedshiftErr))
         self.labelBestRelProb.setText("%s%%" % str(round(100*probTotal, 2)))
         if host == "":                                     
             self.labelBestHostType.setFixedWidth(0)
@@ -351,7 +355,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
 
     def list_best_matches_single_redshift(self):
         print("listing best matches...")
-        redshifts = self.best_redshifts()
+        redshifts, redshiftErrs = self.best_redshifts()
         self.listWidget.clear()
 
         header = ['No.', 'Type', 'Age', 'Softmax Prob.']
@@ -398,6 +402,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
 
             if not self.knownRedshift:
                 self.bestRedshift = redshifts[0]
+                self.bestRedshiftErr = redshiftErrs[0]
         self.best_broad_type()
 
     def list_item_clicked(self, item):
@@ -464,11 +469,13 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
 
     def best_redshifts(self):
         redshifts = []
+        redshiftErrs = []
         for i in range(20):
             host, name, age = classification_split(self.bestTypes[i])
-            redshift, crossCorr, medianName = self.calc_redshift(name, age)
+            redshift, crossCorr, medianName, redshiftErr = self.calc_redshift(name, age)
             redshifts.append(redshift)
-        return redshifts
+            redshiftErrs.append(redshiftErr)
+        return redshifts, redshiftErrs
 
     def set_template_sub_index(self, templateName):
         snInfos, snNames, hostInfos, hostNames = self.get_sn_and_host_templates(self.snName, self.snAge, self.hostName)
@@ -486,11 +493,11 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             templateFluxes.append(snInfos[i][1])
             templateMinMaxIndexes.append((snInfos[i][2], snInfos[i][3]))
 
-        redshift, crossCorrs, medianName = get_median_redshift(self.inputImageUnRedshifted, templateFluxes, self.nw, self.dwlog, self.inputMinMaxIndex, templateMinMaxIndexes, templateNames, outerVal=0.5)
+        redshift, crossCorrs, medianName, redshiftErr = get_median_redshift(self.inputImageUnRedshifted, templateFluxes, self.nw, self.dwlog, self.inputMinMaxIndex, templateMinMaxIndexes, templateNames, outerVal=0.5)
         if redshift is None:
-            return 0, 0, ""
+            return 0, 0, "", 0
 
-        return round(redshift, 4), crossCorrs, medianName
+        return round(redshift, 4), crossCorrs, medianName, round(redshiftErr, 4)
 
     def plot_cross_corr(self):
         zAxis = get_redshift_axis(self.nw, self.dwlog)

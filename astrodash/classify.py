@@ -89,12 +89,15 @@ class Classify(object):
         rlapLabels = []
         matchesReliableLabels = []
         redshifts = []
+        redshiftErrs = []
         for specNum in range(self.numSpectra):
             bestMatchList = []
             for i in range(20):
                 host, name, age = classification_split(bestTypes[specNum][i])
                 if not self.knownZ:
-                    redshifts.append(self.calc_redshift(inputImages[i], name, age, inputMinMaxIndexes[i])[0])
+                    redshift, _, redshiftErr = self.calc_redshift(inputImages[i], name, age, inputMinMaxIndexes[i])[0]
+                    redshifts.append(redshift)
+                    redshiftErrs.append(redshiftErr)
                 prob = softmaxes[specNum][i]
                 bestMatchList.append((host, name, age, prob))
             bestMatchList = np.array(bestMatchList)
@@ -109,7 +112,6 @@ class Classify(object):
             else:
                 matchesReliableLabels.append("Unreliable matches")
 
-
         bestMatchLists = np.array(bestMatchLists)
 
         if not redshifts:
@@ -120,7 +122,7 @@ class Classify(object):
         if saveFilename:
             self.save_best_matches(bestMatchLists, redshifts, bestBroadTypes, rlapLabels, matchesReliableLabels, saveFilename)
 
-        return bestMatchLists, redshifts, bestBroadTypes, rlapLabels, matchesReliableLabels
+        return bestMatchLists, redshifts, bestBroadTypes, rlapLabels, matchesReliableLabels, redshiftErrs
 
     def best_broad_type(self, bestMatchList):
         host, prevName, bestAge, probTotal, reliableFlag = combined_prob(bestMatchList[0:10])
@@ -167,12 +169,12 @@ class Classify(object):
             templateFluxes.append(snInfos[i][1])
             templateMinMaxIndexes.append((snInfos[i][2], snInfos[i][3]))
 
-        redshift, crossCorr, medianName = get_median_redshift(inputFlux, templateFluxes, self.nw, self.dwlog, inputMinMaxIndex, templateMinMaxIndexes, templateNames, outerVal=0.5)
+        redshift, crossCorr, medianName, redshiftErr = get_median_redshift(inputFlux, templateFluxes, self.nw, self.dwlog, inputMinMaxIndex, templateMinMaxIndexes, templateNames, outerVal=0.5)
         print(redshift)
         if redshift is None:
             return 0, np.zeros(1024)
 
-        return round(redshift, 4), crossCorr
+        return round(redshift, 4), crossCorr, round(redshiftErr, 4)
 
     def save_best_matches(self, bestFits, redshifts, bestTypes, rlapLabels, matchesReliableLabels, saveFilename='DASH_matches.txt'):
         with open(saveFilename, 'w') as f:
