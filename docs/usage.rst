@@ -28,6 +28,12 @@ You may also select to classify the host spectrum along with the supernova:
 
     astrodash -f example_spectrum.dat -z 0.2 --classify_host
 
+You may also change the amount of smoothing applied to the spectrum before it is classified as an integer. The default is 6.
+
+.. code-block:: bash
+
+    astrodash -f example_spectrum.dat -z 0.2 --classify_host -s 6
+
 
 The Graphical interface can also be run from a python interface with:
 
