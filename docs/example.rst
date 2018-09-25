@@ -24,5 +24,5 @@ This example automatically classifies 4 spectra. The last line plots the second 
     classification = astrodash.Classify(filenames, knownRedshifts, classifyHost=False, knownZ=True, smooth=6)
     bestFits, redshifts, bestTypes, rlapFlag, matchesFlag = classification.list_best_matches(n=5, saveFilename='example_best_fits.txt')
 
-    # Plot sn2002ey from open supernova catalog (2nd spectrum)
+    # Plot sn2013fs from open supernova catalog (2nd spectrum)
     classification.plot_with_gui(indexToPlot=1)
