@@ -43,7 +43,7 @@ The Graphical interface can also be run from a python interface with:
     astrodash.run_gui()
 
 
-If you want to quickly get started, try using an online spectrum from the open supernova catalog, by typeing something like 'osc-sn2002er-10' in the 'Select File' field, then click 'Re-fit'!
+If you want to quickly get started, try using an online spectrum from the open supernova catalog, by typing something like 'osc-sn2002er-8' in the 'Select File' field, then click 'Fit with priors'!
 
 .. image:: GUI_Screenshot.png
 
@@ -60,7 +60,7 @@ Once the GUI is open you may follow these steps:
 
 5. Browse for any single spectrum FITS, ASCII, dat, or two-column text file by clicking the 'Browse' button.
 
-6. Click 'Re-fit with priors' to classify.
+6. Click 'Fit with priors' to classify.
 
 7. Click any of the best matches to view the continuum-subtracted binned spectra. You may also select a particular type, age, and host of a supernova using the combo boxes. You can set the fraction of host galaxy light in the spectrum with the slider. You may also change the redshift slider or the line on the x-corr plot to view changes in redshift.
 
@@ -82,7 +82,7 @@ Use the following example code:
 
 dash.Classify() takes the following arguments:
 
-    :filenames: is the only mandatory argument. It must be a list of strings of the supernova data files. Column seperated .dat, ASCII, or similarly formatted files are accepted. Single spectrum FITS files are also accepted.
+    :filenames: is the only mandatory argument. It must be a list of strings or file objects. Each entry contains the path to a column seperated file indicating the wavelength and flux in the first two columns respectively. ASCII or similarly formatted files are accepted. Single spectrum FITS files are also accepted. A string in the format 'osc-name-ageidx' may also one of the list elements to download a spectrum from the Open Supernova Catalog; if doing this, the redshift is taken from the OSC instead of the user's input.
 
     :knownRedshifts: is an optional argument, and is a list of floats corresponding the redshifts of each of the files listed in 'filenames'. If this argument is not included, then the redshift will be calculated by DASH.
 
@@ -106,7 +106,7 @@ The final line is optional. It plots the 3rd spectrum onto the graphical interfa
 
 Usage with open supernova catalogs
 ++++++++++++++++++++++++++++++++++
-DASH currently allows input spectra directly from the `Open Supernova Catalog <https://sne.space/>`.
+DASH currently allows input spectra directly from the `Open Supernova Catalog <https://sne.space/>`_.
 Setting the filename in the format:
 
     osc-name-ageIndex. E.g. osc-sn2002er-10
