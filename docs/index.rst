@@ -26,13 +26,13 @@ graphical interface that enables a user to view and classify a spectrum.
 Contribute
 ----------
 
-- Issue Tracker: https://github.com/daniel-muthukrishna/DASH/issues
-- Source Code: https://github.com/daniel-muthukrishna/DASH
+- Issue Tracker: https://github.com/daniel-muthukrishna/astrodash/issues
+- Source Code: https://github.com/daniel-muthukrishna/astrodash
 
 Support
 -------
 
-If you are having issues, please let us know by submitting a GitHub issue at https://github.com/daniel-muthukrishna/DASH/issues
+If you are having issues, please let us know by submitting a GitHub issue at https://github.com/daniel-muthukrishna/astrodash/issues
 
 License
 -------

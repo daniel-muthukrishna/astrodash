@@ -16,11 +16,11 @@ Alternatively, the source code can be downloaded from GitHub by running the foll
 
 .. code-block:: bash
 
-    git clone https://github.com/daniel-muthukrishna/DASH.git
+    git clone https://github.com/daniel-muthukrishna/astrodash.git
 
 Dependencies
 ------------
-Using pip to install DASH will automatically install the mandatory dependencies: numpy, scipy, pyqtgraph, and tensorflow.
+Using pip to install DASH will automatically install the mandatory dependencies: :code:`numpy`, :code:`scipy`, :code:`pyqtgraph`, and :code:`tensorflow`.
 
 PyQt5 is the final dependency, and is optional. It is only required if you would like to use the graphical interface.
 If you have an anaconda installation, this should already be preinstalled, but can otherwise be simply installed by running the following in the terminal:

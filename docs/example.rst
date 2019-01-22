@@ -2,7 +2,7 @@
 Example
 =======
 
-Example script classifying some spectra from the Open Supernova Catalog (OSC) and some from OzDES ATEL9570:
+Example script classifying some spectra from the Open Supernova Catalog (OSC) and some from OzDES ATel9570:
 
 This example automatically classifies 4 spectra. The last line plots the second spectrum on the GUI. The redshift of the OSC objects is taken from the OSC automatically no matter what redshift value the user inputs.
 
