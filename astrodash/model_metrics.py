@@ -7,7 +7,8 @@ import tensorflow as tf
 from astrodash.multilayer_convnet import convnet_variables
 
 
-def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix', cmap=plt.cm.RdBu, fig_dir='.', name='', fontsize_labels=15, fontsize_matrix=18):
+def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix', cmap=plt.cm.RdBu, fig_dir='.',
+                          name='', fontsize_labels=15, fontsize_matrix=18):
     """
     This function prints and plots the confusion matrix.
     Normalization can be applied by setting `normalize=True`.
@@ -89,18 +90,21 @@ def calc_model_metrics(modelFilename, testLabels, testImages, testTypeNames, typ
         classnames = np.copy(snTypes)
         if confMatrixAggregateAges.shape[0] < len(classnames):
             classnames = classnames[:-1]
-        plot_confusion_matrix(confMatrixAggregateAges, classes=classnames, normalize=True, title='', fig_dir=fig_dir, name='aggregate_ages', fontsize_labels=15, fontsize_matrix=16)
+        plot_confusion_matrix(confMatrixAggregateAges, classes=classnames, normalize=True, title='', fig_dir=fig_dir,
+                              name='aggregate_ages', fontsize_labels=15, fontsize_matrix=16)
 
         # Aggregate age and subtypes conf matrix
         aggregateSubtypesIndexes = np.array([0, 108, 180, 234, 306])
         broadTypes = ['Ia', 'Ib', 'Ic', 'II']
         confMatrixAggregateSubtypes = get_aggregated_conf_matrix(aggregateSubtypesIndexes, testLabels, predictedLabels)
-        plot_confusion_matrix(confMatrixAggregateSubtypes, classes=broadTypes, normalize=True, title='', fig_dir=fig_dir, name='aggregate_subtypes', fontsize_labels=30, fontsize_matrix=30)
+        plot_confusion_matrix(confMatrixAggregateSubtypes, classes=broadTypes, normalize=True, title='',
+                              fig_dir=fig_dir, name='aggregate_subtypes', fontsize_labels=30, fontsize_matrix=30)
         # plt.show()
 
     np.set_printoptions(precision=2)
     print(confMatrix)
-    plot_confusion_matrix(confMatrix, classes=typeNamesList, normalize=True, title='', fig_dir=fig_dir, name='all', fontsize_labels=2, fontsize_matrix=1)
+    plot_confusion_matrix(confMatrix, classes=typeNamesList, normalize=True, title='', fig_dir=fig_dir, name='all',
+                          fontsize_labels=2, fontsize_matrix=1)
 
     # ACTUAL ACCURACY, broadTYPE ACCURACY, AGE ACCURACY
     typeAndAgeCorrect = 0
@@ -135,13 +139,15 @@ def calc_model_metrics(modelFilename, testLabels, testImages, testTypeNames, typ
             typeAndAgeCorrect += 1
         if testType == actualType:  # correct type
             typeCorrect += 1
-            if (nearTestAge[0] in actualAge) or (nearTestAge[1] in actualAge):  # check if the age is in the neigbouring bin
+            if (nearTestAge[0] in actualAge) or (
+                    nearTestAge[1] in actualAge):  # check if the age is in the neigbouring bin
                 typeAndNearAgeCorrect += 1  # all correct except nearby bin
         if testBroadType == actualBroadType:  # correct broadtype
             broadTypeCorrect += 1
             if testAge == actualAge:
                 broadTypeAndAgeCorrect += 1
-            if (nearTestAge[0] in actualAge) or (nearTestAge[1] in actualAge):  # check if the age is in the neigbouring bin
+            if (nearTestAge[0] in actualAge) or (
+                    nearTestAge[1] in actualAge):  # check if the age is in the neigbouring bin
                 broadTypeAndNearAgeCorrect += 1  # Broadtype and nearby bin
 
     typeAndAgeAccuracy = float(typeAndAgeCorrect) / len(testTypeNames)
@@ -177,7 +183,8 @@ def main():
     typeNamesList = np.load(dirTestSet + 'typeNamesList.npy')
     testTypeNamesAll = np.load(dirTestSet + 'testTypeNames.npy')
 
-    calc_model_metrics(modelFilename, testLabelsAll[:50000], testImagesAll[:50000], testTypeNamesAll[:50000], typeNamesList, snTypes, fig_dir=fig_dir)
+    calc_model_metrics(modelFilename, testLabelsAll[:50000], testImagesAll[:50000], testTypeNamesAll[:50000],
+                       typeNamesList, snTypes, fig_dir=fig_dir)
 
 
 if __name__ == '__main__':

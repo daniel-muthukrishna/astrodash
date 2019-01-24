@@ -40,7 +40,7 @@ def read_osc_input(filename, template=False):
         urlAgeMax = "https://api.sne.space/" + objName + "/maxdate/value"
         ageMax = read_json(urlAgeMax)
         ageMax = ageMax[next(iter(ageMax))]['maxdate'][0][0]
-        ageMax = Time(ageMax.replace('/','-')).mjd
+        ageMax = Time(ageMax.replace('/', '-')).mjd
 
         # Type
         urlTType = "https://api.sne.space/" + objName + "/claimedtype/value"
@@ -71,7 +71,6 @@ def read_osc_input(filename, template=False):
 
 # filename must start with catalog key followed by '-'. E.g. osc-OTHERINFO
 catalogDict = {'osc': read_osc_input}
-
 
 if __name__ == '__main__':
     read_osc_input('osc-sn2002er-10')

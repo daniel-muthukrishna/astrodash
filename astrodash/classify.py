@@ -3,7 +3,8 @@ import sys
 import pickle
 import numpy as np
 from astrodash.download_data_files import download_all_files
-from astrodash.restore_model import LoadInputSpectra, BestTypesListSingleRedshift, get_training_parameters, classification_split
+from astrodash.restore_model import LoadInputSpectra, BestTypesListSingleRedshift, get_training_parameters, \
+    classification_split
 from astrodash.false_positive_rejection import RlapCalc, combined_prob
 from astrodash.read_binned_templates import load_templates, get_templates
 from astrodash.calculate_redshift import get_median_redshift
@@ -18,7 +19,8 @@ except ImportError:
 
 
 class Classify(object):
-    def __init__(self, filenames=[], redshifts=[], smooth=6, minWave=3500, maxWave=10000, classifyHost=False, knownZ=True, rlapScores=True, data_files='models_v06'):
+    def __init__(self, filenames=[], redshifts=[], smooth=6, minWave=3500, maxWave=10000, classifyHost=False,
+                 knownZ=True, rlapScores=True, data_files='models_v06'):
         """ Takes a list of filenames and corresponding redshifts for supernovae.
         Files should contain a single spectrum, and redshifts should be a list of corresponding redshift floats
         """
@@ -38,25 +40,31 @@ class Classify(object):
         self.rlapScores = rlapScores
         self.pars = get_training_parameters()
         self.nw, w0, w1 = self.pars['nw'], self.pars['w0'], self.pars['w1']
-        self.dwlog = np.log(w1/w0)/self.nw
+        self.dwlog = np.log(w1 / w0) / self.nw
         self.wave = w0 * np.exp(np.arange(0, self.nw) * self.dwlog)
-        self.snTemplates, self.galTemplates = load_templates(os.path.join(self.scriptDirectory, data_files, 'models/sn_and_host_templates.npz'))
+        self.snTemplates, self.galTemplates = load_templates(
+            os.path.join(self.scriptDirectory, data_files, 'models/sn_and_host_templates.npz'))
 
         if self.knownZ:
             if classifyHost:
-                self.modelFilename = os.path.join(self.scriptDirectory, data_files, "models/zeroZ_classifyHost/tensorflow_model.ckpt")
+                self.modelFilename = os.path.join(self.scriptDirectory, data_files,
+                                                  "models/zeroZ_classifyHost/tensorflow_model.ckpt")
             else:
-                self.modelFilename = os.path.join(self.scriptDirectory, data_files, "models/zeroZ/tensorflow_model.ckpt")
+                self.modelFilename = os.path.join(self.scriptDirectory, data_files,
+                                                  "models/zeroZ/tensorflow_model.ckpt")
         else:
             if self.classifyHost:
-                self.modelFilename = os.path.join(self.scriptDirectory, data_files, "models/agnosticZ_classifyHost/tensorflow_model.ckpt")
+                self.modelFilename = os.path.join(self.scriptDirectory, data_files,
+                                                  "models/agnosticZ_classifyHost/tensorflow_model.ckpt")
             else:
-                self.modelFilename = os.path.join(self.scriptDirectory, data_files, "models/agnosticZ/tensorflow_model.ckpt")
+                self.modelFilename = os.path.join(self.scriptDirectory, data_files,
+                                                  "models/agnosticZ/tensorflow_model.ckpt")
 
     def _get_images(self, filename, redshift):
         if redshift in list(catalogDict.keys()):
             redshift = 0
-        loadInputSpectra = LoadInputSpectra(filename, redshift, self.smooth, self.pars, self.minWave, self.maxWave, self.classifyHost)
+        loadInputSpectra = LoadInputSpectra(filename, redshift, self.smooth, self.pars, self.minWave, self.maxWave,
+                                            self.classifyHost)
         inputImage, inputRedshift, typeNamesList, nw, nBins, inputMinMaxIndex = loadInputSpectra.input_spectra()
 
         return inputImage, typeNamesList, nw, nBins, inputMinMaxIndex, inputRedshift
@@ -104,7 +112,8 @@ class Classify(object):
             bestMatchLists.append(bestMatchList[0:n])
             bestBroadType, matchesReliableFlag = self.best_broad_type(bestMatchList)
             bestBroadTypes.append(bestBroadType)
-            rlapLabel, rlapWarningBool = self.rlap_warning_label(bestTypes[specNum][0], inputImages[specNum], inputMinMaxIndexes[specNum])
+            rlapLabel, rlapWarningBool = self.rlap_warning_label(bestTypes[specNum][0], inputImages[specNum],
+                                                                 inputMinMaxIndexes[specNum])
 
             rlapLabels.append(rlapLabel)
             if matchesReliableFlag:
@@ -120,7 +129,8 @@ class Classify(object):
             redshifts = np.array(redshifts)
 
         if saveFilename:
-            self.save_best_matches(bestMatchLists, redshifts, bestBroadTypes, rlapLabels, matchesReliableLabels, saveFilename)
+            self.save_best_matches(bestMatchLists, redshifts, bestBroadTypes, rlapLabels, matchesReliableLabels,
+                                   saveFilename)
 
         return bestMatchLists, redshifts, bestBroadTypes, rlapLabels, matchesReliableLabels, redshiftErrs
 
@@ -131,12 +141,14 @@ class Classify(object):
 
     def rlap_warning_label(self, bestType, inputImage, inputMinMaxIndex):
         host, name, age = classification_split(bestType)
-        snInfos, snNames, hostInfos, hostNames = get_templates(name, age, host, self.snTemplates, self.galTemplates, self.nw)
+        snInfos, snNames, hostInfos, hostNames = get_templates(name, age, host, self.snTemplates, self.galTemplates,
+                                                               self.nw)
         if snInfos != []:
             if self.rlapScores:
                 templateImages = snInfos[:, 1]
                 templateMinMaxIndexes = list(zip(snInfos[:, 2], snInfos[:, 3]))
-                rlapCalc = RlapCalc(inputImage, templateImages, snNames, self.wave, inputMinMaxIndex, templateMinMaxIndexes)
+                rlapCalc = RlapCalc(inputImage, templateImages, snNames, self.wave, inputMinMaxIndex,
+                                    templateMinMaxIndexes)
                 rlap, rlapWarningBool = rlapCalc.rlap_label()
                 if rlapWarningBool:
                     rlapLabel = "Low rlap: {0}".format(rlap)
@@ -160,7 +172,8 @@ class Classify(object):
 
     def calc_redshift(self, inputFlux, snName, snAge, inputMinMaxIndex):
         host = "No Host"
-        snInfos, snNames, hostInfos, hostNames = get_templates(snName, snAge, host, self.snTemplates, self.galTemplates, self.nw)
+        snInfos, snNames, hostInfos, hostNames = get_templates(snName, snAge, host, self.snTemplates, self.galTemplates,
+                                                               self.nw)
         numOfSubTemplates = len(snNames)
         templateNames = snNames
         templateFluxes = []
@@ -169,24 +182,30 @@ class Classify(object):
             templateFluxes.append(snInfos[i][1])
             templateMinMaxIndexes.append((snInfos[i][2], snInfos[i][3]))
 
-        redshift, crossCorr, medianName, redshiftErr = get_median_redshift(inputFlux, templateFluxes, self.nw, self.dwlog, inputMinMaxIndex, templateMinMaxIndexes, templateNames, outerVal=0.5)
+        redshift, crossCorr, medianName, redshiftErr = get_median_redshift(inputFlux, templateFluxes, self.nw,
+                                                                           self.dwlog, inputMinMaxIndex,
+                                                                           templateMinMaxIndexes, templateNames,
+                                                                           outerVal=0.5)
         print(redshift)
         if redshift is None:
             return 0, np.zeros(1024)
 
         return round(redshift, 4), crossCorr, round(redshiftErr, 4)
 
-    def save_best_matches(self, bestFits, redshifts, bestTypes, rlapLabels, matchesReliableLabels, saveFilename='DASH_matches.txt'):
+    def save_best_matches(self, bestFits, redshifts, bestTypes, rlapLabels, matchesReliableLabels,
+                          saveFilename='DASH_matches.txt'):
         with open(saveFilename, 'w') as f:
             for i in range(len(self.filenames)):
                 f.write("%s   z=%s     %s      %s     %s\n %s\n\n" % (
-                    str(self.filenames[i]).split('/')[-1], redshifts[i], bestTypes[i], rlapLabels[i], matchesReliableLabels[i], bestFits[i]))
+                    str(self.filenames[i]).split('/')[-1], redshifts[i], bestTypes[i], rlapLabels[i],
+                    matchesReliableLabels[i], bestFits[i]))
         print("Finished classifying %d spectra!" % len(self.filenames))
 
     def plot_with_gui(self, indexToPlot=0):
         app = QtGui.QApplication(sys.argv)
         form = MainApp(inputFilename=self.filenames[indexToPlot])
-        if not isinstance(self.filenames[indexToPlot], (list, np.ndarray)) and not hasattr(self.filenames[indexToPlot], 'read'):  # Not an array and not a file-handle
+        if not isinstance(self.filenames[indexToPlot], (list, np.ndarray)) and not hasattr(self.filenames[indexToPlot],
+                                                                                           'read'):  # Not an array and not a file-handle
             form.lineEditInputFilename.setText(self.filenames[indexToPlot])
         form.checkBoxKnownZ.setChecked(self.knownZ)
         form.checkBoxClassifyHost.setChecked(self.classifyHost)
@@ -198,15 +217,8 @@ class Classify(object):
         form.show()
         app.exec_()
 
-
-
-
 # # EXAMPLE USAGE:
 # classification = Classify(filenames=['/Users/dmuthukrishna/Users/dmuthukrishna/DES16E1dic_E1_combined_161125_v10_b00.dat',
 #                                      '/Users/dmuthukrishna/Users/dmuthukrishna/DES16E1dic_E1_combined_161125_v10_b00.dat'],
 #                           redshifts=[0.34, 0.13])
 # print(classification.list_best_matches())
-
-
-
-

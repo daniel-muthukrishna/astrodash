@@ -35,8 +35,10 @@ class CombineSnAndHost(object):
         wave, flux, minIndex, maxIndex = self.sn_plus_gal(snCoeff, galCoeff)
         wave, flux = self.processingTools.redshift_spectrum(wave, flux, z)
         flux = zero_non_overlap_part(flux, minIndex, maxIndex, outerVal=0)
-        binnedWave, binnedFlux, minIndex, maxIndex = self.preProcess.log_wavelength(wave[minIndex:maxIndex+1], flux[minIndex:maxIndex+1])
-        newFlux, continuum = self.preProcess.continuum_removal(binnedWave, binnedFlux, self.numSplinePoints, minIndex, maxIndex)
+        binnedWave, binnedFlux, minIndex, maxIndex = self.preProcess.log_wavelength(wave[minIndex:maxIndex + 1],
+                                                                                    flux[minIndex:maxIndex + 1])
+        newFlux, continuum = self.preProcess.continuum_removal(binnedWave, binnedFlux, self.numSplinePoints, minIndex,
+                                                               maxIndex)
         meanZero = self.preProcess.mean_zero(newFlux, minIndex, maxIndex)
         apodized = self.preProcess.apodize(meanZero, minIndex, maxIndex)
         fluxNorm = normalise_spectrum(apodized)
@@ -88,7 +90,8 @@ class BinTemplate(object):
     def _bin_sn_template(self, ageIdx):
         # Undo continuum in the following step in preprocessing.py
         if self.snidTemplate:
-            wave, flux = self.wave, self.fluxes[ageIdx]  # self.snReadSpectrumFile.snid_template_undo_processing(self.snWave, self.snFluxes[ageIdx], self.splineInfo, ageIdx)
+            wave, flux = self.wave, self.fluxes[
+                ageIdx]  # self.snReadSpectrumFile.snid_template_undo_processing(self.snWave, self.snFluxes[ageIdx], self.splineInfo, ageIdx)
             binnedWave, binnedFlux, minIndex, maxIndex = self.preProcess.log_wavelength(wave, flux)
             binnedFluxNorm = normalise_spectrum(binnedFlux)
             binnedFluxNorm = zero_non_overlap_part(binnedFluxNorm, minIndex, maxIndex, outerVal=0.5)
@@ -96,7 +99,8 @@ class BinTemplate(object):
             wave, flux = self.wave, medfilt(self.flux, kernel_size=3)
             flux = normalise_spectrum(flux)
             binnedWave, binnedFlux, minIndex, maxIndex = self.preProcess.log_wavelength(wave, flux)
-            contRemovedFlux, continuum = self.preProcess.continuum_removal(binnedWave, binnedFlux, self.numSplinePoints, minIndex, maxIndex)
+            contRemovedFlux, continuum = self.preProcess.continuum_removal(binnedWave, binnedFlux, self.numSplinePoints,
+                                                                           minIndex, maxIndex)
             meanzero = self.preProcess.mean_zero(contRemovedFlux, minIndex, maxIndex)
             apodized = self.preProcess.apodize(meanzero, minIndex, maxIndex)
             binnedFluxNorm = normalise_spectrum(apodized)
@@ -108,7 +112,8 @@ class BinTemplate(object):
         wave, flux = self.readSpectrumFile.two_col_input_spectrum(self.wave, self.flux, z=0)
         # flux = normalise_spectrum(flux)
         binnedWave, binnedFlux, minIndex, maxIndex = self.preProcess.log_wavelength(wave, flux)
-        contRemovedFlux, continuum = self.preProcess.continuum_removal(binnedWave, binnedFlux, self.numSplinePoints, minIndex, maxIndex)
+        contRemovedFlux, continuum = self.preProcess.continuum_removal(binnedWave, binnedFlux, self.numSplinePoints,
+                                                                       minIndex, maxIndex)
         newFlux = contRemovedFlux * continuum  # Spectral features weighted by the continuum
         fluxNorm = normalise_spectrum(newFlux)
         fluxNorm = zero_non_overlap_part(fluxNorm, minIndex, maxIndex, outerVal=0.5)

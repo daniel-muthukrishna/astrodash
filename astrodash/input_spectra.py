@@ -4,7 +4,8 @@ from astrodash.array_tools import normalise_spectrum, zero_non_overlap_part
 
 
 class InputSpectra(object):
-    def __init__(self, filename, z, nTypes, minAge, maxAge, ageBinSize, w0, w1, nw, typeList, smooth, minWave, maxWave, hostList, nHostTypes):
+    def __init__(self, filename, z, nTypes, minAge, maxAge, ageBinSize, w0, w1, nw, typeList, smooth, minWave, maxWave,
+                 hostList, nHostTypes):
         self.filename = filename
         self.z = z
         self.w0 = w0
@@ -18,8 +19,9 @@ class InputSpectra(object):
         self.ageBinning = AgeBinning(self.minAge, self.maxAge, self.ageBinSize)
         self.numOfAgeBins = self.ageBinning.age_bin(self.maxAge) + 1
         self.nLabels = self.nTypes * self.numOfAgeBins * nHostTypes
-        self.createLabels = CreateLabels(self.nTypes, self.minAge, self.maxAge, self.ageBinSize, self.typeList, hostList, nHostTypes)
-        self.fileType = 'fits or twocolumn etc.' #Will use later on
+        self.createLabels = CreateLabels(self.nTypes, self.minAge, self.maxAge, self.ageBinSize, self.typeList,
+                                         hostList, nHostTypes)
+        self.fileType = 'fits or twocolumn etc.'  # Will use later on
         self.typeNamesList = self.createLabels.type_names_list()
         self.smooth = smooth
         self.minWave = minWave
@@ -34,7 +36,7 @@ class InputSpectra(object):
         minMaxIndexes = []
         readSpectra = ReadSpectra(self.w0, self.w1, self.nw, self.filename)
 
-        #Undo it's previous redshift)
+        # Undo it's previous redshift)
         wave, flux, minIndex, maxIndex, z = readSpectra.input_spectrum(self.z, self.smooth, self.minWave, self.maxWave)
         nonzeroflux = flux[minIndex:maxIndex + 1]
         newflux = normalise_spectrum(nonzeroflux)
@@ -52,7 +54,6 @@ class InputSpectra(object):
         # augmentedFlux = normalise_spectrum(augmentedFlux)
         # augmentedFlux = zero_non_overlap_part(augmentedFlux, minIndex, maxIndex)
 
-
         inputImages = np.array(images)
         inputFilenames = np.array(filenames)
         inputRedshifts = np.array(redshifts)
@@ -62,9 +63,9 @@ class InputSpectra(object):
     def saveArrays(self):
         inputImages, inputFilenames, inputRedshifts, minMaxIndex = self.redshifting()
         np.savez_compressed('input_data.npz', inputImages=inputImages, inputFilenames=inputFilenames,
-                            inputRedshifts=inputRedshifts, typeNamesList = self.typeNamesList)
+                            inputRedshifts=inputRedshifts, typeNamesList=self.typeNamesList)
 ##
-#sfTemplateLocation = '/home/dan/Desktop/SNClassifying_Pre-alpha/templates/superfit_templates/sne/'
+# sfTemplateLocation = '/home/dan/Desktop/SNClassifying_Pre-alpha/templates/superfit_templates/sne/'
 ##sfFilename = 'Ia/sn1981b.max.dat'
 ##
 ##filename = sfFilename

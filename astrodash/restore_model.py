@@ -24,13 +24,15 @@ class LoadInputSpectra(object):
         else:
             hostList, nHostTypes = None, 1
 
-        self.inputSpectra = InputSpectra(inputFilename, z, nTypes, minAge, maxAge, ageBinSize, w0, w1, self.nw, typeList, smooth, minWave, maxWave, hostList, nHostTypes)
+        self.inputSpectra = InputSpectra(inputFilename, z, nTypes, minAge, maxAge, ageBinSize, w0, w1, self.nw,
+                                         typeList, smooth, minWave, maxWave, hostList, nHostTypes)
 
         self.inputImages, self.inputFilenames, self.inputRedshifts, self.typeNamesList, self.inputMinMaxIndexes = self.inputSpectra.redshifting()
         self.nBins = len(self.typeNamesList)
 
     def input_spectra(self):
-        return self.inputImages, self.inputRedshifts, self.typeNamesList, int(self.nw), self.nBins, self.inputMinMaxIndexes
+        return self.inputImages, self.inputRedshifts, self.typeNamesList, int(
+            self.nw), self.nBins, self.inputMinMaxIndexes
 
 
 class RestoreModel(object):
@@ -42,9 +44,11 @@ class RestoreModel(object):
         self.nw = nw
         self.nBins = nBins
         self.imWidthReduc = 8
-        self.imWidth = 32 #Image size and width
+        self.imWidth = 32  # Image size and width
 
-        self.x, self.y_, self.keep_prob, self.y_conv, self.W, self.b = convnet_variables(self.imWidth, self.imWidthReduc, self.nw, self.nBins)
+        self.x, self.y_, self.keep_prob, self.y_conv, self.W, self.b = convnet_variables(self.imWidth,
+                                                                                         self.imWidthReduc, self.nw,
+                                                                                         self.nBins)
 
         self.saver = tf.train.Saver()
 
@@ -100,8 +104,8 @@ class BestTypesListSingleRedshift(object):
             self.idx.append(idx)
 
     def create_list(self, softmax):
-        idx = np.argsort(softmax) #list of the index of the highest probabiites
-        bestTypes = self.typeNamesList[idx[::-1]] #reordered in terms of softmax probability columns
+        idx = np.argsort(softmax)  # list of the index of the highest probabiites
+        bestTypes = self.typeNamesList[idx[::-1]]  # reordered in terms of softmax probability columns
 
         return bestTypes, idx, softmax[idx[::-1]]
 

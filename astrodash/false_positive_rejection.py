@@ -4,6 +4,8 @@ import numpy as np
 from scipy.stats import chisquare, pearsonr
 from astrodash.restore_model import get_training_parameters
 from astrodash.array_tools import mean_zero_spectra
+
+
 # import matplotlib
 # matplotlib.use('TkAgg')
 # import matplotlib.pyplot as plt
@@ -41,7 +43,7 @@ def combined_prob(bestMatchList):
             else:
                 if probPossible2 == 0:
                     if ((minAge in agesListPossible) or (maxAge in agesListPossible)) and (
-                                (minAge in agesList) or (maxAge in agesList)):
+                            (minAge in agesList) or (maxAge in agesList)):
                         probTotal += probPossible + float(prob)
                         agesList = agesList + agesListPossible + [minAge, maxAge]
                         probPossible = 0
@@ -51,7 +53,7 @@ def combined_prob(bestMatchList):
                         agesListPossible2 = agesListPossible + [minAge, maxAge]
                 else:
                     if ((minAge in agesListPossible2) or (maxAge in agesListPossible2)) and (
-                                (minAge in (agesList + agesListPossible)) or (maxAge in (agesList + agesListPossible))):
+                            (minAge in (agesList + agesListPossible)) or (maxAge in (agesList + agesListPossible))):
                         probTotal += probPossible2 + float(prob)
                         agesList = agesList + agesListPossible2 + [minAge, maxAge]
                         probPossible, probPossible2 = 0, 0
@@ -69,7 +71,7 @@ def combined_prob(bestMatchList):
                     agesListPossible = [minAge, maxAge]
             else:
                 if ((minAge in agesListPossible) or (maxAge in agesListPossible)) and (
-                            (minAge in agesList) or (maxAge in agesList)):
+                        (minAge in agesList) or (maxAge in agesList)):
                     probTotal += probPossible + float(prob)
                     agesList = agesList + agesListPossible + [minAge, maxAge]
                     probPossible = 0
@@ -116,14 +118,19 @@ class RlapCalc(object):
 
         rmsXCorr = np.std(product)
 
-        xCorrNormRearranged = np.concatenate((xCorrNorm[int(len(xCorrNorm) / 2):], xCorrNorm[0:int(len(xCorrNorm) / 2)]))
+        xCorrNormRearranged = np.concatenate(
+            (xCorrNorm[int(len(xCorrNorm) / 2):], xCorrNorm[0:int(len(xCorrNorm) / 2)]))
 
-        crossCorr = np.correlate(self.inputFlux, templateFlux, mode='Full')[::-1][int(self.nw/2):int(self.nw + self.nw/2)]/max(np.correlate(self.inputFlux, templateFlux, mode='Full'))
+        crossCorr = np.correlate(self.inputFlux, templateFlux, mode='Full')[::-1][
+                    int(self.nw / 2):int(self.nw + self.nw / 2)] / max(
+            np.correlate(self.inputFlux, templateFlux, mode='Full'))
 
         try:
             deltapeak, h = self._get_peaks(crossCorr)[0]
             shift = int(deltapeak - self.nw / 2)
-            autoCorr = np.correlate(templateFlux, templateFlux, mode='Full')[::-1][int(self.nw/2)-shift:int(self.nw + self.nw/2)-shift]/max(np.correlate(templateFlux, templateFlux, mode='Full'))
+            autoCorr = np.correlate(templateFlux, templateFlux, mode='Full')[::-1][
+                       int(self.nw / 2) - shift:int(self.nw + self.nw / 2) - shift] / max(
+                np.correlate(templateFlux, templateFlux, mode='Full'))
 
             aRandomFunction = crossCorr - autoCorr
             rmsA = np.std(aRandomFunction)
@@ -156,7 +163,6 @@ class RlapCalc(object):
         # plt.savefig('/Users/danmuth/OneDrive/Documents/DASH/Paper/Figures/cross_correlation_{}.pdf'.format(np.random.randint(100)))
         # plt.show()
 
-
         return xCorr, rmsInput, rmsTemp, xCorrNorm, rmsXCorr, xCorrNormRearranged, rmsA
 
     def _get_peaks(self, crosscorr):
@@ -171,7 +177,6 @@ class RlapCalc(object):
         sortedPeaks = list(reversed(arr))
 
         return sortedPeaks
-
 
     def _calculate_r(self, crosscorr, rmsA):
         deltapeak1, h1 = self._get_peaks(crosscorr)[0]  # deltapeak = np.argmax(abs(crosscorr))
@@ -195,7 +200,7 @@ class RlapCalc(object):
         ##        srms = srms + (phase*crosscorr[k+1]).real*(phase*crosscorr[k+1]).real
         ##
         ##    arms = np.sqrt(arms)/nw
-        r = abs((h1 -rmsA) / (np.sqrt(2) * rmsA))
+        r = abs((h1 - rmsA) / (np.sqrt(2) * rmsA))
         fom = (h1 - 0.05) ** 0.75 * (h1 / h2)
 
         return r, deltapeak1, fom
@@ -256,9 +261,8 @@ class RlapCalc(object):
         overlapminindex = max(iminindex, tminindex)
         overlapmaxindex = min(imaxindex - 1, tmaxindex - 1)
 
-        inputSpecOverlapped = 100 * (1+self.inputFlux[overlapminindex:overlapmaxindex])
-        templateSpecOverlapped = 100 * (1+templateFlux[overlapminindex:overlapmaxindex])
-
+        inputSpecOverlapped = 100 * (1 + self.inputFlux[overlapminindex:overlapmaxindex])
+        templateSpecOverlapped = 100 * (1 + templateFlux[overlapminindex:overlapmaxindex])
 
         chi2 = chisquare(inputSpecOverlapped, templateSpecOverlapped)[0]
         pearsonCorr = pearsonr(inputSpecOverlapped, templateSpecOverlapped)
@@ -286,7 +290,7 @@ class RlapCalc(object):
             if i > 20:
                 break
 
-        rlapMean = round(np.mean(rlapList),2)
+        rlapMean = round(np.mean(rlapList), 2)
         rlapLabel = str(rlapMean)
 
         if rlapMean < 6:
@@ -295,4 +299,3 @@ class RlapCalc(object):
             rlapWarning = False
 
         return rlapLabel, rlapWarning
-

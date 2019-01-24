@@ -1,4 +1,4 @@
-#Pre-processing class
+# Pre-processing class
 import sys
 from scipy.signal import medfilt
 import numpy as np
@@ -7,18 +7,18 @@ from astrodash.array_tools import normalise_spectrum, zero_non_overlap_part
 
 
 def limit_wavelength_range(wave, flux, minWave, maxWave):
-    minIdx = (np.abs(wave-minWave)).argmin()
-    maxIdx = (np.abs(wave-maxWave)).argmin()
+    minIdx = (np.abs(wave - minWave)).argmin()
+    maxIdx = (np.abs(wave - maxWave)).argmin()
 
     flux[:minIdx] = np.zeros(minIdx)
-    flux[maxIdx:] = np.zeros(len(flux)-maxIdx)
+    flux[maxIdx:] = np.zeros(len(flux) - maxIdx)
 
     return flux
 
 
 class PreProcessing(object):
     """ Pre-processes spectra before training """
-    
+
     def __init__(self, filename, w0, w1, nw):
         self.filename = filename
         self.w0 = w0
@@ -42,7 +42,7 @@ class PreProcessing(object):
             self.wave, self.flux = self.spectrum
         self.flux = normalise_spectrum(self.flux)
         self.flux = limit_wavelength_range(self.wave, self.flux, minWave, maxWave)
-        self.wDensity = (self.w1 - self.w0)/self.nw  # Average wavelength spacing
+        self.wDensity = (self.w1 - self.w0) / self.nw  # Average wavelength spacing
         wavelengthDensity = (max(self.wave) - min(self.wave)) / len(self.wave)
         filterSize = int(self.wDensity / wavelengthDensity * smooth / 2) * 2 + 1
         preFiltered = medfilt(self.flux, kernel_size=filterSize)
@@ -53,16 +53,15 @@ class PreProcessing(object):
                      "the program.".format(self.filename, self.w0, self.w1))
 
         binnedwave, binnedflux, minIndex, maxIndex = self.preProcess.log_wavelength(wave, deredshifted)
-        newflux, continuum = self.preProcess.continuum_removal(binnedwave, binnedflux, self.numSplinePoints, minIndex, maxIndex)
+        newflux, continuum = self.preProcess.continuum_removal(binnedwave, binnedflux, self.numSplinePoints, minIndex,
+                                                               maxIndex)
         meanzero = self.preProcess.mean_zero(newflux, minIndex, maxIndex)
         apodized = self.preProcess.apodize(meanzero, minIndex, maxIndex)
 
-
-        #filterSize = smooth * 2 + 1
-        medianFiltered = medfilt(apodized, kernel_size=1)#filterSize)
+        # filterSize = smooth * 2 + 1
+        medianFiltered = medfilt(apodized, kernel_size=1)  # filterSize)
         fluxNorm = normalise_spectrum(medianFiltered)
         fluxNorm = zero_non_overlap_part(fluxNorm, minIndex, maxIndex, outerVal=0.5)
-
 
         # # PAPER PLOTS
         # import matplotlib.pyplot as plt
@@ -127,4 +126,4 @@ class PreProcessing(object):
 if __name__ == '__main__':
     fData = '/Users/danmuth/PycharmProjects/astrodash/templates/OzDES_data/ATEL_9570_Run25/DES16C2ma_C2_combined_160926_v10_b00.dat'
     preData = PreProcessing(fData, 3000, 10000, 1024)
-    waveData,fluxData,minIData,maxIData,z = preData.two_column_data(0.24, 5, 3000, 10000)
+    waveData, fluxData, minIData, maxIData, z = preData.two_column_data(0.24, 5, 3000, 10000)

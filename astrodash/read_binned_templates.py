@@ -38,5 +38,6 @@ if __name__ == "__main__":
     snInfoList = snTemplates1['Ia-norm']['-2 to 2']['snInfo']
     galInfoList = galTemplates1['S0']['galInfo']
     for i in range(len(snInfoList)):
-        wave, flux, minMaxIndex = combined_sn_and_host_data(snCoeff=0.5, galCoeff=0.5, z=0, snInfo=snInfoList[i], galInfo=galInfoList[0], w0=3500, w1=10000, nw=1024)
+        wave, flux, minMaxIndex = combined_sn_and_host_data(snCoeff=0.5, galCoeff=0.5, z=0, snInfo=snInfoList[i],
+                                                            galInfo=galInfoList[0], w0=3500, w1=10000, nw=1024)
         print(i)

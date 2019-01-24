@@ -28,7 +28,7 @@ def redshift_binned_spectrum(flux, z, nIndexes, dwlog, w0, w1, nw, outerVal=0.5)
 
     fluxRedshifted = np.zeros(nw)
     fluxRedshifted[0:minWaveIndex] = outerVal * np.ones(minWaveIndex)
-    fluxRedshifted[minWaveIndex:] = fluxInterp(indexesInRange)[:nw-minWaveIndex]
+    fluxRedshifted[minWaveIndex:] = fluxInterp(indexesInRange)[:nw - minWaveIndex]
 
     # Apodize edges
     preprocess = PreProcessSpectrum(w0, w1, nw)

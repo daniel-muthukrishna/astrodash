@@ -78,7 +78,8 @@ def save_templates():
     galTempFileList = galTemplateDirectory + 'gal.list'
     saveFilename = 'models_v06/models/sn_and_host_templates.npz'
 
-    snTemplates, galTemplates = create_sn_and_host_arrays(snTemplateDirectory, snTempFileList, galTemplateDirectory, galTempFileList, parameterFile)
+    snTemplates, galTemplates = create_sn_and_host_arrays(snTemplateDirectory, snTempFileList, galTemplateDirectory,
+                                                          galTempFileList, parameterFile)
 
     np.savez_compressed(saveFilename, snTemplates=snTemplates, galTemplates=galTemplates)
 

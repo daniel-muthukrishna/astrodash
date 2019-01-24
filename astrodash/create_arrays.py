@@ -56,7 +56,7 @@ class CreateLabels(object):
         self.ageBinSize = ageBinSize
         self.typeList = typeList
         self.ageBinning = AgeBinning(self.minAge, self.maxAge, self.ageBinSize)
-        self.numOfAgeBins = self.ageBinning.age_bin(self.maxAge-0.1) + 1
+        self.numOfAgeBins = self.ageBinning.age_bin(self.maxAge - 0.1) + 1
         self.nLabels = self.nTypes * self.numOfAgeBins
         self.ageLabels = self.ageBinning.age_labels()
         self.hostList = hostList
@@ -113,7 +113,9 @@ class ReadSpectra(object):
             self.data = PreProcessing(snFilename, w0, w1, nw)
 
     def sn_plus_gal_template(self, snAgeIdx, snCoeff, galCoeff, z):
-        wave, flux, minIndex, maxIndex, nCols, ages, tType = training_template_data(snAgeIdx, snCoeff, galCoeff, z, self.snFilename, self.galFilename, self.w0, self.w1, self.nw)
+        wave, flux, minIndex, maxIndex, nCols, ages, tType = training_template_data(snAgeIdx, snCoeff, galCoeff, z,
+                                                                                    self.snFilename, self.galFilename,
+                                                                                    self.w0, self.w1, self.nw)
 
         return wave, flux, nCols, ages, tType, minIndex, maxIndex
 
@@ -140,11 +142,14 @@ class ArrayTools(object):
         self.randnum = np.random.randint(10000)
         for key in kwargs:
             if key == 'images':
-                arrayShuf = np.memmap('shuffled_{}_{}_{}.dat'.format(key, memmapName, self.randnum), dtype=np.float16, mode='w+', shape=(arraySize, int(self.nw)))
+                arrayShuf = np.memmap('shuffled_{}_{}_{}.dat'.format(key, memmapName, self.randnum), dtype=np.float16,
+                                      mode='w+', shape=(arraySize, int(self.nw)))
             elif key == 'labels':
-                arrayShuf = np.memmap('shuffled_{}_{}_{}.dat'.format(key, memmapName, self.randnum), dtype=np.uint16, mode='w+', shape=arraySize)
+                arrayShuf = np.memmap('shuffled_{}_{}_{}.dat'.format(key, memmapName, self.randnum), dtype=np.uint16,
+                                      mode='w+', shape=arraySize)
             else:
-                arrayShuf = np.memmap('shuffled_{}_{}_{}.dat'.format(key, memmapName, self.randnum), dtype=object, mode='w+', shape=arraySize)
+                arrayShuf = np.memmap('shuffled_{}_{}_{}.dat'.format(key, memmapName, self.randnum), dtype=object,
+                                      mode='w+', shape=arraySize)
             kwargShuf[key] = arrayShuf
 
         print("Shuffling...")
@@ -169,7 +174,7 @@ class ArrayTools(object):
     def augment_data(self, flux, stdDevMean=0.05, stdDevStdDev=0.05):
         minIndex, maxIndex = ProcessingTools().min_max_index(flux, outerVal=0.5)
         noise = np.zeros(self.nw)
-        stdDev = abs(np.random.normal(stdDevMean, stdDevStdDev)) # randomised standard deviation
+        stdDev = abs(np.random.normal(stdDevMean, stdDevStdDev))  # randomised standard deviation
         noise[minIndex:maxIndex] = np.random.normal(0, stdDev, maxIndex - minIndex)
         # # Add white noise to regions outside minIndex to maxIndex
         # noise[0:minIndex] = np.random.uniform(0.0, 1.0, minIndex)
@@ -202,10 +207,12 @@ class OverSampling(ArrayTools):
         self.randnum = np.random.randint(10000)
         for key in self.kwargs:
             if key == 'images':
-                arrayOverSampled = np.memmap('oversampled_{}_{}.dat'.format(key, self.randnum), dtype=np.float16, mode='w+',
+                arrayOverSampled = np.memmap('oversampled_{}_{}.dat'.format(key, self.randnum), dtype=np.float16,
+                                             mode='w+',
                                              shape=(self.overSampleArraySize, int(self.nw)))
             elif key == 'labels':
-                arrayOverSampled = np.memmap('oversampled_{}_{}.dat'.format(key, self.randnum), dtype=np.uint16, mode='w+',
+                arrayOverSampled = np.memmap('oversampled_{}_{}.dat'.format(key, self.randnum), dtype=np.uint16,
+                                             mode='w+',
                                              shape=self.overSampleArraySize)
             else:
                 arrayOverSampled = np.memmap('oversampled_{}_{}.dat'.format(key, self.randnum), dtype=object, mode='w+',
@@ -222,7 +229,8 @@ class OverSampling(ArrayTools):
         for r in range(repeatAmount):
             for key in self.kwargs:
                 if key == 'images':
-                    oversampled[key].append(self.augment_data(self.kwargShuf[key][i_in], stdDevMean=0.05, stdDevStdDev=std_in))
+                    oversampled[key].append(
+                        self.augment_data(self.kwargShuf[key][i_in], stdDevMean=0.05, stdDevStdDev=std_in))
                 else:
                     oversampled[key].append(self.kwargShuf[key][i_in])
         return oversampled, offset_in, repeatAmount
@@ -232,7 +240,7 @@ class OverSampling(ArrayTools):
         oversampled_in, offset_in, repeatAmount = result
         for key in self.kwargs:
             rlength_array = np.array(oversampled_in[key])
-            self.kwargOverSampled[key][offset_in:repeatAmount+offset_in] = rlength_array[:]
+            self.kwargOverSampled[key][offset_in:repeatAmount + offset_in] = rlength_array[:]
 
     def over_sample_arrays(self, smote=False):
         if smote:
@@ -260,7 +268,8 @@ class OverSampling(ArrayTools):
         #     print('combining results...', i, len(outputs))
 
         print("Before Shuffling")
-        self.kwargOverSampledShuf = self.shuffle_arrays(memmapName='oversampled_{}'.format(self.randnum), **self.kwargOverSampled)
+        self.kwargOverSampledShuf = self.shuffle_arrays(memmapName='oversampled_{}'.format(self.randnum),
+                                                        **self.kwargOverSampled)
         print("After Shuffling")
 
         return self.kwargOverSampledShuf
@@ -269,13 +278,15 @@ class OverSampling(ArrayTools):
         sm = over_sampling.SMOTE(random_state=42, n_jobs=30)
         images, labels = sm.fit_sample(X=self.kwargShuf['images'], y=self.kwargShuf['labels'])
 
-        self.kwargOverSampledShuf = self.shuffle_arrays(memmapName='oversampled_smote_{}'.format(self.randnum), images=images, labels=labels)
+        self.kwargOverSampledShuf = self.shuffle_arrays(memmapName='oversampled_smote_{}'.format(self.randnum),
+                                                        images=images, labels=labels)
 
         return self.kwargOverSampledShuf
 
 
 class CreateArrays(object):
-    def __init__(self, w0, w1, nw, nTypes, minAge, maxAge, ageBinSize, typeList, minZ, maxZ, numOfRedshifts, hostTypes=None, nHostTypes=None):
+    def __init__(self, w0, w1, nw, nTypes, minAge, maxAge, ageBinSize, typeList, minZ, maxZ, numOfRedshifts,
+                 hostTypes=None, nHostTypes=None):
         self.w0 = w0
         self.w1 = w1
         self.nw = nw
@@ -288,9 +299,10 @@ class CreateArrays(object):
         self.maxZ = maxZ
         self.numOfRedshifts = numOfRedshifts
         self.ageBinning = AgeBinning(minAge, maxAge, ageBinSize)
-        self.numOfAgeBins = self.ageBinning.age_bin(maxAge-0.1) + 1
+        self.numOfAgeBins = self.ageBinning.age_bin(maxAge - 0.1) + 1
         self.nLabels = nTypes * self.numOfAgeBins * nHostTypes
-        self.createLabels = CreateLabels(self.nTypes, self.minAge, self.maxAge, self.ageBinSize, self.typeList, hostTypes, nHostTypes)
+        self.createLabels = CreateLabels(self.nTypes, self.minAge, self.maxAge, self.ageBinSize, self.typeList,
+                                         hostTypes, nHostTypes)
         self.hostTypes = hostTypes
 
     def combined_sn_gal_templates_to_arrays(self, args):
@@ -315,24 +327,30 @@ class CreateArrays(object):
                         else:
                             redshifts = np.random.uniform(low=self.minZ, high=self.maxZ, size=self.numOfRedshifts)
                         for z in redshifts:
-                            tempWave, tempFlux, nCols, ages, tType, tMinIndex, tMaxIndex = readSpectra.sn_plus_gal_template(ageidx, snCoeff, galCoeff, z)
+                            tempWave, tempFlux, nCols, ages, tType, tMinIndex, tMaxIndex = readSpectra.sn_plus_gal_template(
+                                ageidx, snCoeff, galCoeff, z)
                             if tMinIndex == tMaxIndex or not tempFlux.any():
-                                print("NO DATA for {} {} ageIdx:{} z>={}".format(galTempList[j], snTempList[i], ageidx, z))
+                                print("NO DATA for {} {} ageIdx:{} z>={}".format(galTempList[j], snTempList[i], ageidx,
+                                                                                 z))
                                 break
 
                             if self.minAge < float(ages[ageidx]) < self.maxAge:
                                 if self.hostTypes is None:  # Checks if we are classifying by host as well
                                     labelIndex, typeName = self.createLabels.label_array(tType, ages[ageidx], host=None)
                                 else:
-                                    labelIndex, typeName = self.createLabels.label_array(tType, ages[ageidx], host=galTempList[j])
+                                    labelIndex, typeName = self.createLabels.label_array(tType, ages[ageidx],
+                                                                                         host=galTempList[j])
                                 if tMinIndex > (self.nw - 1):
                                     continue
                                 nonzeroflux = tempFlux[tMinIndex:tMaxIndex + 1]
                                 newflux = (nonzeroflux - min(nonzeroflux)) / (max(nonzeroflux) - min(nonzeroflux))
                                 newflux2 = np.concatenate((tempFlux[0:tMinIndex], newflux, tempFlux[tMaxIndex + 1:]))
                                 images = np.append(images, np.array([newflux2]), axis=0)
-                                labelsIndexes.append(labelIndex) # labels = np.append(labels, np.array([label]), axis=0)
-                                filenames.append("{0}_{1}_{2}_{3}_snCoeff{4}_z{5}".format(snTempList[i], tType, str(ages[ageidx]), galTempList[j], snCoeff, (z)))
+                                labelsIndexes.append(
+                                    labelIndex)  # labels = np.append(labels, np.array([label]), axis=0)
+                                filenames.append(
+                                    "{0}_{1}_{2}_{3}_snCoeff{4}_z{5}".format(snTempList[i], tType, str(ages[ageidx]),
+                                                                             galTempList[j], snCoeff, (z)))
                                 typeNames.append(typeName)
                 print(snTempList[i], nCols, galTempList[j])
 
@@ -346,7 +364,8 @@ class CreateArrays(object):
         self.filenames.extend(filenamesPart)
         self.typeNames.extend(typeNamesPart)
 
-    def combined_sn_gal_arrays_multiprocessing(self, snTemplateLocation, snTempFileList, galTemplateLocation, galTempFileList):
+    def combined_sn_gal_arrays_multiprocessing(self, snTemplateLocation, snTempFileList, galTemplateLocation,
+                                               galTempFileList):
         # TODO: Maybe do memory mapping for these arrays
         self.images = []
         self.labelsIndexes = []

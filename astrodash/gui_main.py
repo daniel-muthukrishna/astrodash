@@ -5,7 +5,8 @@ from PyQt5 import QtGui
 from PyQt5.QtCore import QThread, pyqtSignal
 import pyqtgraph as pg
 from astrodash.design import Ui_MainWindow
-from astrodash.restore_model import LoadInputSpectra, BestTypesListSingleRedshift, get_training_parameters, classification_split
+from astrodash.restore_model import LoadInputSpectra, BestTypesListSingleRedshift, get_training_parameters, \
+    classification_split
 from astrodash.create_arrays import AgeBinning
 from astrodash.read_binned_templates import load_templates, get_templates, combined_sn_and_host_data
 from astrodash.false_positive_rejection import combined_prob, RlapCalc
@@ -32,7 +33,9 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.snAge = '-20 to -18'
         self.hostName = 'No Host'
         self.lineEditKnownZ.setText('')
-        self.infLine = pg.InfiniteLine(self.plotZ, pen={'width': 3, 'color': (135, 206, 250)}, movable=True, bounds=[-1, 1], hoverPen={'color': (255, 0, 0), 'width': 3}, label='z', labelOpts={'color': (135, 206, 250), 'position': 0.2})
+        self.infLine = pg.InfiniteLine(self.plotZ, pen={'width': 3, 'color': (135, 206, 250)}, movable=True,
+                                       bounds=[-1, 1], hoverPen={'color': (255, 0, 0), 'width': 3}, label='z',
+                                       labelOpts={'color': (135, 206, 250), 'position': 0.2})
         self.infLine.sigPositionChanged.connect(self.cross_corr_redshift_changed)
 
         self.pushButtonLeftTemplate.clicked.connect(self.select_sub_template_left)
@@ -73,39 +76,45 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.graphicsView.plotItem.axes['top']['item'] = self.cAxis
         self.graphicsView.plotItem.layout.addItem(self.cAxis, 1, 1)
 
-
     def select_tensorflow_model(self):
         if self.checkBoxKnownZ.isChecked():
             self.lineEditKnownZ.setEnabled(True)
             if self.checkBoxClassifyHost.isChecked():
-                self.modelFilename = os.path.join(self.mainDirectory, self.data_files, "models/zeroZ_classifyHost/tensorflow_model.ckpt")
+                self.modelFilename = os.path.join(self.mainDirectory, self.data_files,
+                                                  "models/zeroZ_classifyHost/tensorflow_model.ckpt")
             else:
-                self.modelFilename = os.path.join(self.mainDirectory, self.data_files, "models/zeroZ/tensorflow_model.ckpt")
+                self.modelFilename = os.path.join(self.mainDirectory, self.data_files,
+                                                  "models/zeroZ/tensorflow_model.ckpt")
         else:
             self.lineEditKnownZ.setEnabled(False)
             if self.checkBoxClassifyHost.isChecked():
-                self.modelFilename = os.path.join(self.mainDirectory, self.data_files, "models/agnosticZ_classifyHost/tensorflow_model.ckpt")
+                self.modelFilename = os.path.join(self.mainDirectory, self.data_files,
+                                                  "models/agnosticZ_classifyHost/tensorflow_model.ckpt")
             else:
-                self.modelFilename = os.path.join(self.mainDirectory, self.data_files, "models/agnosticZ/tensorflow_model.ckpt")
+                self.modelFilename = os.path.join(self.mainDirectory, self.data_files,
+                                                  "models/agnosticZ/tensorflow_model.ckpt")
         if not os.path.isfile(self.modelFilename + ".index"):
             QtGui.QMessageBox.critical(self, "Error", "Model does not exist")
 
     def templates(self):
         pars = get_training_parameters()
         self.w0, self.w1, self.minAge, self.maxAge, self.ageBinSize, self.typeList, self.nTypes, self.nw, self.hostTypes \
-            = pars['w0'], pars['w1'], pars['minAge'], pars['maxAge'], pars['ageBinSize'], pars['typeList'], pars['nTypes'], pars['nw'], pars['galTypeList']
+            = pars['w0'], pars['w1'], pars['minAge'], pars['maxAge'], pars['ageBinSize'], pars['typeList'], pars[
+            'nTypes'], pars['nw'], pars['galTypeList']
 
-        self.dwlog = np.log(self.w1/self.w0)/self.nw
-        self.wave = self.w0 * np.exp(np.arange(0,self.nw) * self.dwlog)
+        self.dwlog = np.log(self.w1 / self.w0) / self.nw
+        self.wave = self.w0 * np.exp(np.arange(0, self.nw) * self.dwlog)
 
-        self.snTemplates, self.galTemplates = load_templates(os.path.join(self.mainDirectory, self.data_files, 'models/sn_and_host_templates.npz'))
+        self.snTemplates, self.galTemplates = load_templates(
+            os.path.join(self.mainDirectory, self.data_files, 'models/sn_and_host_templates.npz'))
 
     def get_sn_and_host_templates(self, snName, snAge, hostName):
-        snInfos, snNames, hostInfos, hostNames = get_templates(snName, snAge, hostName, self.snTemplates, self.galTemplates, self.nw)
+        snInfos, snNames, hostInfos, hostNames = get_templates(snName, snAge, hostName, self.snTemplates,
+                                                               self.galTemplates, self.nw)
 
         return snInfos, snNames, hostInfos, hostNames
 
-    def get_template_info(self): #
+    def get_template_info(self):  #
         snInfos, snNames, hostInfos, hostNames = self.get_sn_and_host_templates(self.snName, self.snAge, self.hostName)
         numOfSubTemplates = len(snNames)
         if self.templateSubIndex >= numOfSubTemplates:
@@ -116,12 +125,15 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         if snInfos != []:
             name = "%s_%s" % (snNames[self.templateSubIndex], hostNames[0])
             if self.hostName != "No Host":
-                snCoeff = 1 - self.hostFraction/100.
+                snCoeff = 1 - self.hostFraction / 100.
                 galCoeff = self.hostFraction / 100.
             else:
                 snCoeff = 1
                 galCoeff = 0
-            wave, flux, minMaxIndex = combined_sn_and_host_data(snCoeff=snCoeff, galCoeff=galCoeff, z=0, snInfo=snInfos[self.templateSubIndex], galInfo=hostInfos[0], w0=self.w0, w1=self.w1, nw=self.nw)
+            wave, flux, minMaxIndex = combined_sn_and_host_data(snCoeff=snCoeff, galCoeff=galCoeff, z=0,
+                                                                snInfo=snInfos[self.templateSubIndex],
+                                                                galInfo=hostInfos[0], w0=self.w0, w1=self.w1,
+                                                                nw=self.nw)
             return flux, name, minMaxIndex
         else:
             flux = np.zeros(self.nw)
@@ -184,14 +196,14 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             print("Host Fraction Value Error")
 
     def redshift_slider_changed(self):
-        self.plotZ = self.horizontalSliderRedshift.value()/10000.
+        self.plotZ = self.horizontalSliderRedshift.value() / 10000.
         self.lineEditRedshift.setText(str(round(self.plotZ, 3)))
         self.infLine.setValue(self.plotZ)
 
     def redshift_text_changed(self):
         try:
             self.plotZ = float(self.lineEditRedshift.text())
-            self.horizontalSliderRedshift.setValue(int(self.plotZ*10000))
+            self.horizontalSliderRedshift.setValue(int(self.plotZ * 10000))
             self.infLine.setValue(self.plotZ)
             self.plot_best_matches()
         except ValueError:
@@ -206,7 +218,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         plotZ = float(plotZ)
         self.plotZ = plotZ
         self.lineEditRedshift.setText(str(round(self.plotZ, 3)))
-        self.horizontalSliderRedshift.setValue(int(plotZ*10000))
+        self.horizontalSliderRedshift.setValue(int(plotZ * 10000))
         self.infLine.setValue(self.plotZ)
         self.plot_best_matches()
 
@@ -232,7 +244,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             pass
         else:
             self.inputFilename = inputFilename
-            self.inputFilenameSetText = self.inputFilename # os.path.basename(self.inputFilename)
+            self.inputFilenameSetText = self.inputFilename  # os.path.basename(self.inputFilename)
             self.lineEditInputFilename.setText(self.inputFilenameSetText)
 
             self.fit_spectra()
@@ -248,7 +260,8 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             self.minWave = int(self.lineEditMinWave.text())
             self.maxWave = int(self.lineEditMaxWave.text())
         except ValueError:
-            QtGui.QMessageBox.critical(self, "Error", "Min and max waves must be integers between %d and %d" % (self.w0, self.w1))
+            QtGui.QMessageBox.critical(self, "Error",
+                                       "Min and max waves must be integers between %d and %d" % (self.w0, self.w1))
             return
         if self.checkBoxClassifyHost.isChecked():
             self.classifyHost = True
@@ -270,7 +283,10 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         if not os.path.isfile(self.modelFilename + ".index"):
             QtGui.QMessageBox.critical(self, "Error", "Model does not exist")
             return
-        if not isinstance(self.inputFilename, (list, np.ndarray)) and not hasattr(self.inputFilename, 'read') and not os.path.isfile(self.inputFilename) and self.inputFilename.split('-')[0] not in list(catalogDict.keys()):   # Not an array and not a file-handle and not a file and not a catalog input
+        if not isinstance(self.inputFilename, (list, np.ndarray)) and not hasattr(self.inputFilename,
+                                                                                  'read') and not os.path.isfile(
+                self.inputFilename) and self.inputFilename.split('-')[0] not in list(
+                catalogDict.keys()):  # Not an array and not a file-handle and not a file and not a catalog input
             QtGui.QMessageBox.critical(self, "Error", "File not found!")
             return
         try:
@@ -290,7 +306,8 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         self.progressBar.setValue(36)
         self.set_plot_redshift(knownZ)
 
-        self.fitThread = FitSpectrumThread(self.inputFilename, knownZ, self.modelFilename, self.smooth, self.classifyHost, self.minWave, self.maxWave)
+        self.fitThread = FitSpectrumThread(self.inputFilename, knownZ, self.modelFilename, self.smooth,
+                                           self.classifyHost, self.minWave, self.maxWave)
         self.fitThread.trigger.connect(self.load_spectrum_single_redshift)
 
         self.fitThread.start()
@@ -306,7 +323,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
 
     def load_spectrum_single_redshift(self, spectrumInfo):
         self.bestTypes, self.softmax, self.idx, self.typeNamesList, self.inputImageUnRedshifted, self.inputMinMaxIndex = spectrumInfo
-        self.progressBar.setValue(85)#self.progressBar.value()+)
+        self.progressBar.setValue(85)  # self.progressBar.value()+)
         self.done_fit_thread_single_redshift()
 
     def done_fit_thread_single_redshift(self):
@@ -333,8 +350,8 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             self.labelBestRedshift.setText(str(self.bestRedshift))
         else:
             self.labelBestRedshift.setText("{} {} {}".format(str(self.bestRedshift), "±", self.bestRedshiftErr))
-        self.labelBestRelProb.setText("%s%%" % str(round(100*probTotal, 2)))
-        if host == "":                                     
+        self.labelBestRelProb.setText("%s%%" % str(round(100 * probTotal, 2)))
+        if host == "":
             self.labelBestHostType.setFixedWidth(0)
         if reliableFlag:
             self.labelInconsistentWarning.setText("Reliable matches")
@@ -348,7 +365,9 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         fluxes = []
         minMaxIndexes = []
         for i in range(len(snNames)):
-            wave, flux, minMaxIndex = combined_sn_and_host_data(snCoeff=1, galCoeff=0, z=0, snInfo=snInfos[i], galInfo=hostInfos[0], w0=self.w0, w1=self.w1, nw=self.nw)
+            wave, flux, minMaxIndex = combined_sn_and_host_data(snCoeff=1, galCoeff=0, z=0, snInfo=snInfos[i],
+                                                                galInfo=hostInfos[0], w0=self.w0, w1=self.w1,
+                                                                nw=self.nw)
 
             fluxes.append(flux)
             minMaxIndexes.append(minMaxIndex)
@@ -357,7 +376,8 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
 
     def low_rlap_warning_label(self, bestName, bestAge, bestHost):
         fluxes, snNames, templateMinMaxIndexes = self.get_smoothed_templates(bestName, bestAge, bestHost)
-        rlapCalc = RlapCalc(self.inputImageUnRedshifted, fluxes, snNames, self.wave, self.inputMinMaxIndex, templateMinMaxIndexes)
+        rlapCalc = RlapCalc(self.inputImageUnRedshifted, fluxes, snNames, self.wave, self.inputMinMaxIndex,
+                            templateMinMaxIndexes)
         rlapLabel, rlapWarning = rlapCalc.rlap_label()
 
         return rlapLabel, rlapWarning
@@ -388,7 +408,8 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
                 line.insert(3, str(redshift))
             if self.getRlapScores:
                 fluxes, snNames, templateMinMaxIndexes = self.get_smoothed_templates(name, age, host)
-                rlapCalc = RlapCalc(self.inputImageUnRedshifted, fluxes, snNames, self.wave, self.inputMinMaxIndex, templateMinMaxIndexes)
+                rlapCalc = RlapCalc(self.inputImageUnRedshifted, fluxes, snNames, self.wave, self.inputMinMaxIndex,
+                                    templateMinMaxIndexes)
                 rlap = rlapCalc.rlap_label()[0]
                 line.insert(5, str(rlap))
             self.listWidget.addItem("".join(word.ljust(25) for word in line))
@@ -458,21 +479,23 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             self.graphicsView.clear()
             inputPlotFlux = self.inputImageUnRedshifted
             self.graphicsView.plot(self.wave, inputPlotFlux, name='Input Spectrum', pen={'color': (0, 255, 0)})
-            self.graphicsView.plot(templateWave, self.templatePlotFlux, name=self.templatePlotName, pen={'color': (255,0,0)})
+            self.graphicsView.plot(templateWave, self.templatePlotFlux, name=self.templatePlotName,
+                                   pen={'color': (255, 0, 0)})
             self.graphicsView.setXRange(int(self.w0), int(self.w1))
             self.graphicsView.setYRange(0, 1)
             self.graphicsView.plotItem.showGrid(x=True, y=True, alpha=0.95)
             self.graphicsView.plotItem.setLabels(bottom="Observed Wavelength (<font>&#8491;</font>)")
 
             try:
-                self.cAxis.setScale(1/(1+self.plotZ))
+                self.cAxis.setScale(1 / (1 + self.plotZ))
             except ZeroDivisionError:
                 print("Invalid redshift. Redshift cannot be -1.")
             self.cAxis.setGrid(False)
             self.cAxis.setLabel("Rest Wavelength (<font>&#8491;</font>)")
 
             if np.any(self.templatePlotFlux):
-                rlapCalc = RlapCalc(self.inputImageUnRedshifted, [self.templatePlotFlux], [self.templatePlotName], self.wave, self.inputMinMaxIndex, [self.templateMinMaxIndex])
+                rlapCalc = RlapCalc(self.inputImageUnRedshifted, [self.templatePlotFlux], [self.templatePlotName],
+                                    self.wave, self.inputMinMaxIndex, [self.templateMinMaxIndex])
                 rlap = rlapCalc.rlap_label()[0]
                 self.labelRlapScore.setText("rlap: {0}".format(rlap))
 
@@ -502,7 +525,10 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             templateFluxes.append(snInfos[i][1])
             templateMinMaxIndexes.append((snInfos[i][2], snInfos[i][3]))
 
-        redshift, crossCorrs, medianName, redshiftErr = get_median_redshift(self.inputImageUnRedshifted, templateFluxes, self.nw, self.dwlog, self.inputMinMaxIndex, templateMinMaxIndexes, templateNames, outerVal=0.5)
+        redshift, crossCorrs, medianName, redshiftErr = get_median_redshift(self.inputImageUnRedshifted, templateFluxes,
+                                                                            self.nw, self.dwlog, self.inputMinMaxIndex,
+                                                                            templateMinMaxIndexes, templateNames,
+                                                                            outerVal=0.5)
         if redshift is None:
             return 0, 0, "", 0
 
@@ -532,7 +558,6 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
 
 
 class FitSpectrumThread(QThread):
-
     trigger = pyqtSignal('PyQt_PyObject')
 
     def __init__(self, inputFilename, knownZ, modelFilename, smooth, classifyHost, minWave, maxWave):
@@ -550,10 +575,12 @@ class FitSpectrumThread(QThread):
 
     def _input_spectrum_single_redshift(self):
         trainParams = get_training_parameters()
-        loadInputSpectraUnRedshifted = LoadInputSpectra(self.inputFilename, 0, self.smooth, trainParams, self.minWave, self.maxWave, self.classifyHost)
+        loadInputSpectraUnRedshifted = LoadInputSpectra(self.inputFilename, 0, self.smooth, trainParams, self.minWave,
+                                                        self.maxWave, self.classifyHost)
         inputImageUnRedshifted, inputRedshift, typeNamesList, nw, nBins, minMaxIndexUnRedshifted = loadInputSpectraUnRedshifted.input_spectra()
 
-        loadInputSpectra = LoadInputSpectra(self.inputFilename, self.knownZ, self.smooth, trainParams, self.minWave, self.maxWave, self.classifyHost)
+        loadInputSpectra = LoadInputSpectra(self.inputFilename, self.knownZ, self.smooth, trainParams, self.minWave,
+                                            self.maxWave, self.classifyHost)
         inputImage, inputRedshift, typeNamesList, nw, nBins, minMaxIndex = loadInputSpectra.input_spectra()
         bestTypesList = BestTypesListSingleRedshift(self.modelFilename, inputImage, typeNamesList, nw, nBins)
         bestTypes = bestTypesList.bestTypes[0]
@@ -572,6 +599,7 @@ def main():
     form = MainApp()
     form.show()
     app.exec_()
+
 
 if __name__ == '__main__':
     main()

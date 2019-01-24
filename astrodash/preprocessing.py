@@ -5,8 +5,10 @@ import astropy.io.fits as afits
 from scipy.interpolate import interp1d, UnivariateSpline
 from astrodash.array_tools import normalise_spectrum, zero_non_overlap_part
 from astrodash.read_from_catalog import catalogDict
+
 try:
     import pandas as pd
+
     USE_PANDAS = True
 except ImportError:
     print("Pandas module not installed. DASH will use numpy to load spectral files instead. "
@@ -132,7 +134,8 @@ class ReadSpectrumFile(object):
             filename = os.path.basename(self.filename)
             extension = filename.split('.')[-1]
 
-            if template is True and extension == 'dat' and len(filename.split('.')) == 3 and filename.split('.')[1][0] in ['m', 'p']:  # Check if input is a superfit template
+            if template is True and extension == 'dat' and len(filename.split('.')) == 3 and filename.split('.')[1][
+                0] in ['m', 'p']:  # Check if input is a superfit template
                 return self.read_superfit_template()
             elif self.filename.split('-')[0] in list(catalogDict.keys()):  # Read input from catalog
                 return catalogDict[self.filename[0:3]](self.filename)
@@ -286,8 +289,8 @@ class PreProcessSpectrum(object):
             fluxValList = ((flux * 1 / (s1LogList - s0LogList) * dnuList)[jIndexes])[jIndexVals < self.nw]
             fluxValList = np.repeat(fluxValList, numOfJLoops)
             minJ = min(jIndexVals)
-            maxJ = (max(jIndexVals)+numOfJLoops[-1]) if (max(jIndexVals)+numOfJLoops[-1] < self.nw) else self.nw
-            fluxOut[minJ:maxJ] = fluxValList[:(maxJ-minJ)]
+            maxJ = (max(jIndexVals) + numOfJLoops[-1]) if (max(jIndexVals) + numOfJLoops[-1] < self.nw) else self.nw
+            fluxOut[minJ:maxJ] = fluxValList[:(maxJ - minJ)]
 
             return fluxOut
         except Exception as e:

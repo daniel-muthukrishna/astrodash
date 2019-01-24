@@ -21,7 +21,7 @@ class SaveTemplateSpectra(object):
         tempList = temp_list(tempFileList)
         templates = []
         for filename in tempList:
-            spectrum = self.read_template_file(templateDirectory+filename)
+            spectrum = self.read_template_file(templateDirectory + filename)
             templates.append(spectrum)
             print(filename)
 
@@ -48,7 +48,8 @@ def save_templates():
 
     saveTemplateSpectra = SaveTemplateSpectra('data_files/training_params.pickle')
     saveFilename = 'data_files/sn_and_gal_templates.pklz'
-    saveTemplateSpectra.save_templates(snidTempFileList, snidTemplateDirectory, galTempFileList, galTemplateDirectory, saveFilename)
+    saveTemplateSpectra.save_templates(snidTempFileList, snidTemplateDirectory, galTempFileList, galTemplateDirectory,
+                                       saveFilename)
 
     return saveFilename
 

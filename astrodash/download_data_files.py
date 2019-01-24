@@ -39,11 +39,13 @@ def download_all_files(zipVersion):
 
     saveFilenames = ['models_{0}.zip'.format(zipVersion)]
 
-    urlpaths = ["https://github.com/daniel-muthukrishna/astrodash/blob/master/astrodash/models_{0}.zip?raw=true".format(zipVersion)]
+    urlpaths = ["https://github.com/daniel-muthukrishna/astrodash/blob/master/astrodash/models_{0}.zip?raw=true".format(
+        zipVersion)]
 
-    printStatuses = ["Downloading data files from {0}... \nThis download contains the Tensorflow models trained using deep learning. \n"
-                     "The file to be downloaded is ~200MB. However, this is a one time download, and will only occur\n"
-                     "the very first time that this version of DASH is installed.".format(urlpaths[0])]
+    printStatuses = [
+        "Downloading data files from {0}... \nThis download contains the Tensorflow models trained using deep learning. \n"
+        "The file to be downloaded is ~200MB. However, this is a one time download, and will only occur\n"
+        "the very first time that this version of DASH is installed.".format(urlpaths[0])]
 
     for i in range(len(urlpaths)):
         download_file(saveFilenames[i], urlpaths[i], printStatuses[i], scriptDirectory)
@@ -51,6 +53,3 @@ def download_all_files(zipVersion):
 
 if __name__ == '__main__':
     download_all_files('v06')
-
-
-

@@ -28,7 +28,7 @@ def cross_correlation(inputFlux, tempFlux, nw, tempMinMaxIndex):
 
 def calc_redshift_from_crosscorr(crossCorr, nw, dwlog):
     # Find max peak while ignoring peaks that lead to negative redshifts
-    deltaPeak = np.argmax(crossCorr[:int(nw/2)+1])
+    deltaPeak = np.argmax(crossCorr[:int(nw / 2) + 1])
 
     # z = np.exp(deltaPeak * dwlog) - 1 #equation 13 of Blondin)
     zAxisIndex = np.concatenate((np.arange(-nw / 2, 0), np.arange(0, nw / 2)))
@@ -67,12 +67,12 @@ def get_median_redshift(inputFlux, tempFluxes, nw, dwlog, inputMinMaxIndex, temp
     for i, tempFlux in enumerate(tempFluxes):
         assert tempFlux[0] == outerVal
 
-        redshift, crossCorr = get_redshift(inputFlux, tempFlux-outerVal, nw, dwlog, tempMinMaxIndexes[i])
+        redshift, crossCorr = get_redshift(inputFlux, tempFlux - outerVal, nw, dwlog, tempMinMaxIndexes[i])
         redshifts.append(redshift)
         crossCorrs[tempNames[i]] = crossCorr
 
     if redshifts != []:
-        medianIndex = np.argsort(redshifts)[len(redshifts)//2]
+        medianIndex = np.argsort(redshifts)[len(redshifts) // 2]
         medianRedshift = redshifts[medianIndex]
         medianName = tempNames[medianIndex]
         try:
@@ -86,6 +86,6 @@ def get_median_redshift(inputFlux, tempFluxes, nw, dwlog, inputMinMaxIndex, temp
     if len(redshifts) >= 10:
         redshiftError = np.std(redshifts)
     else:
-        pass # redshiftError = 1/rlap * kz
+        pass  # redshiftError = 1/rlap * kz
 
     return medianRedshift, crossCorrs, medianName, stdRedshift

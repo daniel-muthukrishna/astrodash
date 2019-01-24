@@ -26,7 +26,7 @@ def save_templates(saveFilename, trainImages, trainLabels, trainFilenames, typeN
             countTemplates += 1
             if countTemplates > 100:
                 break
-                
+
         if countTemplates == 0:
             templateFluxesForThisType.append(np.zeros(len(trainImages[0])))
             templateLabelsForThisType.append(nLabels + 1)  # Out of range
@@ -59,7 +59,6 @@ def create_template_set_file(dataDirName):
     # zipRef.extractall(extractedFolder)
     # zipRef.close()
     os.system("unzip %s -d %s" % (trainingSet, extractedFolder))
-
 
     npyFiles = {}
     fileList = os.listdir(extractedFolder)

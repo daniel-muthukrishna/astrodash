@@ -46,16 +46,24 @@ def main(spectraDir, atelTextFile, saveMatchesFilename):
             print(row.Name)
 
     # Classify and print the best matches
-    classification = astrodash.Classify(filenames, knownRedshifts, classifyHost=False, rlapScores=True, smooth=16, knownZ=True, data_files='models_v06')
-    bestFits, redshifts, bestTypes, rlapFlag, matchesFlag, redshiftErrs = classification.list_best_matches(n=5, saveFilename=saveMatchesFilename)
+    classification = astrodash.Classify(filenames, knownRedshifts, classifyHost=False, rlapScores=True, smooth=16,
+                                        knownZ=True, data_files='models_v06')
+    bestFits, redshifts, bestTypes, rlapFlag, matchesFlag, redshiftErrs = classification.list_best_matches(n=5,
+                                                                                                           saveFilename=saveMatchesFilename)
 
     # print("{0:17} | {1:5} | {2:8} | {3:10} | {4:6} | {5:10} | {6:10}".format("Name", "  z  ", "DASH_Fit", "  Age ", "Prob.", "Flag", "Wiki Fit"))
     # for i in range(len(filenames)):
     #     print("{0:17} | {1:5} | {2:8} | {3:10} | {4:6} | {5:10} | {6:10}".format('_'.join([filenames[i].split('/')[-1].split('_')[0], filenames[i].split('/')[-1].split('_')[3]]) , redshifts[i], bestTypes[i][0], bestTypes[i][1], bestTypes[i][2], matchesFlag[i].replace(' matches',''), wikiClassifications[i]))
     #
-    print("{0:17} | {1:5} | {2:10} | {3:8} | {4:10} | {5:6} | {6:10} | {6:10} ".format("Name", "  z  ", "ATel Classification", "DASH_Class", "  Age ", "Prob.", "Flag", "Best fit"))
+    print("{0:17} | {1:5} | {2:10} | {3:8} | {4:10} | {5:6} | {6:10} | {6:10} ".format("Name", "  z  ",
+                                                                                       "ATel Classification",
+                                                                                       "DASH_Class", "  Age ", "Prob.",
+                                                                                       "Flag", "Best fit"))
     for i in range(len(filenames)):
-        print("{0:17} | {1:5} | {2:10} | {3:8} | {4:10} | {5:6} | {6:10} | {6:10} ".format('_'.join([filenames[i].split('/')[-1].split('_')[0], filenames[i].split('/')[-1].split('_')[3]]), redshifts[i],  wikiClassifications[i], bestTypes[i][0], bestTypes[i][1], bestTypes[i][2], matchesFlag[i].replace(' matches','')), bestFits[i][0])
+        print("{0:17} | {1:5} | {2:10} | {3:8} | {4:10} | {5:6} | {6:10} | {6:10} ".format(
+            '_'.join([filenames[i].split('/')[-1].split('_')[0], filenames[i].split('/')[-1].split('_')[3]]),
+            redshifts[i], wikiClassifications[i], bestTypes[i][0], bestTypes[i][1], bestTypes[i][2],
+            matchesFlag[i].replace(' matches', '')), bestFits[i][0])
 
     # print("{0:17} | {1:5} | {2:10} | {3:8} | {4:10} | {5:6} | {6:10} | {6:10} ".format("Name", "  z  ", "ATel Classification", "DASH_Class", "  Age ", "Prob.", "Flag", "Best fit"))
     # for i in np.arange(len(filenames)-1, -1, -1):
@@ -69,8 +77,7 @@ def main(spectraDir, atelTextFile, saveMatchesFilename):
     classification.plot_with_gui(indexToPlot=5)
 
 
-if __name__=='__main__':
+if __name__ == '__main__':
     main(spectraDir='/Users/danmuth/PycharmProjects/astrodash/templates/OzDES_data/transients_all/',
          atelTextFile='/Users/danmuth/PycharmProjects/astrodash/templates/OzDES_data/all_atels.txt',
          saveMatchesFilename='DASH_matches_all_atels.txt')
-
