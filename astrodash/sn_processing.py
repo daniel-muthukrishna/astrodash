@@ -40,7 +40,7 @@ class PreProcessing(object):
             self.wave, self.flux, z = self.spectrum
         else:
             self.wave, self.flux = self.spectrum
-        # self.flux = normalise_spectrum(self.flux)
+        self.flux = normalise_spectrum(self.flux)
         self.flux = limit_wavelength_range(self.wave, self.flux, minWave, maxWave)
         self.wDensity = (self.w1 - self.w0)/self.nw  # Average wavelength spacing
         wavelengthDensity = (max(self.wave) - min(self.wave)) / len(self.wave)
@@ -124,7 +124,7 @@ class PreProcessing(object):
         return binnedwave, fluxNorm, minIndex, maxIndex, z
 
 
-
-fData = '/Users/danmuth/PycharmProjects/astrodash/templates/OzDES_data/ATEL_9570_Run25/DES16C2ma_C2_combined_160926_v10_b00.dat'
-preData = PreProcessing(fData, 3000, 10000, 1024)
-waveData,fluxData,minIData,maxIData,z = preData.two_column_data(0.24, 5, 3000, 10000)
+if __name__ == '__main__':
+    fData = '/Users/danmuth/PycharmProjects/astrodash/templates/OzDES_data/ATEL_9570_Run25/DES16C2ma_C2_combined_160926_v10_b00.dat'
+    preData = PreProcessing(fData, 3000, 10000, 1024)
+    waveData,fluxData,minIData,maxIData,z = preData.two_column_data(0.24, 5, 3000, 10000)

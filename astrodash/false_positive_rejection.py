@@ -279,7 +279,7 @@ class RlapCalc(object):
 
         self.zAxis = self.get_redshift_axis(self.nw, self.dwlog)
         rlapList = []
-        print(len(self.templateNames))
+
         for i in range(len(self.templateNames)):
             r, lap, rlap, fom = self.rlap_score(tempIndex=i)
             rlapList.append(rlap)
