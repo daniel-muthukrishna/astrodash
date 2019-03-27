@@ -108,7 +108,7 @@ class Classify(object):
             for i in range(20):
                 host, name, age = classification_split(bestTypes[specNum][i])
                 if not self.knownZ:
-                    redshift, _, redshiftErr = self.calc_redshift(inputImages[i], name, age, inputMinMaxIndexes[i])
+                    redshift, _, redshiftErr = self.calc_redshift(inputImages[specNum], name, age, inputMinMaxIndexes[specNum])
                     redshifts.append(redshift)
                     redshiftErrs.append(redshiftErr)
                 prob = softmaxes[specNum][i]
