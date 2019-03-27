@@ -37,6 +37,8 @@ class Classify(object):
             self.knownZ = True
         else:
             self.knownZ = False
+        if not self.redshifts:
+            self.redshifts = [None] * len(filenames)
         self.rlapScores = rlapScores
         self.pars = get_training_parameters()
         self.nw, w0, w1 = self.pars['nw'], self.pars['w0'], self.pars['w1']
@@ -54,8 +56,11 @@ class Classify(object):
                                                   "models/zeroZ/tensorflow_model.ckpt")
         else:
             if self.classifyHost:
-                self.modelFilename = os.path.join(self.scriptDirectory, data_files,
-                                                  "models/agnosticZ_classifyHost/tensorflow_model.ckpt")
+                raise ValueError("A model that classifies the host while simulatenously not knowing redshift does not "
+                                 "exist currently. Please try one of the other 3 models or check back at a later "
+                                 "date. Contact the author for support or further queries.")
+                # self.modelFilename = os.path.join(self.scriptDirectory, data_files,
+                #                                   "models/agnosticZ_classifyHost/tensorflow_model.ckpt")
             else:
                 self.modelFilename = os.path.join(self.scriptDirectory, data_files,
                                                   "models/agnosticZ/tensorflow_model.ckpt")
@@ -103,7 +108,7 @@ class Classify(object):
             for i in range(20):
                 host, name, age = classification_split(bestTypes[specNum][i])
                 if not self.knownZ:
-                    redshift, _, redshiftErr = self.calc_redshift(inputImages[i], name, age, inputMinMaxIndexes[i])[0]
+                    redshift, _, redshiftErr = self.calc_redshift(inputImages[i], name, age, inputMinMaxIndexes[i])
                     redshifts.append(redshift)
                     redshiftErrs.append(redshiftErr)
                 prob = softmaxes[specNum][i]
@@ -125,8 +130,10 @@ class Classify(object):
 
         if not redshifts:
             redshifts = self.redshifts
+            redshiftErrs = [None] * len(self.redshifts)
         else:
             redshifts = np.array(redshifts)
+            redshiftErrs = np.array(redshiftErrs)
 
         if saveFilename:
             self.save_best_matches(bestMatchLists, redshifts, bestBroadTypes, rlapLabels, matchesReliableLabels,
