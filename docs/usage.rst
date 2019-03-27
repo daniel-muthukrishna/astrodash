@@ -77,7 +77,7 @@ Use the following example code:
     import astrodash
 
     classification = astrodash.Classify(filenames, knownRedshifts, classifyHost=False, knownZ=True, smooth=6, rlapScores=False)
-    bestFits, redshifts, bestTypes, rejectionLabels, reliableFlags = classification.list_best_matches(n=5, saveFilename='DASH_matches.txt')
+    bestFits, redshifts, bestTypes, rejectionLabels, reliableFlags, redshiftErrs = classification.list_best_matches(n=5, saveFilename='DASH_matches.txt')
     classification.plot_with_gui(indexToPlot=2)
 
 dash.Classify() takes the following arguments:

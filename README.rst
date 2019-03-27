@@ -99,7 +99,7 @@ Use the following example code:
     import astrodash
 
     classification = astrodash.Classify(filenames, knownRedshifts, classifyHost=False, knownZ=True, smooth=6, rlapScores=False)
-    bestFits, redshifts, bestTypes, rejectionLabels, reliableFlags = classification.list_best_matches(n=5, saveFilename='DASH_matches.txt')
+    bestFits, redshifts, bestTypes, rejectionLabels, reliableFlags, redshiftErrs = classification.list_best_matches(n=5, saveFilename='DASH_matches.txt')
     classification.plot_with_gui(indexToPlot=2)
 
 astrodash.Classify() takes the following arguments:
@@ -184,7 +184,7 @@ This example automatically classifies 10 spectra. The last line plots the fifth 
 
     # Classify all spectra
     classification = astrodash.Classify(filenames, knownRedshifts, classifyHost=False)
-    bestFits, redshifts, bestTypes, rlapFlag, matchesFlag = classification.list_best_matches(n=5, saveFilename='ATEL_best_fits.txt')
+    bestFits, redshifts, bestTypes, rlapFlag, matchesFlag, redshiftErrs = classification.list_best_matches(n=5, saveFilename='ATEL_best_fits.txt')
 
     # Plot DES16C3bq
     classification.plot_with_gui(indexToPlot=4)
