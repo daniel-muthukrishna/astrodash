@@ -191,9 +191,12 @@ This example automatically classifies 10 spectra. The last line plots the fifth 
 
 6. API Usage
 ------------
-Notes: Sometimes inaccurate results if redshift is unknown.
+Note 1: Sometimes inaccurate results if redshift is unknown.
 
-6. Common Issues
+Note 2: In many cases DASH will classify a spectrum that has a lot of host-galaxy contamination as a Ic-broad type. Therefore, we suggest that users consider that the Ic-broad prediction is more likely to just be a host-contaminated spectrum.
+
+
+7. Common Issues
 ------------
 If you get an error like this:
     `ImportError: /lib64/libc.so.6: version 'GLIBC_2.17' not found`

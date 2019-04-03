@@ -114,3 +114,8 @@ Setting the filename in the format:
 where name is the 'name' of a supernova object (e.g. sn2002er) and 'ageIndex' is an integer index of the spectrum you wish to use from the open supernova catalog (e.g. 10).
 
 You may input this format into the graphical interface or as a string in the list of filenames in the python interface.
+
+
+Notes on performance
+++++++++++++++++++++
+In many cases DASH will classify a spectrum that has a lot of host-galaxy contamination as a Ic-broad type. Therefore, we suggest that users consider that the Ic-broad prediction is more likely to just be a host-contaminated spectrum.
