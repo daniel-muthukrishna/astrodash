@@ -103,6 +103,10 @@ class ReadSpectrumFile(object):
             wave = np.array(wave)
             flux = np.array(flux)
 
+        sorted_indexes = np.argsort(wave)
+        wave = wave[sorted_indexes]
+        flux = flux[sorted_indexes]
+
         return wave, flux
 
     def read_superfit_template(self):
