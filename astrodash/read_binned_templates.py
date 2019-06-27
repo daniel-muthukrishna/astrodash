@@ -19,7 +19,7 @@ def get_templates(snName, snAge, hostName, snTemplates, galTemplates, nw):
 
 
 def load_templates(templateFilename):
-    loaded = np.load(os.path.join(scriptDirectory, templateFilename))
+    loaded = np.load(os.path.join(scriptDirectory, templateFilename), allow_pickle=True)
     snTemplates = loaded['snTemplates'][()]
     galTemplates = loaded['galTemplates'][()]
 
