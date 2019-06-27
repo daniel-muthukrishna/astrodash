@@ -1,0 +1,13 @@
+name: astrodash
+
+channels:
+    - conda-forge
+
+dependencies:
+- python=3
+- pyqt=5
+#testing requirements
+- git-lfs=2.4
+- pip:
+  - astrodash
+  

@@ -19,6 +19,10 @@ In a terminal run:
 
 2. Dependencies
 ---------------
+
+The dependencies can easily be installed by downloading the conda environment file at https://raw.githubusercontent.com/wkerzendorf/astrodash/master/astrodash_env.yml and
+then running it with `conda env install -f astrodash_env.yml`. 
+
 Using pip to install DASH will automatically install the mandatory dependencies: numpy, scipy, pyqtgraph, and tensorflow.
 
 PyQt5 is the final dependency, and is optional. It is only required if you would like to use the graphical interface.
