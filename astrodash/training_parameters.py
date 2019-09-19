@@ -4,7 +4,7 @@ import os
 
 def create_training_params_file(dataDirName):
     parameters = {
-        'typeList': ['Ia-norm', 'Ia-91T', 'Ia-91bg', 'Ia-csm', 'Ia-02cx', 'Ia-pec',
+        'typeList': ['Ia-norm', 'Ia-91T', 'Ia-91bg', 'Ia-csm', 'Iax', 'Ia-pec',
                      'Ib-norm', 'Ibn', 'IIb', 'Ib-pec', 'Ic-norm', 'Ic-broad',
                      'Ic-pec', 'IIP', 'IIL', 'IIn', 'II-pec'],
         'nTypes': 17,

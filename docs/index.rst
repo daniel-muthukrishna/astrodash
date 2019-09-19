@@ -39,6 +39,12 @@ License
 
 The project is licensed under the MIT license.
 
+Citation
+--------
+
+You can cite the following paper for this work: https://ui.adsabs.harvard.edu/abs/2019arXiv190302557M/abstract
+
+
 Author
 ------
 Daniel Muthukrishna

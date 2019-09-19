@@ -63,6 +63,8 @@ def snid_template_spectra_all(filename):
 
     if ttype == 'Ia-99aa':
         ttype = 'Ia-91T'
+    elif ttype == 'Ia-02cx':
+        ttype = 'Iax'
 
     return wave, fluxes, numAges, ages, ttype, splineInfo
 

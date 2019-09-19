@@ -1,5 +1,6 @@
 import os
 import pickle
+import matplotlib
 import matplotlib.pyplot as plt
 import itertools
 import numpy as np
@@ -29,11 +30,17 @@ def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix'
     np.savetxt(os.path.join(fig_dir, 'confusion_matrix_%s.csv' % name), cm)
     print(cm)
 
+    plt.rcParams['text.usetex'] = True
+    plt.rcParams['font.serif'] = ['Computer Modern Roman'] + plt.rcParams['font.serif']
+    font = {'family': 'normal',
+            'size': 16}
+    matplotlib.rc('font', **font)
+
     fig = plt.figure(figsize=(15, 12))
     plt.imshow(cm, interpolation='nearest', cmap=cmap, vmin=-1, vmax=1)
     plt.title(title)
     cb = plt.colorbar()
-    cb.ax.set_yticklabels(cb.ax.get_yticklabels(), fontsize=16)
+    cb.ax.tick_params(labelsize=23)
     tick_marks = np.arange(len(classes))
     plt.xticks(tick_marks, classes, rotation=90, fontsize=fontsize_labels)
     plt.yticks(tick_marks, classes, fontsize=fontsize_labels)
@@ -45,8 +52,8 @@ def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix'
                  color="white" if abs(cm[i, j]) > thresh else "black", fontsize=fontsize_matrix)
 
     plt.tight_layout()
-    plt.ylabel('True label', fontsize=18)
-    plt.xlabel('Predicted label', fontsize=18)
+    plt.ylabel('True label', fontsize=26)
+    plt.xlabel('Predicted label', fontsize=26)
     plt.tight_layout()
     plt.savefig(os.path.join(fig_dir, 'confusion_matrix_%s.pdf' % name))
 
@@ -91,14 +98,14 @@ def calc_model_metrics(modelFilename, testLabels, testImages, testTypeNames, typ
         if confMatrixAggregateAges.shape[0] < len(classnames):
             classnames = classnames[:-1]
         plot_confusion_matrix(confMatrixAggregateAges, classes=classnames, normalize=True, title='', fig_dir=fig_dir,
-                              name='aggregate_ages', fontsize_labels=15, fontsize_matrix=16)
+                              name='aggregate_ages', fontsize_labels=23, fontsize_matrix=21)
 
         # Aggregate age and subtypes conf matrix
         aggregateSubtypesIndexes = np.array([0, 108, 180, 234, 306])
         broadTypes = ['Ia', 'Ib', 'Ic', 'II']
         confMatrixAggregateSubtypes = get_aggregated_conf_matrix(aggregateSubtypesIndexes, testLabels, predictedLabels)
         plot_confusion_matrix(confMatrixAggregateSubtypes, classes=broadTypes, normalize=True, title='',
-                              fig_dir=fig_dir, name='aggregate_subtypes', fontsize_labels=30, fontsize_matrix=30)
+                              fig_dir=fig_dir, name='aggregate_subtypes', fontsize_labels=35, fontsize_matrix=35)
         # plt.show()
 
     np.set_printoptions(precision=2)
