@@ -66,7 +66,7 @@ Once the GUI is open you may follow these steps:
 
 8. Once you have selected the supernova type, you may use the two arrow buttons to change the supernova template which is plotted.
 
-
+The probabailities are shown for the top 20 best matches. On the right, the probabilities of the top N mathches are summed together if they are consistent with each other. This addition means that the age range will be wider even if the best fit classification has a well constrained age. It is advisable to use the smaller well constrained age as the predicted classification.
 
 Python Library
 ++++++++++++++
