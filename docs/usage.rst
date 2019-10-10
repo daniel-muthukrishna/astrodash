@@ -73,7 +73,7 @@ Caveats
 - The "Best Match" classification in the top right of the interface combines the top ranked classifications if they are in agreement. In the example above, the Best Match classification is a Ia between 10 to 26 days because the top classifications are all Ia's between that range. The Softmax probability is then the sum of the top classifications. For a more precise classification, it is advisable to just make use of the top one (or few) classifications in the Best Matches list. Please see Appendix A.2.1 in the paper for more details (https://arxiv.org/pdf/1903.02557.pdf).
 - The "Reliable matches" flag is when the top two ranked classifications are in agreement (i.e. the classifications are in neighbouring age bins of the same broad SNe type).
 - rlap scores are based on the cross-correlation of the input spectrum and each of the spectra in the best matching classification bin, A score above 6 is flagged as a good rlap. Noisy or host-contaminated spectra will generally have low rlap scores.
-- From experience, we have found that highly host-contaminated spectra are classified as Ic-broad type Supernovae. Classifications into this subtype should generally not be trusted.
+- From experience, we have found that highly host-contaminated spectra are classified as Ic-broad type supernovae. Classifications into this subtype should generally not be trusted.
 
 Python Library
 ++++++++++++++
@@ -125,4 +125,4 @@ You may input this format into the graphical interface or as a string in the lis
 
 Notes on performance
 ++++++++++++++++++++
-In many cases DASH will classify a spectrum that has a lot of host-galaxy contamination as a Ic-broad type. Therefore, we suggest that users consider that the Ic-broad prediction is more likely to just be a host-contaminated spectrum.
+In many cases DASH will classify a spectrum that has a lot of host-galaxy contamination as a Ic-broad type. We suggest that users consider that the Ic-broad prediction is more likely to just be a host-contaminated spectrum.

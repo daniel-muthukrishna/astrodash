@@ -1,8 +1,13 @@
 import os
 import pickle
-import tensorflow as tf
 from astrodash.input_spectra import *
 from astrodash.multilayer_convnet import convnet_variables
+
+try:
+    import tensorflow.compat.v1 as tf
+    tf.disable_v2_behavior()
+except ModuleNotFoundError:
+    import tensorflow as tf
 
 
 def get_training_parameters(data_files='models_v06'):

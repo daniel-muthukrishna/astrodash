@@ -4,8 +4,14 @@ import matplotlib
 import matplotlib.pyplot as plt
 import itertools
 import numpy as np
-import tensorflow as tf
+
 from astrodash.multilayer_convnet import convnet_variables
+
+try:
+    import tensorflow.compat.v1 as tf
+    tf.disable_v2_behavior()
+except ModuleNotFoundError:
+    import tensorflow as tf
 
 
 def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix', cmap=plt.cm.RdBu, fig_dir='.',

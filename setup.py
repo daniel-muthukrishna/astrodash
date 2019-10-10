@@ -9,9 +9,9 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(name='astrodash',
-    version='1.0.18',
+    version='1.0.19',
     description='Deep Learning for Automated Spectral Classification of Supernovae',
-    long_description=long_description,
+    # long_description=long_description,
     url='https://github.com/daniel-muthukrishna/DASH',
     author='Daniel Muthukrishna',
     author_email='daniel.muthukrishna@gmail.com',
