@@ -69,11 +69,12 @@ class ReadSpectrumFile(object):
         except Exception as e:
             hdulist = afits.open(self.filename)
             flux = hdulist[0].data
-            wave_start = hdulist[0].header['CRVAL1']
-            if 'CD1_1' in hdulist[0].header:
-                wave_step = hdulist[0].header['CD1_1']
+            header = hdulist[0].header
+            if 'CDELT1' in header:
+                wave_step = header['CDELT1']
             else:
-                wave_step = hdulist[0].header['CDELT1']
+                wave_step = header['CD1_1']
+            wave_start = header['CRVAL1'] - (header['CRPIX1'] - 1) * wave_step
             wave_num = flux.shape[0]
             wave = np.linspace(wave_start, wave_start + wave_step * wave_num, num=wave_num)
 

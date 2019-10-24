@@ -30,11 +30,11 @@ If you have an anaconda installation, this should already be preinstalled, but c
     conda install pyqt
 
 
-Or, ONLY if you do not have anaconda and if you have python 3, it can be installed by running the following in the terminal:
+Or, if you do not have anaconda and if you have python 3, it can be installed by running the following in the terminal:
 
 .. code-block:: bash
 
-    pip3 install pyqt5
+    pip install PyQt5
 
 
 Platforms
