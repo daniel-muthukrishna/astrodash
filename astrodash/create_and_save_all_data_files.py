@@ -12,14 +12,14 @@ scriptDirectory = os.path.dirname(os.path.abspath(__file__))
 
 
 if __name__ == '__main__':
-    modelName = 'testingZeroZ'
+    modelName = 'new_zeroZ_030321_test1'
     trainWithHost = True
     classifyHost = False
     minZ = 0.
     maxZ = 0.
     redshiftDuringTraining = True
     trainFraction = 0.8
-    numTrainBatches = 2000000
+    numTrainBatches = 2000
     # Do not change this unless we want to redshift before training.
     numOfRedshifts = 1
 
@@ -64,8 +64,8 @@ if __name__ == '__main__':
     print("time spent: {0:.2f}".format(t3 - t2))
 
     # TRAIN TENSORFLOW MODEL
-    modelFilenames = train_model(dataDirName, overwrite=True, numTrainBatches=numTrainBatches, minZ=minZ, maxZ=maxZ, redshifting=redshiftDuringTraining)
-    dataFilenames.extend(modelFilenames)
+    modelFilename = train_model(dataDirName, overwrite=True, numTrainBatches=numTrainBatches, minZ=minZ, maxZ=maxZ, redshifting=redshiftDuringTraining)
+    dataFilenames.append(modelFilename)
     t4 = time.time()
     print("time spent: {0:.2f}".format(t4 - t3))
 

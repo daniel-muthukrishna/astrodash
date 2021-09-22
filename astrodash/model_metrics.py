@@ -4,14 +4,8 @@ import matplotlib
 import matplotlib.pyplot as plt
 import itertools
 import numpy as np
-
-from astrodash.multilayer_convnet import convnet_variables
-
-try:
-    import tensorflow.compat.v1 as tf
-    tf.disable_v2_behavior()
-except ModuleNotFoundError:
-    import tensorflow as tf
+from tensorflow.keras.models import load_model
+from sklearn.metrics import confusion_matrix
 
 
 def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix', cmap=plt.cm.RdBu, fig_dir='.',
@@ -67,52 +61,40 @@ def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix'
 def get_aggregated_conf_matrix(aggregateIndexes, testLabels, predictedLabels):
     testLabelsAggregated = np.digitize(testLabels, aggregateIndexes) - 1
     predictedLabelsAggregated = np.digitize(predictedLabels, aggregateIndexes) - 1
-    confMatrixAggregated = tf.confusion_matrix(testLabelsAggregated, predictedLabelsAggregated).eval()
+    confMatrixAggregated = confusion_matrix(testLabelsAggregated, predictedLabelsAggregated)
     np.set_printoptions(precision=2)
     print(confMatrixAggregated)
 
     return confMatrixAggregated
 
 
-def calc_model_metrics(modelFilename, testLabels, testImages, testTypeNames, typeNamesList, snTypes=None, fig_dir='.'):
-    tf.reset_default_graph()
+def calc_model_metrics(modelFilename, testLabels, testImages, testTypeNames, typeNamesList, snTypes, fig_dir='.'):
     nw = len(testImages[0])
     nBins = len(typeNamesList)
-    imWidthReduc = 8
-    imWidth = 32  # Image size and width
 
-    x, y_, keep_prob, y_conv, W, b = convnet_variables(imWidth, imWidthReduc, nw, nBins)
 
-    saver = tf.train.Saver()
+    model = load_model(modelFilename)
+    predictedLabelsIndexes = model.predict(testImages)
+    predictedLabels = predictedLabelsIndexes.argmax(axis=1)
 
-    with tf.Session() as sess:
-        saver.restore(sess, modelFilename)
+    confMatrix = confusion_matrix(testLabels, predictedLabels)
 
-        yy = y_conv.eval(feed_dict={x: testImages, keep_prob: 1.0})
+    # Aggregate age conf matrix
+    aggregateAgesIndexes = np.arange(0, nBins + 1, int(nBins / len(snTypes)))
+    confMatrixAggregateAges = get_aggregated_conf_matrix(aggregateAgesIndexes, testLabels, predictedLabels)
+    classnames = np.copy(snTypes)
+    if confMatrixAggregateAges.shape[0] < len(classnames):
+        classnames = classnames[:-1]
+    plot_confusion_matrix(confMatrixAggregateAges, classes=classnames, normalize=True, title='', fig_dir=fig_dir,
+                          name='aggregate_ages', fontsize_labels=23, fontsize_matrix=21)
 
-        # CONFUSION MATRIX
-        predictedLabels = []
-        for i, name in enumerate(testTypeNames):
-            predictedLabels.append(np.argmax(yy[i]))
-        predictedLabels = np.array(predictedLabels)
-        confMatrix = tf.confusion_matrix(testLabels, predictedLabels).eval()
-
-        # Aggregate age conf matrix
-        aggregateAgesIndexes = np.arange(0, nBins + 1, int(nBins / len(snTypes)))
-        confMatrixAggregateAges = get_aggregated_conf_matrix(aggregateAgesIndexes, testLabels, predictedLabels)
-        classnames = np.copy(snTypes)
-        if confMatrixAggregateAges.shape[0] < len(classnames):
-            classnames = classnames[:-1]
-        plot_confusion_matrix(confMatrixAggregateAges, classes=classnames, normalize=True, title='', fig_dir=fig_dir,
-                              name='aggregate_ages', fontsize_labels=23, fontsize_matrix=21)
-
-        # Aggregate age and subtypes conf matrix
-        aggregateSubtypesIndexes = np.array([0, 108, 180, 234, 306])
-        broadTypes = ['Ia', 'Ib', 'Ic', 'II']
-        confMatrixAggregateSubtypes = get_aggregated_conf_matrix(aggregateSubtypesIndexes, testLabels, predictedLabels)
-        plot_confusion_matrix(confMatrixAggregateSubtypes, classes=broadTypes, normalize=True, title='',
-                              fig_dir=fig_dir, name='aggregate_subtypes', fontsize_labels=35, fontsize_matrix=35)
-        # plt.show()
+    # Aggregate age and subtypes conf matrix
+    aggregateSubtypesIndexes = np.array([0, 108, 180, 234, 306])
+    broadTypes = ['Ia', 'Ib', 'Ic', 'II']
+    confMatrixAggregateSubtypes = get_aggregated_conf_matrix(aggregateSubtypesIndexes, testLabels, predictedLabels)
+    plot_confusion_matrix(confMatrixAggregateSubtypes, classes=broadTypes, normalize=True, title='',
+                          fig_dir=fig_dir, name='aggregate_subtypes', fontsize_labels=35, fontsize_matrix=35)
+    # plt.show()
 
     np.set_printoptions(precision=2)
     print(confMatrix)
@@ -127,7 +109,7 @@ def calc_model_metrics(modelFilename, testLabels, testImages, testTypeNames, typ
     typeAndNearAgeCorrect = 0
     broadTypeAndNearAgeCorrect = 0
     for i in range(len(testTypeNames)):
-        predictedIndex = np.argmax(yy[i])
+        predictedIndex = predictedLabels[i]
 
         classification = testTypeNames[i].split(': ')
         if len(classification) == 2:
@@ -186,7 +168,7 @@ def main():
     if not os.path.exists(fig_dir):
         os.makedirs(fig_dir)
 
-    with open(os.path.join(dirModel, "training_params.pickle"), 'rb') as f:
+    with open(os.path.join(dirModel, "training_params_Iax.pickle"), 'rb') as f:
         pars = pickle.load(f)
     snTypes = pars['typeList']
 

@@ -1,9 +1,10 @@
 import os
 import glob
+import pickle
 import shutil
 import numpy as np
 import itertools
-from astrodash.multilayer_convnet import convnet_variables
+from astrodash.multilayer_convnet import build_model
 import zipfile
 import gzip
 import time
@@ -13,14 +14,13 @@ from astrodash.create_arrays import OverSampling
 from astrodash.helpers import redshift_binned_spectrum, calc_params_for_log_redshifting
 
 
-try:
-    import tensorflow.compat.v1 as tf
-    tf.disable_v2_behavior()
-except ModuleNotFoundError:
-    import tensorflow as tf
-
-def train_model(dataDirName, overwrite=False, numTrainBatches=500000, minZ=0., maxZ=0., redshifting=False):
+def train_model(dataDirName, overwrite=False, numTrainBatches=500000, minZ=0., maxZ=0., redshifting=False, batch_size=50):
     """  Train model. Unzip and overwrite exisiting training set if overwrite is True"""
+
+    modelFilename = os.path.join(dataDirName, "DASH_keras_model.hdf5")
+    if os.path.exists(modelFilename):
+        return modelFilename
+
     # Open training data files
     trainingSet = os.path.join(dataDirName, 'training_set.zip')
     extractedFolder = os.path.join(dataDirName, 'training_set')
@@ -29,9 +29,9 @@ def train_model(dataDirName, overwrite=False, numTrainBatches=500000, minZ=0., m
     # zipRef.close()
     if os.path.exists(extractedFolder) and overwrite:
         shutil.rmtree(extractedFolder, ignore_errors=True)
-        os.system("unzip %s -d %s" % (trainingSet, extractedFolder))
+        os.system(f'unzip "{trainingSet}" -d "{extractedFolder}"')
     elif not os.path.exists(extractedFolder):
-        os.system("unzip %s -d %s" % (trainingSet, extractedFolder))
+        os.system(f'unzip "{trainingSet}" -d "{extractedFolder}"')
     else:
         pass
 
@@ -48,7 +48,7 @@ def train_model(dataDirName, overwrite=False, numTrainBatches=500000, minZ=0., m
             # gzFile.close()
             # unCompressedFile.close()
             npyFiles[filename.strip('.npy.gz')] = f.strip('.gz')
-            os.system("gzip -d %s" % f)  # "gzip -dk %s" % f
+            os.system(f'gzip -d "{f}"')  # "gzip -dk %s" % f
         elif filename.endswith('.npy'):
             npyFiles[filename.strip('.npy')] = f
 
@@ -67,93 +67,65 @@ def train_model(dataDirName, overwrite=False, numTrainBatches=500000, minZ=0., m
     nLabels = len(typeNamesList)
     N = 1024
     nIndexes, dwlog, w0, w1, nw = calc_params_for_log_redshifting(dataDirName)
+    with open(os.path.join(dataDirName, 'training_params.pickle'), 'rb') as f1:
+        pars = pickle.load(f1)
+    snTypes = pars['typeList']
 
     overSampling = OverSampling(nLabels, N, images=trainImages, labels=trainLabels)
     trainArrays = overSampling.over_sample_arrays(smote=False)
     trainImages, trainLabels = trainArrays['images'], trainArrays['labels']
 
-    # # Delete temporary memory mapping files
-    # for filename in glob.glob('shuffled*.dat') + glob.glob('oversampled*.dat'):
-    #     if not os.path.samefile(filename, trainImages.filename) and not os.path.samefile(filename, trainLabels.filename):
-    #         os.remove(filename)
+    testLabels = labels_indexes_to_arrays(testLabelsIndexes, nLabels)
+    # testImages = testImages[0:400]
 
-    # Set up the convolutional network architecture
-    imWidth = 32  # Image size and width
-    imWidthReduc = 8
-    a = []
-    x, y_, keep_prob, y_conv, W, b = convnet_variables(imWidth, imWidthReduc, N, nLabels)
+    model = build_model(N, nLabels)
+    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
-    with tf.Session() as sess:  # config=tf.ConfigProto(inter_op_parallelism_threads=1, intra_op_parallelism_threads=1)) as sess:
-        # TRAIN AND EVALUATE MODEL
-        cross_entropy = tf.reduce_mean(-tf.reduce_sum(y_ * tf.log(y_conv + 1e-8), reduction_indices=[1]))
-        train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy)
-        correct_prediction = tf.equal(tf.argmax(y_conv, 1), tf.argmax(y_, 1))
-        accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+    trainImagesCycle = itertools.cycle(trainImages)
+    trainLabelsCycle = itertools.cycle(trainLabels)
+    train_acc, test_acc = [], []
+    for i in range(numTrainBatches):
+        batch_xs = np.array(list(itertools.islice(trainImagesCycle, batch_size * i, batch_size * i + batch_size)))
+        batch_ys = labels_indexes_to_arrays(list(itertools.islice(trainLabelsCycle, batch_size * i, batch_size * i + batch_size)), nLabels)
 
-        sess.run(tf.global_variables_initializer())
+        # Redshift arrays
+        if redshifting is True:
+            redshifts = np.random.uniform(low=minZ, high=maxZ, size=len(batch_xs))
+            for j, z in enumerate(redshifts):
+                batch_xs[j] = redshift_binned_spectrum(batch_xs[j], z, nIndexes, dwlog, w0, w1, nw, outerVal=0.5)
 
-        testLabels = labels_indexes_to_arrays(testLabelsIndexes[0:400], nLabels)
-        testImages = testImages[0:400]
-        # testLabelsWithGal = labels_indexes_to_arrays(testLabelsIndexesWithGal[0:200], nLabels)
-        # testImagesWithGal = testImagesWithGal[0:200]
+        batch_metrics = model.train_on_batch(batch_xs, batch_ys, return_dict=True)
+        test_metrics = model.test_on_batch(testImages, testLabels, return_dict=True)
+        train_acc.append(batch_metrics['accuracy'])
+        test_acc.append(test_metrics['accuracy'])
+        print(f"Batch {i} of {numTrainBatches}", f"Training metrics: {batch_metrics}", f"Testing metrics: {test_metrics}")
 
-        trainImagesCycle = itertools.cycle(trainImages)
-        trainLabelsCycle = itertools.cycle(trainLabels)
-        for i in range(numTrainBatches):
-            batch_xs = np.array(list(itertools.islice(trainImagesCycle, 50 * i, 50 * i + 50)))
-            batch_ys = labels_indexes_to_arrays(list(itertools.islice(trainLabelsCycle, 50 * i, 50 * i + 50)), nLabels)
-
-            # Redshift arrays
-            if redshifting is True:
-                redshifts = np.random.uniform(low=minZ, high=maxZ, size=len(batch_xs))
-                for j, z in enumerate(redshifts):
-                    batch_xs[j] = redshift_binned_spectrum(batch_xs[j], z, nIndexes, dwlog, w0, w1, nw, outerVal=0.5)
-
-            train_step.run(feed_dict={x: batch_xs, y_: batch_ys, keep_prob: 0.5})
-            if i % 100 == 0:
-                train_accuracy = accuracy.eval(feed_dict={x: batch_xs, y_: batch_ys, keep_prob: 1.0})
-                print("step %d, training accuracy %g" % (i, train_accuracy))
-                testAcc = accuracy.eval(feed_dict={x: testImages, y_: testLabels, keep_prob: 1.0})
-                print("test accuracy %g" % testAcc)
-                a.append(testAcc)
-                # if i % 1000 == 0:
-                #     testWithGalAcc = accuracy.eval(feed_dict={x: testImagesWithGal, y_: testLabelsWithGal, keep_prob: 1.0})
-                #     print("test With Gal accuracy %g" % testWithGalAcc)
-
-        print("test accuracy %g" % accuracy.eval(feed_dict={x: testImages, y_: testLabels, keep_prob: 1.0}))
-
-        yy = y_conv.eval(feed_dict={x: testImages, y_: testLabels, keep_prob: 1.0})
-        cp = correct_prediction.eval(feed_dict={x: testImages, y_: testLabels, keep_prob: 1.0})
-        print(cp)
-        for i in range(len(cp)):
-            if cp[i] == False:
-                predictedIndex = np.argmax(yy[i])
-                print(i, testTypeNames[i], typeNamesList[predictedIndex])
-
-        # SAVE THE MODEL
-        saveFilename = os.path.join(dataDirName, "tensorflow_model.ckpt")
-        saver = tf.train.Saver()
-        save_path = saver.save(sess, saveFilename)
-        print("Model saved in file: %s" % save_path)
-
-    modelFilenames = [saveFilename + '.index', saveFilename + '.meta', saveFilename + '.data-00000-of-00001']
+    # SAVE THE MODEL
+    model.save(modelFilename)
 
     try:
         import matplotlib.pyplot as plt
-        plt.plot(a)
-        plt.xlabel("Number of Epochs")
-        plt.ylabel("Testing accuracy")
-        plt.savefig(os.path.join(dataDirName, "testing_accuracy.png"))
-        np.savetxt(os.path.join(dataDirName, "testing_accuracy.txt"), np.array(a))
+        num_objects = np.arange(0, numTrainBatches*batch_size, batch_size)
+        plt.plot(num_objects, train_acc, label='Training set')
+        plt.plot(num_objects, test_acc, label='Testing set')
+        plt.xlabel("Train objects")
+        plt.ylabel("Accuracy")
+        plt.savefig(os.path.join(dataDirName, "accuracy.png"))
+        np.savetxt(os.path.join(dataDirName, "accuracy.txt"), np.array([train_acc, test_acc]))
     except Exception as e:
         print(e)
 
-    try:
-        calc_model_metrics(saveFilename, testLabelsIndexes, testImages, testTypeNames, typeNamesList)
-    except Exception as e:
-        print(e)
+    # Delete temporary memory mapping files
+    for filename in glob.glob('shuffled*.dat') + glob.glob('oversampled*.dat'):
+        if not os.path.samefile(filename, trainImages.filename) and not os.path.samefile(filename, trainLabels.filename):
+            os.remove(filename)
 
-    return modelFilenames
+    # try:
+    calc_model_metrics(modelFilename, testLabelsIndexes, testImages, testTypeNames, typeNamesList, snTypes, fig_dir=dataDirName)
+    # except Exception as e:
+    #     print(e)
+
+    return modelFilename
 
 
 if __name__ == '__main__':

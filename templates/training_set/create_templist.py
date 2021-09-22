@@ -174,13 +174,13 @@ if __name__ == '__main__':
 
 
 
-    # # Create Template list
-    # f = open('templist.txt', 'w')
-    # for fname in files:
-    #     if fname.endswith('.lnw'):
-    #         f.write(fname)
-    #         f.write('\n')
-    # f.close()
+    # Create Template list
+    f = open('templist.txt', 'w')
+    for fname in files:
+        if fname.endswith('.lnw'):
+            f.write(fname)
+            f.write('\n')
+    f.close()
 
 
 

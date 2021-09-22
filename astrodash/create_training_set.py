@@ -239,6 +239,11 @@ class SaveTrainingSet(object):
 
 def create_training_set_files(dataDirName, minZ=0, maxZ=0, numOfRedshifts=80, trainWithHost=True, classifyHost=False,
                               trainFraction=0.8):
+    saveFilename = os.path.join(dataDirName, 'training_set.zip')
+
+    if os.path.exists(saveFilename):
+        return saveFilename
+
     with open(os.path.join(dataDirName, 'training_params.pickle'), 'rb') as f1:
         pars = pickle.load(f1)
     nTypes, w0, w1, nw, minAge, maxAge, ageBinSize, typeList = pars['nTypes'], pars['w0'], pars['w1'], \
@@ -264,7 +269,7 @@ def create_training_set_files(dataDirName, minZ=0, maxZ=0, numOfRedshifts=80, tr
                                       galTempFileList, hostList, nHostTypes, trainFraction)
     typeNamesList, typeAmounts = saveTrainingSet.type_amounts()
 
-    saveFilename = os.path.join(dataDirName, 'training_set.zip')
+
     saveTrainingSet.save_arrays(saveFilename)
 
     return saveFilename

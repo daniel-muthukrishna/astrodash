@@ -596,6 +596,15 @@ class FitSpectrumThread(QThread):
 
 def main():
     app = QtGui.QApplication(sys.argv)
+    sys._excepthook = sys.excepthook
+
+    # def exception_hook(exctype, value, traceback):
+    #     print(exctype, value, traceback)
+    #     sys._excepthook(exctype, value, traceback)
+    #     QtGui.QMessageBox.critical("Error", "Unintended exception")
+    #
+    # sys.excepthook = exception_hook
+
     form = MainApp()
     form.show()
     app.exec_()

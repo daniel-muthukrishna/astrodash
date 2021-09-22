@@ -1,13 +1,8 @@
 import os
 import pickle
 from astrodash.input_spectra import *
-from astrodash.multilayer_convnet import convnet_variables
+from tensorflow.keras.models import load_model
 
-try:
-    import tensorflow.compat.v1 as tf
-    tf.disable_v2_behavior()
-except ModuleNotFoundError:
-    import tensorflow as tf
 
 
 def get_training_parameters(data_files='models_v06'):
@@ -42,51 +37,17 @@ class LoadInputSpectra(object):
 
 class RestoreModel(object):
     def __init__(self, modelFilename, inputImages, nw, nBins):
-        self.reset()
-
         self.modelFilename = modelFilename
         self.inputImages = inputImages
         self.nw = nw
         self.nBins = nBins
-        self.imWidthReduc = 8
-        self.imWidth = 32  # Image size and width
 
-        self.x, self.y_, self.keep_prob, self.y_conv, self.W, self.b = convnet_variables(self.imWidth,
-                                                                                         self.imWidthReduc, self.nw,
-                                                                                         self.nBins)
-
-        self.saver = tf.train.Saver()
+        self.model = load_model(modelFilename)
 
     def restore_variables(self):
-        with tf.Session() as sess:
-            self.saver.restore(sess, self.modelFilename)
+        softmax = self.model.predict(self.inputImages)
 
-            softmax = self.y_conv.eval(feed_dict={self.x: self.inputImages, self.keep_prob: 1.0})
-            # print(softmax)
-
-            # dwlog = np.log(10000. / 3500.) / self.nw
-            # wlog = 3500. * np.exp(np.arange(0, self.nw) * dwlog)
-            #
-            # import matplotlib.pyplot as plt
-            # spec = np.loadtxt('spec91Tmax_2006cz.txt')
-            # weight = sess.run(self.W)[:, 23]
-            # # plt.scatter(np.arange(1024), self.inputImages[0], marker='.', c=weight, cmap=plt.get_cmap('seismic'))
-            # plt.scatter(wlog, spec, marker='.', c=weight, cmap=plt.get_cmap('seismic'))
-            # plt.colorbar()
-
-            # plt.imshow(sess.run(self.W)[:, 5].reshape([32,32]), cmap=plt.get_cmap('seismic'))
-            # for i, classval in enumerate(np.arange(5, 306, 18)):
-            #     plt.subplot(9, 2, i + 1)
-            #     weight = sess.run(self.W)[:, classval]
-            #     plt.title("{}, {}".format(i, classval))
-            #     plt.imshow(weight.reshape([32, 32]), cmap=plt.get_cmap('seismic'))
-            #     frame1 = plt.gca()
-            #     frame1.axes.get_xaxis().set_visible(False)
-            #     frame1.axes.get_yaxis().set_visible(False)
         return softmax
-
-    def reset(self):
-        tf.reset_default_graph()
 
 
 class BestTypesListSingleRedshift(object):

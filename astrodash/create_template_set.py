@@ -58,7 +58,7 @@ def create_template_set_file(dataDirName):
     # zipRef = zipfile.ZipFile(trainingSet, 'r')
     # zipRef.extractall(extractedFolder)
     # zipRef.close()
-    os.system("unzip %s -d %s" % (trainingSet, extractedFolder))
+    os.system(f'unzip "{trainingSet}" -d "{extractedFolder}"')
 
     npyFiles = {}
     fileList = os.listdir(extractedFolder)
@@ -72,7 +72,7 @@ def create_template_set_file(dataDirName):
             # unCompressedFile.write(decoded)
             # gzFile.close()
             # unCompressedFile.close()
-            os.system("gzip -dk %s" % f)
+            os.system(f'gzip -dk "{f}"')
             npyFiles[filename.strip('.npy.gz')] = f.strip('.gz')
 
     trainImages = np.load(npyFiles['trainImages'], mmap_mode='r')
