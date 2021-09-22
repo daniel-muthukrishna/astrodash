@@ -1,7 +1,7 @@
 import os
 import sys
 import numpy as np
-from PyQt5 import QtGui
+from PyQt5 import QtWidgets
 from PyQt5.QtCore import QThread, pyqtSignal
 import pyqtgraph as pg
 from astrodash.design import Ui_MainWindow
@@ -14,7 +14,7 @@ from astrodash.calculate_redshift import get_median_redshift, get_redshift_axis
 from astrodash.read_from_catalog import catalogDict
 
 
-class MainApp(QtGui.QMainWindow, Ui_MainWindow):
+class MainApp(QtWidgets.QMainWindow, Ui_MainWindow):
     def __init__(self, parent=None, inputFilename="DefaultFilename", data_files='models_v06'):
         super(MainApp, self).__init__(parent)
         self.setupUi(self)
@@ -94,7 +94,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
                 self.modelFilename = os.path.join(self.mainDirectory, self.data_files,
                                                   "models/agnosticZ/tensorflow_model.ckpt")
         if not os.path.isfile(self.modelFilename + ".index"):
-            QtGui.QMessageBox.critical(self, "Error", "Model does not exist")
+            QtWidgets.QMessageBox.critical(self, "Error", "Model does not exist")
 
     def templates(self):
         pars = get_training_parameters()
@@ -239,7 +239,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             self.inputFilename = inputFilename
 
     def select_input_file(self):
-        inputFilename = QtGui.QFileDialog.getOpenFileName(self, "Select a spectrum file")[0]
+        inputFilename = QtWidgets.QFileDialog.getOpenFileName(self, "Select a spectrum file")[0]
         if (inputFilename == self.inputFilename) or (inputFilename == ""):
             pass
         else:
@@ -254,13 +254,13 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
         try:
             self.smooth = int(self.lineEditSmooth.text())
         except ValueError:
-            QtGui.QMessageBox.critical(self, "Error", "Smooth must be positive integer")
+            QtWidgets.QMessageBox.critical(self, "Error", "Smooth must be positive integer")
             return
         try:
             self.minWave = int(self.lineEditMinWave.text())
             self.maxWave = int(self.lineEditMaxWave.text())
         except ValueError:
-            QtGui.QMessageBox.critical(self, "Error",
+            QtWidgets.QMessageBox.critical(self, "Error",
                                        "Min and max waves must be integers between %d and %d" % (self.w0, self.w1))
             return
         if self.checkBoxClassifyHost.isChecked():
@@ -274,20 +274,20 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
                 self.bestRedshift = knownZ
                 self.bestRedshiftErr = None
             except ValueError:
-                QtGui.QMessageBox.critical(self, "Error", "Enter Known Redshift")
+                QtWidgets.QMessageBox.critical(self, "Error", "Enter Known Redshift")
                 return
         else:
             self.knownRedshift = False
             knownZ = 0
             self.lineEditKnownZ.setText("")
         if not os.path.isfile(self.modelFilename + ".index"):
-            QtGui.QMessageBox.critical(self, "Error", "Model does not exist")
+            QtWidgets.QMessageBox.critical(self, "Error", "Model does not exist")
             return
         if not isinstance(self.inputFilename, (list, np.ndarray)) and not hasattr(self.inputFilename,
                                                                                   'read') and not os.path.isfile(
                 self.inputFilename) and self.inputFilename.split('-')[0] not in list(
                 catalogDict.keys()):  # Not an array and not a file-handle and not a file and not a catalog input
-            QtGui.QMessageBox.critical(self, "Error", "File not found!")
+            QtWidgets.QMessageBox.critical(self, "Error", "File not found!")
             return
         try:
             if self.inputFilename.split('-')[0] in list(catalogDict.keys()):
@@ -319,7 +319,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             self.cancelledFitting = True
             self.fitThread.terminate()
             self.progressBar.setValue(100)
-            QtGui.QMessageBox.information(self, "Cancelled!", "Stopped Fitting Input Spectrum")
+            QtWidgets.QMessageBox.information(self, "Cancelled!", "Stopped Fitting Input Spectrum")
 
     def load_spectrum_single_redshift(self, spectrumInfo):
         self.bestTypes, self.softmax, self.idx, self.typeNamesList, self.inputImageUnRedshifted, self.inputMinMaxIndex = spectrumInfo
@@ -333,7 +333,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
             self.set_plot_redshift(self.bestRedshift)
             self.plot_cross_corr()
             self.progressBar.setValue(100)
-            # QtGui.QMessageBox.information(self, "Done!", "Finished Fitting Input Spectrum")
+            # QtWidgets.QMessageBox.information(self, "Done!", "Finished Fitting Input Spectrum")
 
     def best_broad_type(self):
         bestMatchList = []
@@ -550,7 +550,7 @@ class MainApp(QtGui.QMainWindow, Ui_MainWindow):
 
     def browse_folder(self):
         self.listWidget.clear()
-        directory = QtGui.QFileDialog.getExistingDirectory(self, "Pick a folder")
+        directory = QtWidgets.QFileDialog.getExistingDirectory(self, "Pick a folder")
 
         if directory:
             for file_name in os.listdir(directory):
@@ -595,13 +595,13 @@ class FitSpectrumThread(QThread):
 
 
 def main():
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     sys._excepthook = sys.excepthook
 
     # def exception_hook(exctype, value, traceback):
     #     print(exctype, value, traceback)
     #     sys._excepthook(exctype, value, traceback)
-    #     QtGui.QMessageBox.critical("Error", "Unintended exception")
+    #     QtWidgets.QMessageBox.critical("Error", "Unintended exception")
     #
     # sys.excepthook = exception_hook
 
