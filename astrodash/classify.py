@@ -11,7 +11,7 @@ from astrodash.calculate_redshift import get_median_redshift
 from astrodash.read_from_catalog import catalogDict
 
 try:
-    from PyQt5 import QtGui
+    from PyQt5 import QtWidgets
     from astrodash.gui_main import MainApp
 except ImportError:
     print("Warning: You will need to install 'PyQt5' if you want to use the graphical interface. "
@@ -209,7 +209,7 @@ class Classify(object):
         print("Finished classifying %d spectra!" % len(self.filenames))
 
     def plot_with_gui(self, indexToPlot=0):
-        app = QtGui.QApplication(sys.argv)
+        app = QtWidgets.QApplication(sys.argv)
         form = MainApp(inputFilename=self.filenames[indexToPlot])
         if not isinstance(self.filenames[indexToPlot], (list, np.ndarray)) and not hasattr(self.filenames[indexToPlot],
                                                                                            'read'):  # Not an array and not a file-handle

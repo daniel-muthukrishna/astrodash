@@ -5,7 +5,7 @@ from astrodash.download_data_files import download_all_files
 download_all_files('v06')
 
 try:
-    from PyQt5 import QtGui
+    from PyQt5 import QtWidgets
     from astrodash.gui_main import MainApp
 except ImportError:
     print("Warning: You will need to install 'PyQt5' if you want to use the graphical interface. " \
@@ -30,7 +30,7 @@ def run_gui():
     parser.add_argument('-s', "--smooth", type=int, help='Smooth spectrum (int)')
     args = parser.parse_args()
 
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
 
     if args.filepath is None:
         filepath = "DefaultFilename"
