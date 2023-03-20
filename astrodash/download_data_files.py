@@ -39,7 +39,10 @@ def download_all_files(zipVersion):
 
     saveFilenames = ['models_{0}.zip'.format(zipVersion)]
 
-    urlpaths = ["https://github.com/daniel-muthukrishna/astrodash/blob/master/astrodash/models_{0}.zip?raw=true".format(
+#     urlpaths = ["https://github.com/daniel-muthukrishna/astrodash/blob/master/astrodash/models_{0}.zip?raw=true".format(
+#         zipVersion)]
+
+    urlpaths = ["https://zenodo.org/record/7753795/files/models_{0}.zip?download=1".format(
         zipVersion)]
 
     printStatuses = [
