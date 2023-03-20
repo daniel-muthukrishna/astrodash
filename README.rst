@@ -7,6 +7,8 @@ interface that enables a user to view and classify a spectrum.
 
 Documentation at: http://astrodash.readthedocs.io
 
+Update: The latest trained model has been moved to Zenodo: https://zenodo.org/record/7753795. Please download the models_v06.zip file if installing the code does not automatically download this for you.
+
 
 1. Installation
 ---------------
