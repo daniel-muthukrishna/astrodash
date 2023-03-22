@@ -42,8 +42,9 @@ def download_all_files(zipVersion):
 #     urlpaths = ["https://github.com/daniel-muthukrishna/astrodash/blob/master/astrodash/models_{0}.zip?raw=true".format(
 #         zipVersion)]
 
-    urlpaths = ["https://zenodo.org/record/7753795/files/models_{0}.zip?download=1".format(
+    urlpaths = ["https://zenodo.org/record/7760927/files/models_{0}.zip?download=1".format(
         zipVersion)]
+    
 
     printStatuses = [
         "Downloading data files from {0}... \nThis download contains the Tensorflow models trained using deep learning. \n"
